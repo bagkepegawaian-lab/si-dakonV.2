@@ -1324,27 +1324,6 @@ function buildForm(h) {
   }
   refreshData();
 });
-   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFYhGvZcx-0HesFfeIhs8TvRSDuOUg8sH7aKr_P5GQO00KXWVICpc3mrLo-fqCywU/exec?action=getData";
-
-fetch(SCRIPT_URL)
-  .then(res => res.json())
-  .then(res => {
-    console.log("DATA MASUK:", res);
-
-    // ⬇️ PENTING: ambil bagian data-nya
-    const data = res.data || res;
-
-    if (typeof loadData === "function") {
-      loadData(data);
-    }
-
-    if (typeof allData !== "undefined") {
-      allData = data;
-    }
-  })
-  .catch(err => {
-    console.error("ERROR FETCH:", err);
-  });
 
 
 </script>
