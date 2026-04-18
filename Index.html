@@ -678,6 +678,15 @@ function openAddModal() {
     $("#dakon-img-preview").attr("src", ""); // Kosongkan preview foto
     $("#dataModal").modal('show');
 }
+    function doGet(e) {
+  const data = { status: "ok", data: ["tes123"] };
+
+  const callback = e.parameter.callback || "handleData";
+
+  return ContentService
+    .createTextOutput(callback + "(" + JSON.stringify(data) + ")")
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
 function handleAuthAction() {
     if(isAdminMode) { 
         // PROSES LOGOUT
@@ -1271,15 +1280,16 @@ $("#fileFoto").on('change', function() {
         reader.readAsDataURL(file);
     }
 });
-  function loadJSONP(url, callback) {
+function loadJSONP(url, callback) {
   const script = document.createElement("script");
-  script.src = url + "&callback=" + callback;
+  script.src = url + "&callback=" + callback + "&_=" + Date.now();
   document.body.appendChild(script);
-} 
-  function handleData(res) {
+}
+
+function handleData(res) {
   console.log("DATA MASUK:", res);
 
-  const data = res.data || res; // ✅ ambil isi data
+  const data = res.data || res;
 
   if (typeof loadData === "function") {
     loadData(data);
@@ -1288,15 +1298,12 @@ $("#fileFoto").on('change', function() {
   if (typeof allData !== "undefined") {
     allData = data;
   }
-}   $(document).ready(function () {
+}
 
-  // 🔐 session
-  if(localStorage.getItem('si_ida_session') === 'true') {
-    isAdminMode = true;
-    $('#adminInfo').show();
-    $('#btnAddData').show();
-    $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
-  }
+$(document).ready(function () {
+  const url = "URL_WEB_APP_BARU?action=getData";
+  loadJSONP(url, "handleData");
+});
 
   // 🚀 ambil data
   const url = "https://script.google.com/macros/s/AKfycbyFYhGvZcx-0HesFfeIhs8TvRSDuOUg8sH7aKr_P5GQO00KXWVICpc3mrLo-fqCywU/exec?action=getData";
