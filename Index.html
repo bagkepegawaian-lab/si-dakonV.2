@@ -1329,11 +1329,48 @@ function buildForm(h) {
   }
   refreshData();
 });
-const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSJ0UDwDiwEZnqiznYczmYhXT3YbfvVLFqqFSOxTAzh3qdim0uEHEhe_cG8-asccPynKulS0pWuEhyB/pub?gid=1326817545&single=true&output=csv";
-fetch(url)
-  .then(res => res.text())
-  .then(data => {
-     // Proses data CSV di sini
+const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSJ0UDwDiwEZnqiznYczmYhXT3YbfvVLFqqFSOxTAzh3qdim0uEHEhe_cG8-asccPynKulS0pWuEhyB/pub?gid=1326817545&single=true&output=csv'; // Ganti dengan link CSV hasil Publish to Web
+
+function loadDataFromSheet() {
+  fetch(sheetUrl)
+    .then(response => response.text())
+    .then(csvText => {
+      Papa.parse(csvText, {
+        header: false,
+        skipEmptyLines: true,
+        complete: function(results) {
+          allData = results.data.slice(1);
+          headersGlobal = results.data[0];
+          
+          // Menjalankan fungsi asli Anda
+          buildForm(headersGlobal);
+          updateHomeStats();
+          // Jika ada fungsi render tabel utama
+          if(typeof renderTable === "function") {
+             renderTable(headersGlobal, allData);
+          }
+        }
+      });
+    })
+    .catch(err => console.error("Gagal load data:", err));
+}
+
+// Modifikasi refreshData agar bisa jalan di Netlify maupun Google Apps Script
+function refreshData() {
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    // Mode Google Apps Script (Asli)
+    google.script.run.withSuccessHandler(res => {
+      allData = res.slice(1);
+      headersGlobal = res[0];
+      buildForm(headersGlobal);
+      updateHomeStats();
+    }).getData();
+  } else {
+    // Mode Web Deployment (Netlify/Github)
+    loadDataFromSheet();
+  }
+}
+ 
   });
 
 </script>
