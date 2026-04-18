@@ -678,15 +678,7 @@ function openAddModal() {
     $("#dakon-img-preview").attr("src", ""); // Kosongkan preview foto
     $("#dataModal").modal('show');
 }
-    function doGet(e) {
-  const data = { status: "ok", data: ["tes123"] };
-
-  const callback = e.parameter.callback || "handleData";
-
-  return ContentService
-    .createTextOutput(callback + "(" + JSON.stringify(data) + ")")
-    .setMimeType(ContentService.MimeType.JAVASCRIPT);
-}
+   
 function handleAuthAction() {
     if(isAdminMode) { 
         // PROSES LOGOUT
@@ -1342,10 +1334,10 @@ function loadDataFromSheet() {
           allData = results.data.slice(1);
           headersGlobal = results.data[0];
           
-          // Menjalankan fungsi asli Anda
+          
           buildForm(headersGlobal);
           updateHomeStats();
-          // Jika ada fungsi render tabel utama
+          
           if(typeof renderTable === "function") {
              renderTable(headersGlobal, allData);
           }
@@ -1355,10 +1347,9 @@ function loadDataFromSheet() {
     .catch(err => console.error("Gagal load data:", err));
 }
 
-// Modifikasi refreshData agar bisa jalan di Netlify maupun Google Apps Script
 function refreshData() {
   if (typeof google !== 'undefined' && google.script && google.script.run) {
-    // Mode Google Apps Script (Asli)
+   
     google.script.run.withSuccessHandler(res => {
       allData = res.slice(1);
       headersGlobal = res[0];
@@ -1366,7 +1357,7 @@ function refreshData() {
       updateHomeStats();
     }).getData();
   } else {
-    // Mode Web Deployment (Netlify/Github)
+  
     loadDataFromSheet();
   }
  
