@@ -1324,24 +1324,7 @@ function buildForm(h) {
 });
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFYhGvZcx-0HesFfeIhs8TvRSDuOUg8sH7aKr_P5GQO00KXWVICpc3mrLo-fqCywU/exec";
 
-fetch(SCRIPT_URL, { method: "GET", mode: "cors" })
-  .then(res => res.json())
-  .then(data => {
-    console.log("DATA:", data);
 
-    // ⬇️ kalau sebelumnya kamu punya fungsi load data, panggil di sini
-    if (typeof loadData === "function") {
-      loadData(data);
-    }
-
-    // ⬇️ atau kalau pakai allData langsung
-    if (typeof allData !== "undefined") {
-      allData = data;
-    }
-  })
-  .catch(err => {
-    console.error("ERROR FETCH:", err);
-  });
 
 </script>
 </body>
