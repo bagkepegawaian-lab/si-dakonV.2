@@ -1303,8 +1303,10 @@ $("#fileFoto").on('change', function() {
   }
 }
 
-const url = "https://script.google.com/macros/s/AKfycbyFYhGvZcx-0HesFfeIhs8TvRSDuOUg8sH7aKr_P5GQO00KXWVICpc3mrLo-fqCywU/exec?action=getData";
-loadJSONP(url, "handleData");
+$(document).ready(function () {
+  const url = "https://script.google.com/macros/s/AKfycbyFYhGvZcx-0HesFfeIhs8TvRSDuOUg8sH7aKr_P5GQO00KXWVICpc3mrLo-fqCywU/exec?action=getData";
+  loadJSONP(url, "handleData");
+});
 function buildForm(h) {
   let html = "";
   h.forEach((name, i) => {
