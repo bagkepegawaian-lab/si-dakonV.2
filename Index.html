@@ -1276,8 +1276,10 @@ $("#fileFoto").on('change', function() {
   script.src = url + "&callback=" + callback;
   document.body.appendChild(script);
 }
-    function handleData(data) {
-  console.log("DATA MASUK:", data);
+    function handleData(res) {
+  console.log("DATA MASUK:", res);
+
+  const data = res.data || res; // ✅ ambil isi data
 
   if (typeof loadData === "function") {
     loadData(data);
@@ -1286,26 +1288,22 @@ $("#fileFoto").on('change', function() {
   if (typeof allData !== "undefined") {
     allData = data;
   }
-}
-    function doGet(e) {
-  const data = { status: "ok", data: ["tes"] }; // ganti sesuai data kamu
-  
-  const callback = e.parameter.callback;
-  
-  if (callback) {
-    return ContentService
-      .createTextOutput(callback + "(" + JSON.stringify(data) + ")")
-      .setMimeType(ContentService.MimeType.JAVASCRIPT);
-  } else {
-    return ContentService
-      .createTextOutput(JSON.stringify(data))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
+}   $(document).ready(function () {
 
-$(document).ready(function () {
+  // 🔐 session
+  if(localStorage.getItem('si_ida_session') === 'true') {
+    isAdminMode = true;
+    $('#adminInfo').show();
+    $('#btnAddData').show();
+    $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
+  }
+
+  // 🚀 ambil data
   const url = "https://script.google.com/macros/s/AKfycbyFYhGvZcx-0HesFfeIhs8TvRSDuOUg8sH7aKr_P5GQO00KXWVICpc3mrLo-fqCywU/exec?action=getData";
   loadJSONP(url, "handleData");
+
+  // kalau masih dipakai
+  refreshData();
 });
 function buildForm(h) {
   let html = "";
