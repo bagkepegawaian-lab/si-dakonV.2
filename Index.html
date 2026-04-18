@@ -1329,7 +1329,12 @@ function buildForm(h) {
   }
   refreshData();
 });
-
+const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSJ0UDwDiwEZnqiznYczmYhXT3YbfvVLFqqFSOxTAzh3qdim0uEHEhe_cG8-asccPynKulS0pWuEhyB/pub?gid=1326817545&single=true&output=csv";
+fetch(url)
+  .then(res => res.text())
+  .then(data => {
+     // Proses data CSV di sini
+  });
 
 </script>
 </body>
