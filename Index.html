@@ -1275,8 +1275,8 @@ $("#fileFoto").on('change', function() {
   const script = document.createElement("script");
   script.src = url + "&callback=" + callback;
   document.body.appendChild(script);
-}
-    function handleData(res) {
+} 
+  function handleData(res) {
   console.log("DATA MASUK:", res);
 
   const data = res.data || res; // ✅ ambil isi data
