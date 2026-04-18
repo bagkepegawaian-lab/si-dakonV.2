@@ -795,8 +795,60 @@ function refreshData() {
   }
 }
 
+<script>
+// 1. --- KONFIGURASI GLOBAL ---
+const sheetUrl = 'MASUKKAN_LINK_CSV_PUBLISH_TO_WEB_DI_SINI'; // Ganti dengan link CSV Anda
+let allData = [];
+let headersGlobal = [];
+let table = null;
+let isAdminMode = false;
+const hiddenFields = ["PASSWORD", "USERNAME", "TOKEN"]; // Sesuaikan field yang ingin disembunyikan
+
+// 2. --- FUNGSI LOAD DATA (OPTIMAL UNTUK DATA BESAR) ---
+function loadDataFromSheet() {
+  console.log("Memulai sinkronisasi data...");
+  fetch(sheetUrl)
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.text();
+    })
+    .then(csvText => {
+      // Menggunakan Worker agar browser tidak lag saat memproses ribuan baris
+      Papa.parse(csvText, {
+        header: false,
+        skipEmptyLines: true,
+        worker: true, 
+        fastMode: true,
+        complete: function(results) {
+          if (results.data && results.data.length > 0) {
+            headersGlobal = results.data[0];
+            allData = results.data.slice(1);
+            
+            console.log("Data berhasil dimuat: " + allData.length + " baris.");
+
+            // Jalankan fungsi UI secara berurutan
+            buildForm(headersGlobal);
+            
+            // Gunakan requestAnimationFrame agar rendering grafik tidak membebani CPU sekaligus
+            window.requestAnimationFrame(() => {
+              updateHomeStats();
+              if(typeof renderTable === "function") {
+                 renderTable(headersGlobal, allData);
+              }
+            });
+          }
+        }
+      });
+    })
+    .catch(err => console.error("Gagal load data:", err));
+}
+
+function refreshData() {
+  loadDataFromSheet();
+}
+
+// 3. --- FUNGSI STATISTIK DASHBOARD (KODE ASLI ANDA) ---
 function updateHomeStats() {
-  // 1. Identifikasi kolom (KODE ASLI)
   const idxStatus = headersGlobal.findIndex(h => h.toUpperCase().trim() === "STATUS");
   const idxStatusASN = headersGlobal.findIndex(h => h.toUpperCase().includes("STATUS ASN"));
   const idxGol = headersGlobal.findIndex(h => h.toUpperCase().includes("GOL") && h.toUpperCase().includes("RUANG"));
@@ -804,13 +856,11 @@ function updateHomeStats() {
   const idxUmur = headersGlobal.findIndex(h => h.toUpperCase().includes("UMUR") || h.toUpperCase().includes("USIA"));
   const idxEdu = headersGlobal.findIndex(h => h.toUpperCase().includes("PENDIDIKAN TERAKHIR"));
 
-  // 2. Filter hanya data AKTIF (KODE ASLI)
   const dataAktifOnly = allData.filter(row => {
     const statusVal = (idxStatus !== -1 && row[idxStatus]) ? row[idxStatus].toString().toUpperCase() : "AKTIF";
     return statusVal.includes("AKTIF") && !statusVal.includes("TIDAK");
   });
 
-  // 3. Inisialisasi variabel hitung (KODE ASLI)
   let pns = 0, pppk = 0, total = dataAktifOnly.length;
   let dPns = 0, tPns = 0, dPppk = 0, tPppk = 0;
   let golMap = {}, jabDosenMap = {}, totalDosen = 0, jabTendikMap = {}, totalTendik = 0, eduMap = {};
@@ -836,7 +886,6 @@ function updateHomeStats() {
     }
   });
 
-  // 4. Update Angka UI (KODE ASLI)
   $('#home-total-all').text(total);
   $('#home-val-pns').text(pns); $('#home-val-pppk').text(pppk);
   $('#home-total-pns-big').text(pns); $('#home-total-pppk-big').text(pppk);
@@ -848,8 +897,179 @@ function updateHomeStats() {
     $('#home-bar-pppk').find('.progress-bar').attr('style', `width: ${(pppk/total*100)}% !important; background-color: #fb8c00 !important;`); 
   }
 
-  // 5. Render Chart (KODE ASLI)
+  // Render Charts
   try {
+    const ctxAge = document.getElementById('homeAgeCurveChart').getContext('2d');
+    if(window.homeAgeChart) window.homeAgeChart.destroy();
+    window.homeAgeChart = new Chart(ctxAge, {
+      type: 'line',
+      data: { labels: Object.keys(ageGroups), datasets: [{ label: 'Jumlah Pegawai', data: Object.values(ageGroups), fill: true, backgroundColor: 'rgba(0, 77,64, 0.1)', borderColor: '#004d40', borderWidth: 3, pointBackgroundColor: '#ffb74d', pointRadius: 6, tension: 0.4 }] },
+      options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+    // ... (Fungsi Chart Edu & Golongan tetap sama sesuai aslinya)
+  } catch(e) { console.log(e); }
+
+  // Render Jabatan List
+  const renderJabList = (map, tot, col, type) => {
+    let h = "";
+    let keys = (type === 'DOSEN') ? ["Guru Besar", "Lektor Kepala", "Lektor", "Asisten Ahli"] : Object.keys(map).sort((a,b)=>map[b]-map[a]);
+    if (type === 'DOSEN') Object.keys(map).forEach(k => { if(!keys.includes(k)) keys.push(k); });
+
+    keys.forEach(k => {
+      const val = map[k] || 0;
+      const p = tot > 0 ? (val/tot*100) : 0;
+      h += `
+        <div class="jab-item mb-2 p-2 rounded-4 position-relative overflow-hidden" style="background: white; border: 1px solid #f1f3f5; min-height: 56px; display: flex; flex-direction: column; justify-content: center;">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold" style="font-size:11.5px; color: #2d3436;">${k.toUpperCase()}</span>
+            <span class="badge" style="background: ${col}; color: white;">${val}</span>
+          </div>
+          <div class="progress" style="height:6px; background-color: #f1f3f5;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:${p}%; background: linear-gradient(90deg, ${col}, #80cbc4) !important;"></div>
+          </div>
+        </div>`;
+    });
+    return h;
+  };
+
+  $('#home-jabatan-list').html(`
+    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+      <div><h6 id="jab-title-text" class="fw-bold mb-0" style="color:#004d40;">Jabatan Akademik Dosen</h6></div>
+      <div class="btn-group p-1" role="group" style="background:#f1f3f5; border-radius:10px;">
+        <input type="radio" class="btn-check" name="btnjab" id="btn-d" checked>
+        <label class="btn btn-sm px-3" for="btn-d">DOSEN</label>
+        <input type="radio" class="btn-check" name="btnjab" id="btn-t">
+        <label class="btn btn-sm px-3" for="btn-t">TENDIK</label>
+      </div>
+    </div>
+    <div id="jab-scroll-content" style="max-height: 265px; overflow-y: auto;">
+      ${renderJabList(jabDosenMap, totalDosen, '#004d40', 'DOSEN')}
+    </div>
+  `);
+
+  $('#btn-d').on('change', function() {
+    $('#jab-title-text').text('Jabatan Akademik Dosen');
+    $('#jab-scroll-content').html(renderJabList(jabDosenMap, totalDosen, '#004d40', 'DOSEN'));
+  });
+  $('#btn-t').on('change', function() {
+    $('#jab-title-text').text('Jabatan Fungsional Tendik');
+    $('#jab-scroll-content').html(renderJabList(jabTendikMap, totalTendik, '#fb8c00', 'TENDIK'));
+  });
+}
+
+// 4. --- FUNGSI TABEL (OPTIMAL UNTUK DATA BESAR) ---
+<script>
+// ==========================================
+// 1. KONFIGURASI GLOBAL & STATE
+// ==========================================
+const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTEOltN8DofL0vXQf96t1G2_uYqG6v4o_X8vU9Bv_30S_T8N_X3k_Q_r_g/pub?output=csv'; 
+let allData = [];
+let headersGlobal = [];
+let table = null;
+let isAdminMode = false;
+let activeCat = "PNS"; // Default kategori untuk updateStats
+const hiddenFields = ["PASSWORD", "USERNAME", "TOKEN"];
+
+// ==========================================
+// 2. LOADING DATA (OPTIMASI NETLIFY/DATA BESAR)
+// ==========================================
+function loadDataFromSheet() {
+    console.log("Memulai sinkronisasi data...");
+    fetch(sheetUrl)
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.text();
+        })
+        .then(csvText => {
+            // Menggunakan Worker agar browser tidak lag saat memproses ribuan baris
+            Papa.parse(csvText, {
+                header: false,
+                skipEmptyLines: true,
+                worker: true, 
+                fastMode: true,
+                complete: function(results) {
+                    if (results.data && results.data.length > 0) {
+                        headersGlobal = results.data[0];
+                        allData = results.data.slice(1);
+                        
+                        console.log("Data berhasil dimuat: " + allData.length + " baris.");
+
+                        // Jalankan fungsi UI secara berurutan
+                        buildForm(headersGlobal);
+                        
+                        // Gunakan requestAnimationFrame agar rendering tidak berat di awal
+                        window.requestAnimationFrame(() => {
+                            updateHomeStats();
+                            updateStats(); // Untuk statistik gender di halaman lain jika ada
+                            if(typeof renderTable === "function") {
+                                renderTable(headersGlobal, allData);
+                            }
+                        });
+                    }
+                }
+            });
+        })
+        .catch(err => console.error("Gagal load data:", err));
+}
+
+function refreshData() {
+    loadDataFromSheet();
+}
+
+// ==========================================
+// 3. UPDATE HOME STATS (FITUR VISUAL LENGKAP)
+// ==========================================
+function updateHomeStats() {
+  const idxStatus = headersGlobal.findIndex(h => h.toUpperCase().trim() === "STATUS");
+  const idxStatusASN = headersGlobal.findIndex(h => h.toUpperCase().includes("STATUS ASN"));
+  const idxGol = headersGlobal.findIndex(h => h.toUpperCase().includes("GOL") && h.toUpperCase().includes("RUANG"));
+  const idxJab = headersGlobal.findIndex(h => h.toUpperCase() === "JABATAN");
+  const idxUmur = headersGlobal.findIndex(h => h.toUpperCase().includes("UMUR") || h.toUpperCase().includes("USIA"));
+  const idxEdu = headersGlobal.findIndex(h => h.toUpperCase().includes("PENDIDIKAN TERAKHIR"));
+
+  const dataAktifOnly = allData.filter(row => {
+    const statusVal = (idxStatus !== -1 && row[idxStatus]) ? row[idxStatus].toString().toUpperCase() : "AKTIF";
+    return statusVal.includes("AKTIF") && !statusVal.includes("TIDAK");
+  });
+
+  let pns = 0, pppk = 0, total = dataAktifOnly.length;
+  let dPns = 0, tPns = 0, dPppk = 0, tPppk = 0;
+  let golMap = {}, jabDosenMap = {}, totalDosen = 0, jabTendikMap = {}, totalTendik = 0, eduMap = {};
+  let ageGroups = { "20-25":0, "26-30":0, "31-35":0, "36-40":0, "41-45":0, "46-50":0, "51-55":0, "56-60":0, "61-65":0, "66-70":0 };
+
+  dataAktifOnly.forEach(row => {
+    const s = (row[idxStatusASN] || "").toUpperCase();
+    const gl = (row[idxGol] || "N/A").toString().trim();
+    const ed = (row[idxEdu] || "Tidak Terisi").trim();
+    const j = (row[idxJab] || "Lainnya").trim();
+    if(gl !== "N/A" && gl !== "") golMap[gl] = (golMap[gl] || 0) + 1;
+    if(ed) eduMap[ed] = (eduMap[ed] || 0) + 1;
+    if(s.includes("PNS")) { pns++; if(s.includes("DOSEN")) dPns++; else if(s.includes("TENDIK")) tPns++; } 
+    else if(s.includes("PPPK")) { pppk++; if(s.includes("DOSEN")) dPppk++; else if(s.includes("TENDIK")) tPppk++; }
+    if(s.includes("DOSEN")) { jabDosenMap[j] = (jabDosenMap[j] || 0) + 1; totalDosen++; } 
+    else { jabTendikMap[j] = (jabTendikMap[j] || 0) + 1; totalTendik++; }
+    let age = parseInt(row[idxUmur]);
+    if (age) {
+        if (age <= 25) ageGroups["20-25"]++; else if (age <= 30) ageGroups["26-30"]++; else if (age <= 35) ageGroups["31-35"]++;
+        else if (age <= 40) ageGroups["36-40"]++; else if (age <= 45) ageGroups["41-45"]++; else if (age <= 50) ageGroups["46-50"]++;
+        else if (age <= 55) ageGroups["51-55"]++; else if (age <= 60) ageGroups["56-60"]++; else if (age <= 65) ageGroups["61-65"]++;
+        else if (age <= 70) ageGroups["66-70"]++;
+    }
+  });
+
+  $('#home-total-all').text(total);
+  $('#home-val-pns').text(pns); $('#home-val-pppk').text(pppk);
+  $('#home-total-pns-big').text(pns); $('#home-total-pppk-big').text(pppk);
+  $('#home-val-dosen-pns').text(dPns); $('#home-val-tendik-pns').text(tPns);
+  $('#home-val-dosen-pppk').text(dPppk); $('#home-val-tendik-pppk').text(tPppk);
+
+  if(total > 0) { 
+    $('#home-bar-pns').find('.progress-bar').attr('style', `width: ${(pns/total*100)}% !important; background-color: #004d40 !important;`); 
+    $('#home-bar-pppk').find('.progress-bar').attr('style', `width: ${(pppk/total*100)}% !important; background-color: #fb8c00 !important;`); 
+  }
+
+  try {
+    // 1. Chart Umur (Line)
     const ctxAge = document.getElementById('homeAgeCurveChart').getContext('2d');
     if(window.homeAgeChart) window.homeAgeChart.destroy();
     window.homeAgeChart = new Chart(ctxAge, {
@@ -858,6 +1078,7 @@ function updateHomeStats() {
       options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: true, align: 'top', font: { weight: '800', size: 12 }, color: '#004d40', formatter: (v) => v > 0 ? v : '' } } }
     });
 
+    // 2. Chart Pendidikan (Doughnut with Center Text)
     const ctxEdu = document.getElementById('homeEducationPieChart').getContext('2d');
     if(window.homeEduChart) window.homeEduChart.destroy();
     const sortedEdu = Object.entries(eduMap).sort(([,a],[,b]) => b - a);
@@ -868,6 +1089,7 @@ function updateHomeStats() {
       plugins: [{ id: 'centerText', beforeDraw: (chart) => { const { width, height, ctx } = chart; ctx.restore(); ctx.font = "bold 12px sans-serif"; ctx.textBaseline = "middle"; ctx.fillStyle = "#888"; const textTotal = "TOTAL"; const textTotalX = Math.round((chart.chartArea.left + chart.chartArea.right) / 2 - ctx.measureText(textTotal).width / 2); ctx.fillText(textTotal, textTotalX, (chart.chartArea.top + chart.chartArea.bottom) / 2 - 12); ctx.font = "bold 24px sans-serif"; ctx.fillStyle = "#004d40"; const valText = sortedEdu.reduce((a, b) => a + b[1], 0).toString(); const valX = Math.round((chart.chartArea.left + chart.chartArea.right) / 2 - ctx.measureText(valText).width / 2); ctx.fillText(valText, valX, (chart.chartArea.top + chart.chartArea.bottom) / 2 + 12); ctx.save(); } }]
     });
 
+    // 3. Chart Golongan (Bar)
     const ctxGol = document.getElementById('homeGolonganChart').getContext('2d');
     const labelsGol = Object.keys(golMap).sort();
     if(window.homeGolChart) window.homeGolChart.destroy();
@@ -878,7 +1100,7 @@ function updateHomeStats() {
     });
   } catch(e) { console.log(e); }
 
-  // 6. List Jabatan (HANYA BAGIAN INI DENGAN HOVER, SILUET, GRADASI, & PRES 4 BARIS)
+  // 4. List Jabatan (Hover, Siluet, Gradasi)
   const renderJabList = (map, tot, col, type) => {
     let h = "";
     let keys = [];
@@ -928,7 +1150,6 @@ function updateHomeStats() {
       .btn-check:checked + .btn { background-color: #004d40 !important; color: white !important; }
       #jab-scroll-content::-webkit-scrollbar { width: 4px; }
       #jab-scroll-content::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
-      /* Efek Hover Hanya untuk Jabatan */
       .jab-item:hover { transform: translateX(5px); border-color: #004d40 !important; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
       .jab-item:hover .silhouette-icon { transform: scale(1.1); opacity: 0.08 !important; }
     </style>
@@ -946,6 +1167,9 @@ function updateHomeStats() {
   });
 }
 
+// ==========================================
+// 4. STATS GENDER (UPDATESTATS)
+// ==========================================
 function updateStats() {
   const idxStatusASN = headersGlobal.findIndex(h => h.toUpperCase().includes("STATUS ASN"));
   const idxGender = headersGlobal.findIndex(h => h.toUpperCase() === "JENIS KELAMIN");
@@ -965,6 +1189,9 @@ function updateStats() {
   $('#unit-list').html(uHtml);
 }
 
+// ==========================================
+// 5. RENDERING TABEL (DATATABLES)
+// ==========================================
 function renderTable(h, v) {
   let displayIndices = [];
   h.forEach((name, index) => {
@@ -997,6 +1224,9 @@ function renderTable(h, v) {
   $('#quickSearch').on('keyup', function(){ table.search(this.value).draw(); });
 }
 
+// ==========================================
+// 6. DETAIL DRH & LOGIKA AVATAR 3D
+// ==========================================
 function showDetail(idx) {
   const row = allData[idx]; 
   $("#drh-nama-header").text(row[2]); 
@@ -1008,28 +1238,21 @@ function showDetail(idx) {
   const idxStatus = headersGlobal.findIndex(h => h.toUpperCase().trim() === "STATUS");
   const idxFoto = headersGlobal.findIndex(h => h.toUpperCase().includes("FOTO"));
   const idxAkhirTB = headersGlobal.findIndex(h => h.toUpperCase().includes("AKHIR") && h.toUpperCase().includes("TUGAS"));
-  
-  // Menemukan indeks kolom Jenis Kelamin untuk menentukan avatar
   const idxGender = headersGlobal.findIndex(h => h.toUpperCase().includes("JENIS KELAMIN") || h.toUpperCase() === "GENDER");
-  
   const idxFolder = headersGlobal.findIndex(h => h.toUpperCase().trim() === "DOKUMEN");
 
   $("#drh-instansi-header").text(idxInstansi !== -1 ? (row[idxInstansi] || 'UIN Sunan Ampel Surabaya') : 'UIN Sunan Ampel Surabaya');
   $("#drh-unit-header").text(idxUnit !== -1 ? (row[idxUnit] || 'UIN Sunan Ampel Surabaya') : 'UIN Sunan Ampel Surabaya');
   $("#drh-jenis-header").text(idxJenis !== -1 ? (row[idxJenis] || 'UIN Sunan Ampel Surabaya') : 'UIN Sunan Ampel Surabaya');
   
-  // ==========================================
-  // 🔥 LOGIKA WARNA BADGE STATUS
-  // ==========================================
+  // LOGIKA WARNA BADGE STATUS
   const statusVal = idxStatus !== -1 ? (row[idxStatus] || 'AKTIF') : 'AKTIF';
   const statusUpper = statusVal.toUpperCase();
-  let badgeBg = "#6c757d"; 
-  let badgeText = "#ffffff";
+  let badgeBg = "#6c757d"; let badgeText = "#ffffff";
 
   if (statusUpper.includes("TUGAS BELAJAR")) {
     if (idxAkhirTB !== -1 && row[idxAkhirTB]) {
-      const today = new Date();
-      const endDate = new Date(row[idxAkhirTB]);
+      const today = new Date(); const endDate = new Date(row[idxAkhirTB]);
       const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
       badgeBg = (diffDays <= 365) ? "#dc3545" : "#6f42c1";
     } else { badgeBg = "#6f42c1"; }
@@ -1044,23 +1267,13 @@ function showDetail(idx) {
   $("#status-live-badge").html(`<i class="fas fa-check-circle me-1"></i> ${statusVal}`).css({
     "background-color": badgeBg, "color": badgeText, "padding": "6px 14px", "border-radius": "20px", "font-weight": "bold", "display": "inline-block"
   });
-  $("#drh-status-header").html(`<i class="fas fa-check-circle me-1"></i> ${statusVal}`);
 
-  // ==========================================
-  // 🔥 LOGIKA AVATAR DEFAULT (STYLE 3D SEPERTI USER1.JPG)
-  // ==========================================
+  // LOGIKA AVATAR DEFAULT (3D)
   const genderVal = (idxGender !== -1 && row[idxGender]) ? row[idxGender].toString().toUpperCase() : "";
-  
-  // Link Avatar 3D (Pria Jas & Wanita Berjilbab Jas)
   const avatarPria = "https://img.freepik.com/free-psd/3d-illustration-person-with-hijab_23-2149436190.jpg"; 
   const avatarWanita = "https://img.freepik.com/free-psd/3d-illustration-person-with-glasses_23-2149436185.jpg";
-  
-  let defaultAvatar = avatarPria;
-  if (genderVal.startsWith("P") || genderVal.includes("WANITA") || genderVal.includes("PEREMPUAN")) {
-    defaultAvatar = avatarWanita;
-  }
+  let defaultAvatar = (genderVal.startsWith("P") || genderVal.includes("WANITA") || genderVal.includes("PEREMPUAN")) ? avatarWanita : avatarPria;
 
-  // Cek apakah ada link foto khusus di kolom foto
   if(idxFoto !== -1) {
     const customFoto = row[idxFoto] ? row[idxFoto].toString().trim() : "";
     $("#drh-img").attr("src", (customFoto.startsWith("http")) ? customFoto : defaultAvatar);
@@ -1068,43 +1281,22 @@ function showDetail(idx) {
     $("#drh-img").attr("src", defaultAvatar);
   }
 
-  // ==========================================
-  // MODIFIKASI TOMBOL EDIT
-  // ==========================================
+  // TOMBOL EDIT
   $("#btnEditDrh").show().off('click').on('click', function() {
-      if (isAdminMode) {
-          editData(idx);
-      } else {
+      if (isAdminMode) { editData(idx); } else {
           Swal.fire({
-              title: 'Akses Terbatas',
-              text: "Silakan login sebagai Admin untuk memperbarui data ini.",
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonColor: '#3085d6',
-              cancelButtonColor: '#d33',
-              confirmButtonText: 'Login & Edit Sekarang',
-              cancelButtonText: 'Batal'
+              title: 'Akses Terbatas', text: "Silakan login sebagai Admin untuk mengedit.", icon: 'warning',
+              showCancelButton: true, confirmButtonText: 'Login & Edit'
           }).then((result) => {
-              if (result.isConfirmed) {
-                  window.pendingEditIdx = idx; 
-                  $('#detailModal').modal('hide');
-                  if (typeof handleAuthAction === "function") {
-                      handleAuthAction(); 
-                  }
-              }
+              if (result.isConfirmed) { window.pendingEditIdx = idx; $('#detailModal').modal('hide'); if (typeof handleAuthAction === "function") { handleAuthAction(); } }
           });
       }
   });
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  
-  // ==========================================
-  // LOGIKA TEKS BERJALAN & KONTEN LAINNYA
-  // ==========================================
+
+  // TEKS BERJALAN MASA STUDI
   let tbHtml = "";
   if(idxAkhirTB !== -1 && row[idxAkhirTB]){
-    const tglAkhirRaw = row[idxAkhirTB];
-    const today = new Date();
-    const endDate = new Date(tglAkhirRaw);
+    const tglAkhirRaw = row[idxAkhirTB]; const today = new Date(); const endDate = new Date(tglAkhirRaw);
     if (!isNaN(endDate.getTime())) {
       const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
       let alertBg = diffDays <= 365 ? "#f8d7da" : "#d1ecf1";
@@ -1116,30 +1308,30 @@ function showDetail(idx) {
     }
   }
 
+  // DOKUMEN FOLDER
   let btnFolderHtml = "";
   if (isAdminMode && idxFolder !== -1 && row[idxFolder]) {
     const link = row[idxFolder].toString().trim();
     if (link.startsWith('http')) {
-      btnFolderHtml = `<div style="text-align: center; margin-top: 25px;"><a href="${link}" target="_blank" class="btn btn-primary" style="padding: 12px 35px; border-radius: 30px; font-weight: bold;"><i class="fas fa-file-alt me-2"></i> Buka Dokumen Pegawai</a></div>`;
+      btnFolderHtml = `<div style="text-align: center; margin-top: 25px;"><a href="${link}" target="_blank" class="btn btn-primary" style="padding: 12px 35px; border-radius: 30px; font-weight: bold;"><i class="fas fa-file-alt me-2"></i> Buka Dokumen</a></div>`;
     }
   }
 
+  // PEMBAGIAN SECTION DATA
   const labelPribadi = ["NIP", "NAMA", "TANGGAL LAHIR", "TEMPAT LAHIR", "UMUR", "USIA","SISA CUTI TAHUNAN"];
   let htmlPribadi = "", htmlRiwayat = "";
-
   headersGlobal.forEach((h, i) => {
     const headUpper = h.toUpperCase().trim();
     if(!hiddenFields.some(f => headUpper.includes(f)) && !headUpper.includes("FOTO") && headUpper !== "DOKUMEN") {
         const fieldHtml = `<div class="drh-field-group"><label>${h}</label><div class="drh-field-value">${row[i] || '-'}</div></div>`;
-        if (labelPribadi.some(p => headUpper === p)) { htmlPribadi += fieldHtml; } 
-        else { htmlRiwayat += fieldHtml; }
+        if (labelPribadi.some(p => headUpper === p)) htmlPribadi += fieldHtml; else htmlRiwayat += fieldHtml;
     }
   });
 
-  const finalContent = `
+  $("#drh-body-content").html(`
     ${tbHtml}
     <style>
-      .drh-section-card { border: 2px solid #ced4da !important; border-radius: 12px !important; margin-top: 20px !important; padding: 20px !important; background: #fff !important; display: block !important; box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important; }
+      .drh-section-card { border: 2px solid #ced4da; border-radius: 12px; margin-top: 20px; padding: 20px; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
       @keyframes marquee-slow { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
     </style>
     <div class="drh-section-card animate__animated animate__fadeIn">
@@ -1147,241 +1339,94 @@ function showDetail(idx) {
         <div class="drh-data-grid">${htmlPribadi}</div>
     </div>
     <div class="drh-section-card animate__animated animate__fadeIn animate__delay-1s">
-        <div class="drh-section-title"><i class="fas fa-briefcase"></i> Riwayat Pekerjaan & Data Lainnya</div>
+        <div class="drh-section-title"><i class="fas fa-briefcase"></i> Riwayat & Pekerjaan</div>
         <div class="drh-data-grid">${htmlRiwayat}</div>
     </div>
     ${btnFolderHtml}
-  `;
-
-  $("#drh-body-content").html(finalContent);
+  `);
   $('#detailModal').modal('show');
 }
+
+// ==========================================
+// 7. FORM EDIT & UPLOAD
+// ==========================================
+function buildForm(h) {
+  let html = "";
+  h.forEach((name, i) => {
+    if (!name.toLowerCase().includes("foto")) {
+      html += `<div class="col-md-6 mb-2"><label class="form-label small fw-bold text-muted mb-1">${name}</label><input type="text" name="col_${i}" id="col_${i}" class="form-control rounded-3"></div>`;
+    }
+  });
+  $("#dynamicInputs").html(html);
+}
+
 function editData(idx) {
     const row = allData[idx];
-    
-    // 1. Reset Form & Set Row Index
     $("#pegawaiForm")[0].reset();
-    $("#row_index").val(idx + 2); // Baris di Sheet = Index + 2
-
-    // 2. Isi Input col_0, col_1, dst
+    $("#row_index").val(idx + 2);
     headersGlobal.forEach((h, i) => {
-        const input = $(`#col_${i}`);
-        if (input.length) {
-            input.val(row[i] || "");
-        }
+        if ($(`#col_${i}`).length) $(`#col_${i}`).val(row[i] || "");
     });
-
-    // 3. LOGIKA PREVIEW FOTO
     const idxFoto = headersGlobal.findIndex(h => h.toUpperCase().includes("FOTO"));
-    if (idxFoto !== -1 && row[idxFoto]) {
-        $("#dakon-img-preview").attr("src", row[idxFoto]).show();
-    } else {
-        $("#dakon-img-preview").attr("src", "").hide();
-    }
-
-    // 4. Transisi Modal
+    if (idxFoto !== -1 && row[idxFoto]) $("#dakon-img-preview").attr("src", row[idxFoto]).show();
+    else $("#dakon-img-preview").hide();
     $('#detailModal').modal('hide');
-    setTimeout(() => {
-        $('#dataModal').modal('show');
-    }, 400);
+    setTimeout(() => $('#dataModal').modal('show'), 400);
 }
-// Fungsi kompresi gambar (Sangat mempercepat upload)
-// Fungsi untuk mengecilkan ukuran gambar secara instan sebelum upload
-// Fungsi untuk mengecilkan ukuran gambar (Sangat mempercepat simpan)
+
 async function compressImage(file) {
   return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target.result;
+    const reader = new FileReader(); reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image(); img.src = e.target.result;
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 800; 
-        let width = img.width;
-        let height = img.height;
-        if (width > MAX_WIDTH) {
-          height *= MAX_WIDTH / width;
-          width = MAX_WIDTH;
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        // Simpan sebagai JPEG kualitas 70% agar ringan
+        const canvas = document.createElement('canvas'); const MAX_WIDTH = 800;
+        let width = img.width, height = img.height;
+        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
         resolve(canvas.toDataURL('image/jpeg', 0.7));
       };
     };
   });
 }
+
 $("#pegawaiForm").on('submit', async function(e) {
   e.preventDefault();
-  
-  Swal.fire({
-    title: 'Menyimpan...',
-    text: 'Sedang mengirim data ke server...',
-    allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
-  });
-
-  // KONVERSI FORM KE OBJEK BIASA (Agar Cepat & Tidak Muter Terus)
-  const formElement = document.getElementById('pegawaiForm');
-  const formData = new FormData(formElement);
+  Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
   const formObj = {};
-  formData.forEach((value, key) => { formObj[key] = value; });
-
-  const fileInput = document.getElementById('fileFoto');
-  const file = fileInput.files[0];
-
-  const onSuccess = (res) => {
-    Swal.fire({ icon: 'success', title: 'Berhasil!', text: res, timer: 1500, showConfirmButton: false });
-    $('#dataModal').modal('hide');
-    $('body').removeClass('modal-open');
-    $('.modal-backdrop').remove();
-    refreshData(); 
-  };
-
-  const onFailure = (err) => {
-    Swal.fire('Gagal!', 'Error: ' + err.toString(), 'error');
-  };
-
+  new FormData(this).forEach((v, k) => { formObj[k] = v; });
+  const file = document.getElementById('fileFoto').files[0];
   try {
     if (file) {
-      // Kompres dulu foto agar ringan (200kb)
-      const compressedBase64 = await compressImage(file);
-      google.script.run
-        .withSuccessHandler(onSuccess)
-        .withFailureHandler(onFailure)
-        .processWithFile(formObj, compressedBase64, file.name);
+      const b64 = await compressImage(file);
+      google.script.run.withSuccessHandler(res => { Swal.fire('Berhasil!', res, 'success'); refreshData(); }).processWithFile(formObj, b64, file.name);
     } else {
-      google.script.run
-        .withSuccessHandler(onSuccess)
-        .withFailureHandler(onFailure)
-        .processForm(formObj);
+      google.script.run.withSuccessHandler(res => { Swal.fire('Berhasil!', res, 'success'); refreshData(); }).processForm(formObj);
     }
-  } catch (err) {
-    onFailure(err);
-  }
+  } catch (err) { Swal.fire('Gagal!', err.toString(), 'error'); }
 });
 
 $("#fileFoto").on('change', function() {
     const file = this.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-            $("#dakon-img-preview").attr("src", e.target.result).show();
-        }
+        reader.onload = (e) => $("#dakon-img-preview").attr("src", e.target.result).show();
         reader.readAsDataURL(file);
     }
 });
-function loadJSONP(url, callback) {
-  const script = document.createElement("script");
-  script.src = url + "&callback=" + callback + "&_=" + Date.now();
-  document.body.appendChild(script);
-}
 
-function handleData(res) {
-  console.log("DATA MASUK:", res);
-
-  const data = res.data || res;
-
-  if (typeof loadData === "function") {
-    loadData(data);
-  }
-
-  if (typeof allData !== "undefined") {
-    allData = data;
-  }
-}
-
-$(document).ready(function () {
-  const url = "URL_WEB_APP_BARU?action=getData";
-  loadJSONP(url, "handleData");
-});
-
-function buildForm(h) {
-  let html = "";
-  h.forEach((name, i) => {
-    if (!name.toLowerCase().includes("foto")) {
-      html += `<div class="col-md-6"><label class="form-label small fw-bold text-muted mb-1">${name}</label><input type="text" name="col_${i}" id="col_${i}" class="form-control rounded-3"></div>`;
+// ==========================================
+// 8. INISIALISASI
+// ==========================================
+$(document).ready(() => {
+    if(localStorage.getItem('si_ida_session') === 'true') {
+        isAdminMode = true; $('#adminInfo, #btnAddData').show();
+        $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
     }
-  });
-  $("#dynamicInputs").html(html);
-}
-
- $(document).ready(() => {
-  if(localStorage.getItem('si_ida_session') === 'true') {
-      isAdminMode = true; $('#adminInfo').show(); $('#btnAddData').show();
-      $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
-  }
-  refreshData();
-});
-const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSJ0UDwDiwEZnqiznYczmYhXT3YbfvVLFqqFSOxTAzh3qdim0uEHEhe_cG8-asccPynKulS0pWuEhyB/pub?gid=1326817545&single=true&output=csv'; // Ganti dengan link CSV hasil Publish to Web
-
-function loadDataFromSheet() {
-  // Tampilkan loading sederhana di konsol atau UI jika perlu
-  console.log("Sedang memproses data besar...");
-
-  fetch(sheetUrl)
-    .then(response => {
-      if (!response.ok) throw new Error('Koneksi ke Google Sheets gagal');
-      return response.text();
-    })
-    .then(csvText => {
-      // Optimasi PapaParse untuk data besar
-      Papa.parse(csvText, {
-        header: false,
-        skipEmptyLines: true,
-        worker: true,        // PENTING: Menjalankan proses di background agar browser tidak lag/freeze
-        fastMode: true,      // PENTING: Mempercepat parsing untuk database besar
-        complete: function(results) {
-          if (results.data && results.data.length > 0) {
-            // Simpan header (baris pertama)
-            headersGlobal = results.data[0];
-            // Simpan data (baris kedua dst)
-            allData = results.data.slice(1);
-            
-            console.log("Berhasil memuat " + allData.length + " baris data.");
-
-            // Jalankan fungsi update UI secara bertahap
-            buildForm(headersGlobal);
-            
-            // Gunakan requestAnimationFrame agar rendering statistik tidak berat
-            window.requestAnimationFrame(() => {
-              updateHomeStats();
-              if(typeof renderTable === "function") {
-                 renderTable(headersGlobal, allData);
-              }
-            });
-          }
-        },
-        error: function(err) {
-          console.error("Kesalahan parsing CSV:", err);
-        }
-      });
-    })
-    .catch(err => {
-      console.error("Gagal load data:", err);
-      // Opsional: tampilkan pesan error ke user di sini
-    });
-}    .catch(err => console.error("Gagal load data:", err));
-}
-
-function refreshData() {
-  if (typeof google !== 'undefined' && google.script && google.script.run) {
-   
-    google.script.run.withSuccessHandler(res => {
-      allData = res.slice(1);
-      headersGlobal = res[0];
-      buildForm(headersGlobal);
-      updateHomeStats();
-    }).getData();
-  } else {
-  
     loadDataFromSheet();
-  }
- 
-  };
+});
+</script>
 
 </script>
 </body>
