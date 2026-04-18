@@ -1096,6 +1096,7 @@ function showDetail(idx) {
       }
   });
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  
   // ==========================================
   // LOGIKA TEKS BERJALAN & KONTEN LAINNYA
   // ==========================================
@@ -1318,27 +1319,52 @@ function buildForm(h) {
 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSJ0UDwDiwEZnqiznYczmYhXT3YbfvVLFqqFSOxTAzh3qdim0uEHEhe_cG8-asccPynKulS0pWuEhyB/pub?gid=1326817545&single=true&output=csv'; // Ganti dengan link CSV hasil Publish to Web
 
 function loadDataFromSheet() {
+  // Tampilkan loading sederhana di konsol atau UI jika perlu
+  console.log("Sedang memproses data besar...");
+
   fetch(sheetUrl)
-    .then(response => response.text())
+    .then(response => {
+      if (!response.ok) throw new Error('Koneksi ke Google Sheets gagal');
+      return response.text();
+    })
     .then(csvText => {
+      // Optimasi PapaParse untuk data besar
       Papa.parse(csvText, {
         header: false,
         skipEmptyLines: true,
+        worker: true,        // PENTING: Menjalankan proses di background agar browser tidak lag/freeze
+        fastMode: true,      // PENTING: Mempercepat parsing untuk database besar
         complete: function(results) {
-          allData = results.data.slice(1);
-          headersGlobal = results.data[0];
-          
-          
-          buildForm(headersGlobal);
-          updateHomeStats();
-          
-          if(typeof renderTable === "function") {
-             renderTable(headersGlobal, allData);
+          if (results.data && results.data.length > 0) {
+            // Simpan header (baris pertama)
+            headersGlobal = results.data[0];
+            // Simpan data (baris kedua dst)
+            allData = results.data.slice(1);
+            
+            console.log("Berhasil memuat " + allData.length + " baris data.");
+
+            // Jalankan fungsi update UI secara bertahap
+            buildForm(headersGlobal);
+            
+            // Gunakan requestAnimationFrame agar rendering statistik tidak berat
+            window.requestAnimationFrame(() => {
+              updateHomeStats();
+              if(typeof renderTable === "function") {
+                 renderTable(headersGlobal, allData);
+              }
+            });
           }
+        },
+        error: function(err) {
+          console.error("Kesalahan parsing CSV:", err);
         }
       });
     })
-    .catch(err => console.error("Gagal load data:", err));
+    .catch(err => {
+      console.error("Gagal load data:", err);
+      // Opsional: tampilkan pesan error ke user di sini
+    });
+}    .catch(err => console.error("Gagal load data:", err));
 }
 
 function refreshData() {
