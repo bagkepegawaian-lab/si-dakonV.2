@@ -1869,6 +1869,11 @@ function buildForm(h) {
   });
   $("#dynamicInputs").html(html);
 }
+    fetch("https://script.google.com/macros/s/AKfycby-68Vto-Ps3W-Fekc7QfcND0IZMgWxKo2_M1QVgSWA9TjjI047RjS68OsXr60TtSzD/exec")
+  .then(res => res.json())
+  .then(data => {
+    console.log(data);
+  });
 
  $(document).ready(() => {
   if(localStorage.getItem('si_ida_session') === 'true') {
