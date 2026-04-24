@@ -828,15 +828,31 @@ function switchASN(cat) {
 
 function refreshData() {
   $('#loader-bar').css('width','30%');
-  if (typeof google !== 'undefined') {
-      google.script.run.withSuccessHandler(res => {
-        headersGlobal = res.headers; allData = res.values;
-        buildForm(res.headers); renderTable(res.headers, res.values); 
-        updateStats(); updateHomeStats();
-        $('#loader-bar').css('width','100%');
-        setTimeout(()=>$('#loader-bar').css('width','0%'), 500);
-      }).getRawData();
-  }
+
+  fetch("https://script.google.com/macros/s/AKfycby-68Vto-Ps3W-Fekc7QfcND0IZMgWxKo2_M1QVgSWA9TjjI047RjS68OsXr60TtSzD/exec")
+    .then(res => res.json())
+    .then(res => {
+      headersGlobal = res.headers;
+      allData = res.values;
+
+      buildForm(headersGlobal);
+      renderTable(headersGlobal, allData);
+      updateStats();
+      updateHomeStats();
+
+      $('#loader-bar').css('width','100%');
+      setTimeout(()=>$('#loader-bar').css('width','0%'), 500);
+    })
+    .catch(err => {
+      console.error("ERROR:", err);
+      alert("Gagal ambil data dari server!");
+    });
+}
+function doGet() {
+  const data = getRawData(); // function kamu
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 function showDUK() {
   console.log("Tombol DUK diklik!");
@@ -1352,10 +1368,10 @@ function updateStats() {
   $('#kontainer-bawah-unit').html(`
     <div class="amazing-dashboard">
       <div class="amazing-sidebar">
-        <div class="neon-badge">ANALYTICS SYSTEM</div>
-        <h2 class="amazing-title">Unit <br><span>Scanning</span></h2>
+        <div class="neon-badge">DATA SEBARAN JABATAN</div>
+        <h2 class="amazing-title">Unit <br><span>KERJA</span></h2>
         <div class="select-box-neon">
-          <label>SELECT DEPARTMENT</label>
+          <label>PILIH UNIT KERJA</label>
           <select id="select-unit-kerja" class="neon-input">${dropdownOptions}</select>
         </div>
         <div id="amazing-stat-summary" class="mt-4"></div>
@@ -1378,14 +1394,14 @@ function updateStats() {
           <div class="neon-card" onclick="triggerUnitPopup('${jabName}', '${unitObj.originalName}')">
             <div class="neon-card-inner">
               <div class="neon-card-label">${jabName}</div>
-              <div class="neon-card-count">${count}<span>Staff</span></div>
+              <div class="neon-card-count">${count}<span>ASN</span></div>
             </div>
             <div class="neon-card-icon"><i class="fas fa-arrow-right"></i></div>
           </div>`;
       });
       $('#amazing-stat-summary').html(`
         <div class="neon-total-box">
-          <span>ACTIVE PERSONNEL</span>
+          <span>ASN AKTIF</span>
           <div class="neon-total-val">${total}</div>
         </div>
       `);
@@ -1869,11 +1885,6 @@ function buildForm(h) {
   });
   $("#dynamicInputs").html(html);
 }
-    fetch("https://script.google.com/macros/s/AKfycby-68Vto-Ps3W-Fekc7QfcND0IZMgWxKo2_M1QVgSWA9TjjI047RjS68OsXr60TtSzD/exec")
-  .then(res => res.json())
-  .then(data => {
-    console.log(data);
-  });
 
  $(document).ready(() => {
   if(localStorage.getItem('si_ida_session') === 'true') {
