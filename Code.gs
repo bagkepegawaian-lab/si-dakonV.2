@@ -2,8 +2,6 @@ const SPREADSHEET_ID = "1ObGH4HxcsDdRxF_NlOC6Cy9pehuxOpkWSVMj4Ahl5Qw";
 const SHEET_NAME = "DataPegawai";
 const FOLDER_FOTO_ID = "1J3JJD1FG1QdiRwYArSCMY74HuNzNEiiF"; 
 
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "12345";
 
 function doGet() {
   return HtmlService.createTemplateFromFile('Index')
@@ -16,22 +14,45 @@ function doGet() {
 /** * PERBAIKAN LOGIN: 
  * Menambahkan status dan timestamp agar callback di HTML tidak "hang" atau blank.
  */
+/** * LOGIN DINAMIS DARI SHEET "Users"
+ * Kolom A = Username, Kolom B = Password
+ */
 function checkLogin(username, password) {
   try {
-    if (username === ADMIN_USER && password === ADMIN_PASS) {
-      return { 
-        success: true, 
-        message: "Login Berhasil!",
-        session: new Date().getTime()
-      };
-    } else {
-      return { success: false, message: "Username atau Password Salah!" };
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let userSheet = ss.getSheetByName("Users");
+    
+    // Jika sheet "Users" belum ada, buat otomatis (opsional) atau lempar error
+    if (!userSheet) {
+      return { success: false, message: "Sistem Error: Sheet 'Users' tidak ditemukan!" };
     }
+
+    const data = userSheet.getDataRange().getValues(); // Ambil semua data user
+    
+    // Lakukan pencarian (Looping) mulai dari baris kedua (index 1) untuk melewati header
+    for (var i = 1; i < data.length; i++) {
+      let sheetUser = data[i][0].toString().trim();
+      let sheetPass = data[i][1].toString().trim();
+      
+      // Validasi kecocokan username dan password
+      if (username.trim() === sheetUser && password.trim() === sheetPass) {
+        return { 
+          success: true, 
+          message: "Login Berhasil!",
+          user: sheetUser, // Mengirim nama user yang login
+          session: new Date().getTime()
+        };
+      }
+    }
+
+    // Jika setelah loop selesai tidak ada yang cocok
+    return { success: false, message: "Username atau Password Salah!" };
+
   } catch (e) {
+    Logger.log("Error checkLogin: " + e.message);
     return { success: false, message: "Error Sistem: " + e.toString() };
   }
 }
-
 function getSheetConnection() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME);
