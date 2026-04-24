@@ -4,7 +4,7 @@ const FOLDER_FOTO_ID = "1J3JJD1FG1QdiRwYArSCMY74HuNzNEiiF";
 
 
 function doGet() {
-  return HtmlService.createTemplateFromFile('Index')
+  return HtmlService.createTemplateFromFile('index')
     .evaluate()
     .setTitle('Si DAKON - UINSA') 
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
