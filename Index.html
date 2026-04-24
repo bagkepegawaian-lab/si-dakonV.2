@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
       :root { 
@@ -188,6 +189,149 @@
 #dataModal .flex-grow-1::-webkit-scrollbar-thumb:hover {
     background: #00332b;
 }
+/* CSS WAJIB AGAR PROGRESS BAR MUNCUL */
+.custom-progress {
+    background-color: #eee; /* Warna abu-abu untuk sisa bar */
+    border-radius: 10px;
+    height: 10px;           /* Memberi ketebalan agar bar kelihatan */
+    width: 100%;
+    margin-top: 8px;
+    overflow: hidden;
+    display: block;         /* Memastikan elemen tampil */
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 10px;
+    display: block;
+    transition: width 0.6s ease; /* Animasi gerak */
+}
+/* Container utama bar (jalur abu-abu) */
+  .custom-progress {
+    background-color: #e9ecef !important; /* Warna abu-abu terang */
+    border-radius: 50px;
+    height: 12px;           /* Ukuran dipertebal supaya jelas */
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    display: flex;          /* WAJIB: Agar isi bar sejajar */
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* Bar yang berwarna */
+  .progress-bar {
+    height: 100%;
+    width: 0%;              /* Default 0, akan diisi oleh JS */
+    border-radius: 50px;
+    transition: width 1s ease-in-out; 
+    display: block !important;
+  }
+
+  /* Warna Berdasarkan Class (PNS: Biru, PPPK: Oranye) */
+  .pg-pns { 
+    background-color: #0d6efd !important; 
+  }
+  .pg-pppk { 
+    background-color: #fd7e14 !important; 
+  }
+  /* Global Styling untuk Tampilan Modern */
+    :root {
+        --pns-color: #3498db;
+        --pppk-color: #f39c12;
+        --dosen-color: #27ae60;
+        --tendik-color: #2ecc71;
+        --bg-card: #ffffff;
+    }
+
+    .home-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.02);
+        transition: transform 0.3s ease;
+    }
+
+    .home-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .total-big-number {
+        font-size: 3rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin: 10px 0;
+    }
+
+    .status-badge-active {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: #e1f5fe;
+        color: #01579b;
+    }
+
+    /* Styling Progress Bar Modern */
+    .custom-progress {
+        background-color: #f0f2f5;
+        border-radius: 100px;
+        height: 12px; /* Lebih tebal agar modern */
+        width: 100%;
+        overflow: hidden;
+        margin-top: 10px;
+        position: relative;
+    }
+
+    .progress-bar {
+        height: 100%;
+        width: 0%;
+        border-radius: 100px;
+        transition: width 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Warna Gradasi agar Mewah */
+    .pg-pns { background: linear-gradient(90deg, #2196F3, #00BCD4); }
+    .pg-pppk { background: linear-gradient(90deg, #FF9800, #FFC107); }
+    
+    .pg-label-group span {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .text-muted-fw {
+        color: #888;
+        font-weight: 500;
+    }
+    .btn-duk {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  .btn-duk:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    background: #0f172a;
+  }
+
+/* Warna default jika tidak ada inline style */
+.pg-pns { background-color: #2e7d32 !important; }
+.pg-pppk { background-color: #f57c00 !important; }
 $('.card').css({
   'background': 'rgba(255, 255, 255, 0.9)',
   'backdrop-filter': 'blur(10px)',
@@ -235,6 +379,7 @@ $('.card').css({
   </div>
 </div>
 
+
 <div class="container">
   <div id="search-container" class="search-panel animate__animated animate__fadeInUp animate__delay-1s" style="display:none">
    
@@ -272,25 +417,29 @@ $('.card').css({
               <h3 class="home-section-title">Total ASN</h3>
               <div class="home-card">
                 <div class="mb-4">
-                  <span class="text-muted-fw">Total Seluruh Pegawai</span>
+                  <span class="text-muted-fw">Total Seluruh ASN</span>
                   <h1 class="total-big-number" id="home-total-all">0</h1>
                   <div class="status-badge-active">ASN Aktif</div>
                 </div>
+                            
                 <div class="pg-bar-group">
-                  <div class="pg-label-group d-flex justify-content-between"><span class="text-muted-fw">Pegawai PNS</span><span class="fw-bold" id="home-val-pns">0</span></div>
+                  <div class="pg-label-group d-flex justify-content-between"><span class="text-muted-fw">ASN PNS</span><span class="fw-bold" id="home-val-pns">0</span></div>
                   <div class="custom-progress"><div class="progress-bar pg-pns" id="home-bar-pns" style="width: 0%"></div></div>
                 </div>
+    
+            
                 <div class="pg-bar-group mt-3">
-                  <div class="pg-label-group d-flex justify-content-between"><span class="text-muted-fw">Pegawai PPPK</span><span class="fw-bold" id="home-val-pppk">0</span></div>
+                  <div class="pg-label-group d-flex justify-content-between"><span class="text-muted-fw">ASN PPPK Kerja</span><span class="fw-bold" id="home-val-pppk">0</span></div>
                   <div class="custom-progress"><div class="progress-bar pg-pppk" id="home-bar-pppk" style="width: 0%"></div></div>
                 </div>
               </div>
             </div>
+    
             <div class="col-md-4">
-              <h3 class="home-section-title">Detail Pegawai PNS</h3>
+              <h3 class="home-section-title">Detail Pegawai Negeri Sipil</h3>
               <div class="home-card">
                 <div class="mb-4">
-                  <span class="text-muted-fw">Total Pegawai PNS</span>
+                  <span class="text-muted-fw">Total Pegawai Negeri Sipil</span>
                   <h1 class="total-big-number" id="home-total-pns-big" style="color: #2e7d32;">0</h1>
                   <div class="status-badge-active" style="background: #e8f5e9; color: #2e7d32;">PNS Aktif</div>
                 </div>
@@ -328,7 +477,7 @@ $('.card').css({
             <div class="col-lg-8">
               <div class="home-card">
                 <div class="mb-4">
-                  <h5 class="fw-bold m-0" style="color: var(--tvk-blue)">Distribusi Golongan & Ruang</h5>
+                  <h5 class="fw-bold m-0" style="color: var(--tvk-blue)">Data Golongan & Ruang</h5>
                   <small class="text-muted">Komposisi pangkat seluruh pegawai aktif</small>
                 </div>
                 <div style="height: 320px;"><canvas id="homeGolonganChart"></canvas></div>
@@ -346,7 +495,7 @@ $('.card').css({
               <div class="home-card">
                 <div class="mb-4">
                   <h5 class="fw-bold m-0" style="color: var(--tvk-blue)">Analisis Demografi Usia</h5>
-                  <small class="text-muted">Distribusi usia pegawai (Label 20-70)</small>
+                  <small class="text-muted">Rentan usia pegawai (Label 20-70)</small>
                 </div>
                 <div style="height: 400px;"><canvas id="homeAgeCurveChart"></canvas></div>
               </div>
@@ -377,11 +526,40 @@ $('.card').css({
             <div class="d-flex justify-content-between align-items-center mb-3"><p class="m-0" id="stat-label-wanita">Wanita</p><i class="fas fa-venus fa-2x" style="color: #fff3e0"></i></div>
             <h3 id="total-wanita" style="color: var(--tvk-accent);">0</h3>
         </div></div>
+        <div class="col-12">
+    <div class="row g-4 mt-3">
+  <div class="col-12 text-center">
+    <button class="btn btn-outline-danger btn-sm rounded-pill px-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePensiun" aria-expanded="false" aria-controls="collapsePensiun">
+      <i class="fas fa-user-slash me-2"></i> Lihat Daftar Pegawai Pensiun (<span id="count-pensiun">0</span>)
+    </button>
+  </div>
+
+  <div class="collapse mt-3" id="collapsePensiun">
+    <div class="card-white shadow-sm">
+      <div class="table-responsive overflow-auto" style="max-height: 250px; border: 1px solid #eee; border-radius: 8px;">
+        <table class="table table-sm table-hover m-0" style="font-size: 12px;">
+          <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+            <tr>
+              <th>Nama</th>
+              <th>NIP</th>
+              <th>Unit Kerja</th>
+              <th class="text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody id="pensiun-list">
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
       </div>
       <div class="row g-4">
         <div class="col-lg-6"><div class="card-white h-100"><h6>Jabatan</h6><div id="unit-list"></div></div></div>
         <div class="col-lg-6"><div class="card-white h-100"><h6>Grafik</h6><div style="height: 300px;"><canvas id="pangkatChart"></canvas></div></div></div>
       </div>
+      <div id="kontainer-bawah-unit" style="margin-bottom: 50px;"></div>
     </div>
 
     <div id="database-page" class="content-page" style="display:none">
@@ -392,6 +570,9 @@ $('.card').css({
             <i class="fas fa-plus me-2"></i> Tambah Data Baru
           </button>
         </div>
+        <button onclick="showDUK()" class="btn-duk">
+  <i class="fas fa-sort-amount-down"></i> Lihat DUK Pegawai
+</button>
         <div class="table-responsive">
           <table id="mainTable" class="table table-hover w-100">
             <thead></thead>
@@ -401,6 +582,10 @@ $('.card').css({
       </div>
     </div>
   </div>
+  <div class="row g-4 mt-2">
+  
+</div>
+</div>
 </div>
 
 <div class="modal fade" id="detailModal" tabindex="-1">
@@ -479,7 +664,7 @@ $('.card').css({
 let table, headersGlobal = [], allData = [], chartRekap = null, homeGolChart = null, homeAgeChart = null, homeEduChart = null, isAdminMode = false;
 let activeCat = 'DOSEN';
 
-const hiddenFields = ["NIK", "KK", "TLP", "TELP", "TELEPON", "UNIT KERJA HOMEBASE","X","XX","XXX","PANGKAT BERIKUTNYA", "KENAIKAN PANGKAT","MASA KERJA","MASA PANGGOL TERAKHIR", "EXISTING","JANGAN","ESELONISASI", "JFT","DOKUMEN"];
+const hiddenFields = ["No","NIK", "KK", "TLP", "TELP", "TELEPON", "UNIT KERJA HOMEBASE","X","XX","XXX","PANGKAT BERIKUTNYA", "KENAIKAN PANGKAT","MASA KERJA","MASA PANGGOL TERAKHIR", "EXISTING","JANGAN","ESELONISASI", "JFT","DOKUMEN"];
 
 Chart.register(ChartDataLabels);
 function openAddModal() {
@@ -488,6 +673,41 @@ function openAddModal() {
     $("#dakon-img-preview").attr("src", ""); // Kosongkan preview foto
     $("#dataModal").modal('show');
 }
+
+// Fungsi sakti buat maksa progress bar ngikutin angka
+function refreshProgressBars() {
+    // Cari semua elemen yang punya class 'progress-bar'
+    const bars = document.querySelectorAll('.progress-bar');
+    
+    bars.forEach(bar => {
+        const id = bar.id;
+        let valId, totalId;
+
+        // Logika penentuan ID pasangan (Angka vs Total)
+        if (id === 'home-bar-pns') { valId = 'home-val-pns'; totalId = 'home-total-all'; }
+        else if (id === 'home-bar-pppk') { valId = 'home-val-pppk'; totalId = 'home-total-all'; }
+        else if (id === 'home-bar-dosen-pns') { valId = 'home-val-dosen-pns'; totalId = 'home-total-pns-big'; }
+        else if (id === 'home-bar-tendik-pns') { valId = 'home-val-tendik-pns'; totalId = 'home-total-pns-big'; }
+        else if (id === 'home-bar-dosen-pppk') { valId = 'home-val-dosen-pppk'; totalId = 'home-total-pppk-big'; }
+        else if (id === 'home-bar-tendik-pppk') { valId = 'home-val-tendik-pppk'; totalId = 'home-total-pppk-big'; }
+
+        if (valId && totalId) {
+            const val = parseInt(document.getElementById(valId).innerText.replace(/\D/g,'')) || 0;
+            const total = parseInt(document.getElementById(totalId).innerText.replace(/\D/g,'')) || 1;
+            const percent = (val / total * 100) + '%';
+            
+            // Terapkan ke style lebar
+            bar.style.setProperty('width', percent, 'important');
+            console.log("Updating " + id + " to " + percent); // Cek di Inspect Element (Console)
+        }
+    });
+}
+
+// Jalankan berulang kali untuk memastikan (interval 1 detik)
+// Ini buat jaga-jaga kalau datamu telat dateng dari database
+setInterval(refreshProgressBars, 1000);
+
+
 function handleAuthAction() {
     if(isAdminMode) { 
         // PROSES LOGOUT
@@ -496,16 +716,25 @@ function handleAuthAction() {
             text: "Anda akan keluar dari Mode Admin",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#004d40',
+            confirmButtonColor: '#d33', // Ubah ke merah untuk indikasi logout
             confirmButtonText: 'Ya, Logout'
         }).then((result) => {
             if (result.isConfirmed) {
                 localStorage.removeItem('si_ida_session');
                 isAdminMode = false;
+                
+                // Sembunyikan elemen-elemen admin
                 $('#adminInfo').fadeOut();
                 $('#btnAddData').fadeOut();
                 $('#btnEditDrh').fadeOut();
+                
+                // Kembalikan teks tombol login
                 $('#authBtn').html('<i class="fas fa-user-lock me-2"></i>Admin Sign In');
+                
+                // Reset variabel antrean jika ada
+                window.pendingEditIdx = null;
+                window.pendingAction = null;
+
                 showPage('home-page');
                 Swal.fire('Logged Out', 'Anda telah keluar dari Mode Admin', 'success');
             }
@@ -532,7 +761,11 @@ function handleAuthAction() {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire({ title: 'Mengecek...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                Swal.fire({ 
+                    title: 'Mengecek...', 
+                    allowOutsideClick: false, 
+                    didOpen: () => { Swal.showLoading(); } 
+                });
 
                 google.script.run.withSuccessHandler(function(response) {
                     if (response.success) {
@@ -553,21 +786,24 @@ function handleAuthAction() {
                         });
 
                         // ==========================================
-                        // 🔥 TAMBAHAN LOGIKA DISINI
+                        // LOGIKA AUTO-RESUME TINDAKAN TERPENDAM
                         // ==========================================
                         if (window.pendingEditIdx !== undefined && window.pendingEditIdx !== null) {
                             const targetIdx = window.pendingEditIdx;
                             window.pendingEditIdx = null; // Reset antrean
                             
-                            // Beri jeda sedikit agar modal login tertutup sempurna
+                            // Jeda agar SweetAlert login tertutup dulu
                             setTimeout(() => {
-                                editData(targetIdx); 
+                                // Jika sebelumnya klik "Edit"
+                                if (typeof editData === "function") {
+                                    editData(targetIdx); 
+                                }
+                                // Jika Anda ingin menambah auto-resume untuk Cetak/File,
+                                // Anda bisa menambahkan logika window.pendingAction disini
                             }, 600);
                         } else {
                             showPage('home-page');
                         }
-                        // ==========================================
-
                     } else {
                         Swal.fire('Gagal', response.message, 'error');
                     }
@@ -602,7 +838,121 @@ function refreshData() {
       }).getRawData();
   }
 }
+function showDUK() {
+  console.log("Tombol DUK diklik!");
 
+  if (typeof allData === 'undefined' || allData.length === 0) {
+    alert("Data pegawai belum dimuat atau kosong.");
+    return;
+  }
+
+  // 1. IDENTIFIKASI KOLOM
+  const findIdx = (str) => headersGlobal.findIndex(h => h && h.toUpperCase().replace(/\s/g, '').includes(str.toUpperCase().replace(/\s/g, '')));
+  
+  const idxNama = findIdx("NAMA");
+  const idxNip = findIdx("NIP");
+  const idxGolRuang = findIdx("GOL./RUANG");
+  const idxTmtPanggol = findIdx("TMTPANGGOL");
+  const idxJabatan = findIdx("JABATAN");
+  const idxUnit = findIdx("UNIT");
+  // Mencari kolom status untuk memfilter PNS
+  const idxStatusASN = findIdx("STATUSASN") !== -1 ? findIdx("STATUSASN") : findIdx("JENISPEGAWAI");
+
+  // 2. HIRARKI GOLONGAN
+  const hirarki = ["IV/E", "IV/D", "IV/C", "IV/B", "IV/A", "III/D", "III/C", "III/B", "III/A", "II/D", "II/C", "II/B", "II/A", "I/D", "I/C", "I/B", "I/A"];
+
+  // 3. FILTER (Hanya PNS) & SORTING GANDA
+  const dataSorted = allData
+    .filter(row => {
+      // Ambil nilai status, ubah ke uppercase
+      const statusVal = (row[idxStatusASN] || "").toString().toUpperCase();
+      // Hanya lolos jika ada kata "PNS" dan BUKAN "PPPK" (antisipasi jika teksnya 'PNS PPPK' atau sejenisnya)
+      return statusVal.includes("PNS") && !statusVal.includes("PPPK");
+    })
+    .sort((a, b) => {
+      const golA = (a[idxGolRuang] || "").toString().toUpperCase().trim();
+      const golB = (b[idxGolRuang] || "").toString().toUpperCase().trim();
+      let posA = hirarki.findIndex(g => golA.includes(g));
+      let posB = hirarki.findIndex(g => golB.includes(g));
+      if (posA === -1) posA = 999;
+      if (posB === -1) posB = 999;
+
+      if (posA === posB) {
+        const tmtA = new Date(a[idxTmtPanggol] || '2099-12-31');
+        const tmtB = new Date(b[idxTmtPanggol] || '2099-12-31');
+        return tmtA - tmtB;
+      }
+      return posA - posB;
+    });
+
+  // 4. SUSUN BARIS TABEL
+  let tableRows = "";
+  dataSorted.forEach((row, i) => {
+    tableRows += `
+      <tr style="border-bottom: 1px solid #f1f5f9; background: white;">
+        <td style="padding:12px 15px; text-align:center; font-weight:800; color:#94a3b8; font-size:12px; white-space:nowrap;">${i + 1}</td>
+        <td style="padding:12px 15px; text-align:left;">
+          <div style="font-weight:700; color:#1e293b; font-size:14px; line-height:1.2;">${row[idxNama] || '-'}</div>
+          <div style="font-size:11px; color:#64748b; font-family:monospace;">${row[idxNip] || '-'}</div>
+        </td>
+        <td style="padding:12px 15px; text-align:left;">
+          <span style="background:#f0f7ff; color:#0061f2; padding:4px 10px; border-radius:6px; font-weight:800; font-size:12px; border:1px solid #e0eefe; white-space:nowrap;">
+            ${row[idxGolRuang] || '-'}
+          </span>
+        </td>
+        <td style="padding:12px 15px; text-align:left; color:#e11d48; font-weight:700; font-size:12px; font-family:monospace; white-space:nowrap;">
+          ${row[idxTmtPanggol] || '-'}
+        </td>
+        <td style="padding:12px 15px; text-align:left;">
+          <div style="font-weight:600; color:#475569; font-size:13px; line-height:1.2;">${row[idxJabatan] || '-'}</div>
+          <div style="font-size:11px; color:#94a3b8;">${row[idxUnit] || '-'}</div>
+        </td>
+      </tr>`;
+  });
+
+  // 5. TAMPILKAN POPUP
+  if (typeof Swal === 'undefined') {
+      alert("Library SweetAlert2 belum terpasang!");
+      return;
+  }
+
+  Swal.fire({
+    html: `
+      <div style="text-align:left; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #3b82f6; padding-bottom:15px; margin-bottom:20px;">
+          <div>
+            <h2 style="margin:0; font-size:24px; font-weight:800; color:#0f172a;">Daftar Urut Kepangkatan (DUK) PNS</h2>
+            <p style="margin:5px 0 0; font-size:12px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;">Data Khusus Pegawai Negeri Sipil</p>
+          </div>
+          <button onclick="Swal.close()" style="background:#f1f5f9; border:none; width:35px; height:35px; border-radius:10px; font-size:20px; cursor:pointer; color:#64748b;">&times;</button>
+        </div>
+        
+        <div style="border-radius:12px; border:1px solid #e2e8f0; background:white; overflow:hidden;">
+          <div style="max-height:550px; overflow-y:auto;">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead style="background:#f8fafc; position:sticky; top:0; z-index:10; border-bottom:2px solid #e2e8f0;">
+                <tr>
+                  <th style="padding:15px; color:#475569; font-size:11px; text-transform:uppercase; width:1%; white-space:nowrap; text-align:center;">No.</th>
+                  <th style="padding:15px; color:#475569; font-size:11px; text-transform:uppercase; text-align:left;">Identitas Pegawai</th>
+                  <th style="padding:15px; color:#475569; font-size:11px; text-transform:uppercase; text-align:left; width:120px;">Gol./Ruang</th>
+                  <th style="padding:15px; color:#475569; font-size:11px; text-transform:uppercase; text-align:left; width:130px;">TMT Panggol</th>
+                  <th style="padding:15px; color:#475569; font-size:11px; text-transform:uppercase; text-align:left;">Jabatan & Unit Kerja</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows || '<tr><td colspan="5" style="text-align:center; padding:20px;">Tidak ada data PNS ditemukan</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `,
+    width: '1300px',
+    padding: '1.5rem',
+    showConfirmButton: false,
+    background: '#ffffff',
+  });
+}
 function updateHomeStats() {
   // 1. Identifikasi kolom (KODE ASLI)
   const idxStatus = headersGlobal.findIndex(h => h.toUpperCase().trim() === "STATUS");
@@ -611,6 +961,12 @@ function updateHomeStats() {
   const idxJab = headersGlobal.findIndex(h => h.toUpperCase() === "JABATAN");
   const idxUmur = headersGlobal.findIndex(h => h.toUpperCase().includes("UMUR") || h.toUpperCase().includes("USIA"));
   const idxEdu = headersGlobal.findIndex(h => h.toUpperCase().includes("PENDIDIKAN TERAKHIR"));
+  const idxGender = headersGlobal.findIndex(h => h && h.toUpperCase().includes("JENIS KELAMIN"));
+  
+  // Index tambahan untuk Pop-up
+  const idxNama = headersGlobal.findIndex(h => h && h.toUpperCase().includes("NAMA"));
+  const idxNip = headersGlobal.findIndex(h => h && h.toUpperCase().includes("NIP"));
+  const idxUnit = headersGlobal.findIndex(h => h && h.toUpperCase().includes("UNIT"));
 
   // 2. Filter hanya data AKTIF (KODE ASLI)
   const dataAktifOnly = allData.filter(row => {
@@ -618,23 +974,46 @@ function updateHomeStats() {
     return statusVal.includes("AKTIF") && !statusVal.includes("TIDAK");
   });
 
-  // 3. Inisialisasi variabel hitung (KODE ASLI)
+  // 3. Inisialisasi variabel hitung (KODE ASLI + LOGIKA GENDER)
   let pns = 0, pppk = 0, total = dataAktifOnly.length;
   let dPns = 0, tPns = 0, dPppk = 0, tPppk = 0;
-  let golMap = {}, jabDosenMap = {}, totalDosen = 0, jabTendikMap = {}, totalTendik = 0, eduMap = {};
+  let golMap = {}, eduMap = {};
   let ageGroups = { "20-25":0, "26-30":0, "31-35":0, "36-40":0, "41-45":0, "46-50":0, "51-55":0, "56-60":0, "61-65":0, "66-70":0 };
+
+  // Penampung data Gender untuk Tab
+  let genStat = {
+    all: { L: 0, P: 0, rows: [] },
+    pns: { L: 0, P: 0, rows: [] },
+    pppk: { L: 0, P: 0, rows: [] }
+  };
 
   dataAktifOnly.forEach(row => {
     const s = (row[idxStatusASN] || "").toUpperCase();
     const gl = (row[idxGol] || "N/A").toString().trim();
     const ed = (row[idxEdu] || "Tidak Terisi").trim();
-    const j = (row[idxJab] || "Lainnya").trim();
+    const g = (row[idxGender] || "").toUpperCase();
+
+    // Logika Gender
+    let genderType = (g.startsWith("L") || g.includes("PRIA")) ? "L" : "P";
+    genStat.all[genderType]++;
+    genStat.all.rows.push(row);
+
     if(gl !== "N/A" && gl !== "") golMap[gl] = (golMap[gl] || 0) + 1;
     if(ed) eduMap[ed] = (eduMap[ed] || 0) + 1;
-    if(s.includes("PNS")) { pns++; if(s.includes("DOSEN")) dPns++; else if(s.includes("TENDIK")) tPns++; } 
-    else if(s.includes("PPPK")) { pppk++; if(s.includes("DOSEN")) dPppk++; else if(s.includes("TENDIK")) tPppk++; }
-    if(s.includes("DOSEN")) { jabDosenMap[j] = (jabDosenMap[j] || 0) + 1; totalDosen++; } 
-    else { jabTendikMap[j] = (jabTendikMap[j] || 0) + 1; totalTendik++; }
+
+    if(s.includes("PNS")) { 
+        pns++; 
+        genStat.pns[genderType]++;
+        genStat.pns.rows.push(row);
+        if(s.includes("DOSEN")) dPns++; else if(s.includes("TENDIK")) tPns++; 
+    } 
+    else if(s.includes("PPPK")) { 
+        pppk++; 
+        genStat.pppk[genderType]++;
+        genStat.pppk.rows.push(row);
+        if(s.includes("DOSEN")) dPppk++; else if(s.includes("TENDIK")) tPppk++; 
+    }
+
     let age = parseInt(row[idxUmur]);
     if (age) {
         if (age <= 25) ageGroups["20-25"]++; else if (age <= 30) ageGroups["26-30"]++; else if (age <= 35) ageGroups["31-35"]++;
@@ -643,6 +1022,24 @@ function updateHomeStats() {
         else if (age <= 70) ageGroups["66-70"]++;
     }
   });
+
+  // --- FUNGSI POPUP DATA ---
+  const showPopupData = (title, filteredRows) => {
+    const listHtml = filteredRows.map((row, i) => `
+      <tr style="background: ${i % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #edf2f7;">
+        <td style="padding: 10px 12px; vertical-align: top;">
+          <div style="font-size: 11px; font-weight: 700; color: #2d3436;">${row[idxNama]}</div>
+          <div style="font-size: 10px; color: #636e72; font-family: monospace;">${row[idxNip] || '-'}</div>
+        </td>
+        <td style="padding: 10px 12px; font-size: 10px; color: #2d3436; vertical-align: middle;">${row[idxUnit] || '-'}</td>
+      </tr>`).join('');
+
+    Swal.fire({
+      title: `<span style="font-size: 16px; font-weight: 800; color: #004d40;">${title.toUpperCase()}</span>`,
+      html: `<div style="margin-top: 10px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;"><div style="max-height: 350px; overflow-y: auto;"><table style="width: 100%; border-collapse: collapse; text-align: left;"><thead style="background: #f1f3f5; position: sticky; top: 0;"><tr><th style="padding: 12px; font-size: 10px; color: #004d40;">PEGAWAI</th><th style="padding: 12px; font-size: 10px; color: #004d40;">UNIT KERJA</th></tr></thead><tbody>${listHtml}</tbody></table></div></div>`,
+      confirmButtonText: 'Tutup', confirmButtonColor: '#004d40', width: '550px'
+    });
+  };
 
   // 4. Update Angka UI (KODE ASLI)
   $('#home-total-all').text(total);
@@ -656,14 +1053,26 @@ function updateHomeStats() {
     $('#home-bar-pppk').find('.progress-bar').attr('style', `width: ${(pppk/total*100)}% !important; background-color: #fb8c00 !important;`); 
   }
 
-  // 5. Render Chart (KODE ASLI)
+  // 5. Render Chart Original (USIA, PENDIDIKAN, GOLONGAN)
   try {
     const ctxAge = document.getElementById('homeAgeCurveChart').getContext('2d');
     if(window.homeAgeChart) window.homeAgeChart.destroy();
     window.homeAgeChart = new Chart(ctxAge, {
       type: 'line',
       data: { labels: Object.keys(ageGroups), datasets: [{ label: 'Jumlah Pegawai', data: Object.values(ageGroups), fill: true, backgroundColor: 'rgba(0, 77,64, 0.1)', borderColor: '#004d40', borderWidth: 3, pointBackgroundColor: '#ffb74d', pointRadius: 6, tension: 0.4 }] },
-      options: { maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: true, align: 'top', font: { weight: '800', size: 12 }, color: '#004d40', formatter: (v) => v > 0 ? v : '' } } }
+      options: { 
+        maintainAspectRatio: false, 
+        plugins: { legend: { display: false }, datalabels: { display: true, align: 'top', font: { weight: '800', size: 12 }, color: '#004d40', formatter: (v) => v > 0 ? v : '' } },
+        onClick: (e, elements) => {
+          if (elements.length > 0) {
+            const idx = elements[0].index;
+            const label = Object.keys(ageGroups)[idx];
+            const [min, max] = label.split('-').map(Number);
+            const rows = dataAktifOnly.filter(r => { let a = parseInt(r[idxUmur]); return a >= min && a <= max; });
+            showPopupData(`Pegawai Usia ${label}`, rows);
+          }
+        }
+      }
     });
 
     const ctxEdu = document.getElementById('homeEducationPieChart').getContext('2d');
@@ -672,7 +1081,18 @@ function updateHomeStats() {
     window.homeEduChart = new Chart(ctxEdu, {
       type: 'doughnut',
       data: { labels: sortedEdu.map(el => el[0]), datasets: [{ data: sortedEdu.map(el => el[1]), backgroundColor: ['#004d40', '#fb8c00', '#00796b', '#ffa726', '#26a69a', '#ffcc80'], borderWidth: 2, hoverOffset: 10 }] },
-      options: { maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 15, font: { size: 11, weight: 'bold' }, generateLabels: (chart) => chart.data.labels.map((label, i) => ({ text: `${label}: ${chart.data.datasets[0].data[i]}`, fillStyle: chart.data.datasets[0].backgroundColor[i], index: i })) } }, datalabels: { display: false } } },
+      options: { 
+        maintainAspectRatio: false, cutout: '75%', 
+        plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 15, font: { size: 11, weight: 'bold' } } }, datalabels: { display: false } },
+        onClick: (e, elements) => {
+          if (elements.length > 0) {
+            const idx = elements[0].index;
+            const label = sortedEdu[idx][0];
+            const rows = dataAktifOnly.filter(r => (r[idxEdu] || "").trim() === label);
+            showPopupData(`Pegawai Pendidikan ${label}`, rows);
+          }
+        }
+      },
       plugins: [{ id: 'centerText', beforeDraw: (chart) => { const { width, height, ctx } = chart; ctx.restore(); ctx.font = "bold 12px sans-serif"; ctx.textBaseline = "middle"; ctx.fillStyle = "#888"; const textTotal = "TOTAL"; const textTotalX = Math.round((chart.chartArea.left + chart.chartArea.right) / 2 - ctx.measureText(textTotal).width / 2); ctx.fillText(textTotal, textTotalX, (chart.chartArea.top + chart.chartArea.bottom) / 2 - 12); ctx.font = "bold 24px sans-serif"; ctx.fillStyle = "#004d40"; const valText = sortedEdu.reduce((a, b) => a + b[1], 0).toString(); const valX = Math.round((chart.chartArea.left + chart.chartArea.right) / 2 - ctx.measureText(valText).width / 2); ctx.fillText(valText, valX, (chart.chartArea.top + chart.chartArea.bottom) / 2 + 12); ctx.save(); } }]
     });
 
@@ -682,97 +1102,352 @@ function updateHomeStats() {
     window.homeGolChart = new Chart(ctxGol, {
       type: 'bar',
       data: { labels: labelsGol, datasets: [{ data: labelsGol.map(l => golMap[l]), backgroundColor: 'rgba(0, 77, 64, 0.8)', borderRadius: 8, hoverBackgroundColor: '#ffb74d' }] },
-      options: { maintainAspectRatio: false, layout: { padding: { top: 30 } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: '#004d40', font: { weight: 'bold', size: 13 }, formatter: (value) => value || '0' } }, scales: { y: { beginAtZero: true, grid: { display: false }, ticks: { color: '#888', font: { size: 11 } } }, x: { grid: { display: false }, ticks: { color: '#333', font: { weight: '600', size: 11 } } } } }
+      options: { 
+        maintainAspectRatio: false, 
+        plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: '#004d40', font: { weight: 'bold' } } },
+        onClick: (e, elements) => {
+          if (elements.length > 0) {
+            const idx = elements[0].index;
+            const label = labelsGol[idx];
+            const rows = dataAktifOnly.filter(r => (r[idxGol] || "").toString().trim() === label);
+            showPopupData(`Pegawai Golongan ${label}`, rows);
+          }
+        }
+      }
     });
   } catch(e) { console.log(e); }
 
-  // 6. List Jabatan (HANYA BAGIAN INI DENGAN HOVER, SILUET, GRADASI, & PRES 4 BARIS)
-  const renderJabList = (map, tot, col, type) => {
-    let h = "";
-    let keys = [];
-    if (type === 'DOSEN') {
-      keys = ["Guru Besar", "Lektor Kepala", "Lektor", "Asisten Ahli"];
-      Object.keys(map).forEach(k => { if(!keys.includes(k)) keys.push(k); });
-    } else {
-      keys = Object.keys(map).sort((a,b)=>map[b]-map[a]);
-    }
-
-    keys.forEach(k => {
-      const val = map[k] || 0;
-      const p = tot > 0 ? (val/tot*100) : 0;
-      h += `
-        <div class="jab-item mb-2 p-2 rounded-4 position-relative overflow-hidden" 
-             style="background: white; border: 1px solid #f1f3f5; min-height: 56px; display: flex; flex-direction: column; justify-content: center; transition: all 0.3s ease;">
-          <div class="silhouette-icon" style="position:absolute; right:-5px; bottom:-5px; opacity:0.03; pointer-events:none; transition: all 0.5s ease;">
-             <svg width="65" height="65" viewBox="0 0 24 24" fill="${col}"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-          </div>
-          <div class="d-flex justify-content-between align-items-center mb-1" style="z-index:1;">
-            <span class="fw-bold" style="font-size:11.5px; color: #2d3436;">${k.toUpperCase()}</span>
-            <span class="badge" style="background: ${col}; color: white; border-radius: 6px; font-size:10.5px; padding: 3px 8px;">${val}</span>
-          </div>
-          <div class="progress" style="height:6px; background-color: #f1f3f5; border-radius: 10px; z-index:1;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                 style="width:${p}%; background: linear-gradient(90deg, ${col}, #80cbc4) !important; border-radius: 10px;"></div>
-          </div>
-        </div>`;
-    });
-    return h;
-  };
-
-  let jabHtml = `
+  // 6. GANTI KARTU JABATAN MENJADI GENDER DENGAN TAB (BENTUK RADIAL MODERN)
+  let genderHtml = `
     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
-      <div><h6 id="jab-title-text" class="fw-bold mb-0" style="color:#004d40;">Jabatan Fungsional Dosen</h6></div>
+      <div><h6 id="gen-title-text" class="fw-bold mb-0" style="color:#004d40;">Jenis Kelamin Pegawai</h6></div>
       <div class="btn-group p-1" role="group" style="background:#f1f3f5; border-radius:10px;">
-        <input type="radio" class="btn-check" name="btnjab" id="btn-d" checked>
-        <label class="btn btn-sm px-3" for="btn-d" style="font-size:10px; font-weight:600; border-radius:8px; cursor:pointer;">DOSEN</label>
-        <input type="radio" class="btn-check" name="btnjab" id="btn-t">
-        <label class="btn btn-sm px-3" for="btn-t" style="font-size:10px; font-weight:600; border-radius:8px; cursor:pointer;">TENDIK</label>
+        <input type="radio" class="btn-check" name="btngen" id="btn-all" checked>
+        <label class="btn btn-sm px-2" for="btn-all" style="font-size:9px; font-weight:600; border-radius:8px; cursor:pointer;">SEMUA</label>
+        <input type="radio" class="btn-check" name="btngen" id="btn-pns">
+        <label class="btn btn-sm px-2" for="btn-pns" style="font-size:9px; font-weight:600; border-radius:8px; cursor:pointer;">PNS</label>
+        <input type="radio" class="btn-check" name="btngen" id="btn-pppk">
+        <label class="btn btn-sm px-2" for="btn-pppk" style="font-size:9px; font-weight:600; border-radius:8px; cursor:pointer;">PPPK</label>
       </div>
     </div>
-    <div id="jab-scroll-content" style="max-height: 265px; overflow-y: auto; padding-right: 5px;">
-      ${renderJabList(jabDosenMap, totalDosen, '#004d40', 'DOSEN')}
+    <div class="position-relative" style="height: 180px;">
+      <canvas id="genderRadialChart"></canvas>
+      <div style="position: absolute; top: 65%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+        <h4 id="gen-main-val" class="fw-bold mb-0" style="color:#004d40;">0</h4>
+        <small id="gen-sub-label" style="font-size: 9px; color: #888; font-weight:bold;">TOTAL</small>
+      </div>
     </div>
+    <div class="row g-2 mt-2" id="gender-legend-container"></div>
     <style>
       .btn-check:checked + .btn { background-color: #004d40 !important; color: white !important; }
-      #jab-scroll-content::-webkit-scrollbar { width: 4px; }
-      #jab-scroll-content::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
-      /* Efek Hover Hanya untuk Jabatan */
-      .jab-item:hover { transform: translateX(5px); border-color: #004d40 !important; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-      .jab-item:hover .silhouette-icon { transform: scale(1.1); opacity: 0.08 !important; }
+      .gen-mini-card { background: white; border: 1px solid #f1f3f5; border-radius: 12px; padding: 10px; text-align: center; transition: all 0.3s; cursor: pointer; }
+      .gen-mini-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: #004d40; }
     </style>
   `;
 
-  $('#home-jabatan-list').html(jabHtml);
+  $('#home-jabatan-list').html(genderHtml);
 
-  $('#btn-d').on('change', function() {
-    $('#jab-title-text').text('Jabatan Akademik Dosen');
-    $('#jab-scroll-content').html(renderJabList(jabDosenMap, totalDosen, '#004d40', 'DOSEN'));
-  });
-  $('#btn-t').on('change', function() {
-    $('#jab-title-text').text('Jabatan Fungsional Tendik');
-    $('#jab-scroll-content').html(renderJabList(jabTendikMap, totalTendik, '#fb8c00', 'TENDIK'));
-  });
+  const renderGenderUI = (data, titleSuffix) => {
+    const totalGen = data.L + data.P;
+    $('#gen-main-val').text(totalGen);
+
+    const legendHtml = `
+      <div class="col-6">
+        <div class="gen-mini-card" onclick="window.showGenderList('L', '${titleSuffix}')">
+          <div style="color: #00796b; font-size: 10px; font-weight:bold;">LAKI-LAKI</div>
+          <div class="fw-bold" style="font-size:16px; color: #333;">${data.L}</div>
+          <div style="font-size: 9px; color: #aaa;">${totalGen > 0 ? Math.round(data.L/totalGen*100) : 0}%</div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="gen-mini-card" onclick="window.showGenderList('P', '${titleSuffix}')">
+          <div style="color: #fb8c00; font-size: 10px; font-weight:bold;">PEREMPUAN</div>
+          <div class="fw-bold" style="font-size:16px; color: #333;">${data.P}</div>
+          <div style="font-size: 9px; color: #aaa;">${totalGen > 0 ? Math.round(data.P/totalGen*100) : 0}%</div>
+        </div>
+      </div>
+    `;
+    $('#gender-legend-container').html(legendHtml);
+
+    // Global helper untuk klik card
+    window.showGenderList = (type, suffix) => {
+        const filtered = data.rows.filter(r => {
+            const g = (r[idxGender] || "").toUpperCase();
+            return type === 'L' ? (g.startsWith("L") || g.includes("PRIA")) : (g.startsWith("P") || g.includes("WANITA"));
+        });
+        showPopupData(`Pegawai ${type === 'L' ? 'Laki-Laki' : 'Perempuan'} (${suffix})`, filtered);
+    };
+
+    const ctx = document.getElementById('genderRadialChart').getContext('2d');
+    if(window.genChartRight) window.genChartRight.destroy();
+    window.genChartRight = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Laki-laki', 'Perempuan'],
+        datasets: [{
+          data: [data.L, data.P],
+          backgroundColor: ['#00796b', '#fb8c00'],
+          borderWidth: 0,
+          hoverOffset: 5
+        }]
+      },
+      options: {
+        maintainAspectRatio: false, cutout: '82%', rotation: -90, circumference: 180,
+        plugins: { legend: { display: false }, datalabels: { display: false } },
+        onClick: (e, elements) => {
+            if (elements.length > 0) {
+                const idx = elements[0].index;
+                window.showGenderList(idx === 0 ? 'L' : 'P', titleSuffix);
+            }
+        }
+      }
+    });
+  };
+
+  // Listeners Tab
+  $('#btn-all').on('change', () => { $('#gen-title-text').text('Jenis Kelamin Pegawai'); renderGenderUI(genStat.all, 'SEMUA'); });
+  $('#btn-pns').on('change', () => { $('#gen-title-text').text('Jenis Kelamin PNS'); renderGenderUI(genStat.pns, 'PNS'); });
+  $('#btn-pppk').on('change', () => { $('#gen-title-text').text('Jenis Kelamin PPPK'); renderGenderUI(genStat.pppk, 'PPPK'); });
+
+  renderGenderUI(genStat.all, 'SEMUA');
 }
 
 function updateStats() {
-  const idxStatusASN = headersGlobal.findIndex(h => h.toUpperCase().includes("STATUS ASN"));
-  const idxGender = headersGlobal.findIndex(h => h.toUpperCase() === "JENIS KELAMIN");
+  if (!allData || allData.length === 0) return;
+
+  // --- 1. IDENTIFIKASI KOLOM (KUNCI ASLI) ---
+  const idxStatusASN = headersGlobal.findIndex(h => h && h.toUpperCase().includes("STATUS ASN"));
+  const idxStatus = headersGlobal.findIndex(h => h && h.toUpperCase() === "STATUS"); 
+  const idxJab = headersGlobal.findIndex(h => h && h.toUpperCase() === "JABATAN");
+  const idxGender = headersGlobal.findIndex(h => h && h.toUpperCase().includes("JENIS KELAMIN"));
+  const idxPensiun = headersGlobal.findIndex(h => h && h.toUpperCase().includes("MASA PENSIUN"));
+  const idxNama = headersGlobal.findIndex(h => h && h.toUpperCase().includes("NAMA"));
+  const idxUnit = headersGlobal.findIndex(h => h && h.toUpperCase().includes("UNIT"));
+  
   const filtered = allData.filter(row => (row[idxStatusASN] || "").toUpperCase().includes(activeCat));
-  let pria = 0, wanita = 0, jabMap = {};
-  const idxJab = headersGlobal.findIndex(h => h.toUpperCase() === "JABATAN");
+  
+  let pria = 0, wanita = 0, jabMap = {}, statusMap = {};
+  let totalData = filtered.length;
+
+  const getRowStatus = (row) => {
+    let statRaw = (row[idxStatus] || "").toString().toUpperCase();
+    const pensiunVal = (row[idxPensiun] || "").toString().toUpperCase();
+    if (pensiunVal.includes("SUDAH PENSIUN")) return "Tidak Aktif";
+    if (statRaw.includes("IZIN BELAJAR") || statRaw.includes("IJIN BELAJAR")) return "Izin Belajar";
+    if (statRaw.includes("TUGAS BELAJAR")) return "Tugas Belajar";
+    if (statRaw.includes("AKTIF")) return "Aktif";
+    return "Lainnya";
+  };
+
+  let unitJabMap = {};
   filtered.forEach(row => {
     const g = (row[idxGender] || "").toUpperCase();
-    if(g.startsWith('L') || (g.startsWith('P') && g.includes('RIA'))) pria++; else wanita++;
-    const jab = row[idxJab] || "Lainnya"; jabMap[jab] = (jabMap[jab] || 0) + 1;
+    if(g.startsWith('L') || g.includes('PRIA')) pria++; else wanita++;
+    const jab = (row[idxJab] || "Lainnya").toString().trim();
+    if (jab !== "") jabMap[jab] = (jabMap[jab] || 0) + 1;
+    const finalStat = getRowStatus(row);
+    statusMap[finalStat] = (statusMap[finalStat] || 0) + 1;
+    const unitRaw = (row[idxUnit] || "Tanpa Unit").toString().trim();
+    const unitKey = unitRaw.toUpperCase(); 
+    if (!unitJabMap[unitKey]) {
+      unitJabMap[unitKey] = { originalName: unitRaw, jabatans: {} };
+    }
+    unitJabMap[unitKey].jabatans[jab] = (unitJabMap[unitKey].jabatans[jab] || 0) + 1;
   });
-  $('#total-pegawai').text(filtered.length); $('#total-pria').text(pria); $('#total-wanita').text(wanita);
+
+  $('#total-pegawai').text(totalData); 
+  $('#total-pria').text(pria); 
+  $('#total-wanita').text(wanita);
+
+  // --- 2. LIST JABATAN HIJAU (ATAS) ---
+  const urutanCustom = ["GURU BESAR", "LEKTOR KEPALA", "LEKTOR", "ASISTEN AHLI"];
+  const greenGradients = ["linear-gradient(135deg, #059669 0%, #10b981 100%)", "linear-gradient(135deg, #065f46 0%, #34d399 100%)", "linear-gradient(135deg, #047857 0%, #6ee7b7 100%)", "linear-gradient(135deg, #10b981 0%, #a7f3d0 100%)"];
+  const sortedJabKeys = Object.keys(jabMap).sort((a, b) => {
+    const findIdx = (str) => urutanCustom.findIndex(u => str.toUpperCase().includes(u));
+    return (findIdx(a) === -1 ? 99 : findIdx(a)) - (findIdx(b) === -1 ? 99 : findIdx(b));
+  });
+
   let uHtml = ""; 
-  Object.keys(jabMap).sort((a,b) => jabMap[b] - jabMap[a]).forEach(k => {
-    uHtml += `<div class="d-flex justify-content-between py-2 border-bottom"><span>${k}</span><b>${jabMap[k]}</b></div>`;
+  sortedJabKeys.forEach((k, index) => {
+    const count = jabMap[k];
+    const percent = totalData > 0 ? ((count / totalData) * 100).toFixed(0) : 0;
+    uHtml += `<div class="jabatan-row-refined mb-1" onclick="showGlobalJabatanPopup('${k}')" style="background:#fff; border-radius:10px; padding:8px 12px; border:1px solid #f1f5f9; cursor:pointer;">
+        <div class="d-flex justify-content-between align-items-center">
+          <div style="font-size:10px; font-weight:800; color:#1e293b; text-transform:uppercase;">${k}</div>
+          <div style="font-size:15px; font-weight:900; color:#059669;">${count}</div>
+        </div>
+        <div style="height:4px; background:#f1f5f9; border-radius:10px; margin-top:6px; overflow:hidden;"><div style="width:${percent}%; background:${greenGradients[index % 4]}; height:100%;"></div></div>
+      </div>`;
   });
   $('#unit-list').html(uHtml);
+
+  // --- 3. DUAL CHART (DOUGHNUT & CURVA) ---
+  setTimeout(() => {
+    // Doughnut Chart (Status)
+    const ctxDoughnut = document.getElementById('pangkatChart').getContext('2d');
+    if (window.rekapJabChart) window.rekapJabChart.destroy();
+    window.rekapJabChart = new Chart(ctxDoughnut, {
+      type: 'doughnut',
+      data: { labels: Object.keys(statusMap), datasets: [{ data: Object.values(statusMap), backgroundColor: ["#10b981", "#8b5cf6", "#3b82f6", "#ef4444"], borderWeight: 0 }] },
+      options: { maintainAspectRatio: false, cutout: '80%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+    });
+
+    // Line Chart (Curva Jabatan)
+    const containerCurva = document.getElementById('curvaJabatanContainer');
+    if (containerCurva) {
+        const ctxLine = document.getElementById('lineJabatanChart').getContext('2d');
+        if (window.lineJabChart) window.lineJabChart.destroy();
+        window.lineJabChart = new Chart(ctxLine, {
+          type: 'line',
+          data: {
+            labels: sortedJabKeys,
+            datasets: [{
+              label: 'Jumlah Pegawai',
+              data: sortedJabKeys.map(k => jabMap[k]),
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              fill: true,
+              tension: 0.4,
+              pointRadius: 4,
+              pointBackgroundColor: '#10b981'
+            }]
+          },
+          options: {
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 } } },
+              x: { grid: { display: false }, ticks: { font: { size: 8 } } }
+            }
+          }
+        });
+    }
+  }, 250);
+
+  // --- 4. LIST PENSIUN ---
+  const containerPensiun = document.getElementById('pensiun-list');
+  if (containerPensiun) {
+    let pnl = ""; let cp = 0;
+    allData.forEach(row => {
+      if ((row[idxStatusASN]||"").toUpperCase().includes(activeCat) && (row[idxPensiun]||"").toUpperCase().includes("SUDAH PENSIUN")) {
+        cp++; pnl += `<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:10px 6px; font-size:11px; color:#1e293b; font-weight:700;">${row[idxNama]}</td><td style="padding:10px 6px; font-size:11px;">${row[idxUnit] || '-'}</td></tr>`;
+      }
+    });
+    $('#count-pensiun').text(cp);
+    containerPensiun.innerHTML = cp === 0 ? '<tr><td colspan="2" class="text-center py-2">Data Kosong</td></tr>' : pnl;
+  }
+
+  // ==========================================================
+  // --- 5. TAMPILAN AMAZING: NEON DASHBOARD ---
+  // ==========================================================
+  const sortedUnitKeys = Object.keys(unitJabMap).sort();
+  let dropdownOptions = `<option value="">-- Pilih Unit Kerja --</option>`;
+  let defaultKey = "";
+  sortedUnitKeys.forEach(key => {
+    const isDefault = key.includes("ADAB DAN HUMANIORA");
+    if(isDefault) defaultKey = key;
+    dropdownOptions += `<option value="${key}" ${isDefault ? 'selected' : ''}>${unitJabMap[key].originalName}</option>`;
+  });
+
+  $('#kontainer-bawah-unit').html(`
+    <div class="amazing-dashboard">
+      <div class="amazing-sidebar">
+        <div class="neon-badge">ANALYTICS SYSTEM</div>
+        <h2 class="amazing-title">Unit <br><span>Scanning</span></h2>
+        <div class="select-box-neon">
+          <label>SELECT DEPARTMENT</label>
+          <select id="select-unit-kerja" class="neon-input">${dropdownOptions}</select>
+        </div>
+        <div id="amazing-stat-summary" class="mt-4"></div>
+      </div>
+      <div class="amazing-content">
+        <div id="hasil-unit-kerja" class="amazing-grid"></div>
+      </div>
+    </div>
+  `);
+
+  const renderAmazingResults = (key) => {
+    let html = "";
+    if (key && unitJabMap[key]) {
+      const unitObj = unitJabMap[key];
+      let total = 0;
+      Object.keys(unitObj.jabatans).forEach(jabName => {
+        const count = unitObj.jabatans[jabName];
+        total += count;
+        html += `
+          <div class="neon-card" onclick="triggerUnitPopup('${jabName}', '${unitObj.originalName}')">
+            <div class="neon-card-inner">
+              <div class="neon-card-label">${jabName}</div>
+              <div class="neon-card-count">${count}<span>Staff</span></div>
+            </div>
+            <div class="neon-card-icon"><i class="fas fa-arrow-right"></i></div>
+          </div>`;
+      });
+      $('#amazing-stat-summary').html(`
+        <div class="neon-total-box">
+          <span>ACTIVE PERSONNEL</span>
+          <div class="neon-total-val">${total}</div>
+        </div>
+      `);
+    } else {
+      html = `<div class="amazing-empty"><i class="fas fa-radar"></i><p>Waiting for selection...</p></div>`;
+    }
+    $('#hasil-unit-kerja').html(html);
+  };
+
+  renderAmazingResults(defaultKey);
+  $('#select-unit-kerja').on('change', function() { renderAmazingResults($(this).val()); });
+
+  // CSS AMAZING INJECTION
+  if (!$('#style-amazing-v7').length) {
+    $('head').append(`<style id="style-amazing-v7">
+      .amazing-dashboard { display: flex; background: #0f172a; border-radius: 30px; overflow: hidden; margin-top: 30px; border: 1px solid rgba(255,255,255,0.05); min-height: 450px; }
+      .amazing-sidebar { width: 280px; background: #1e293b; padding: 35px; border-right: 1px solid rgba(255,255,255,0.05); }
+      .neon-badge { color: #10b981; font-size: 8px; font-weight: 900; letter-spacing: 2px; border: 1px solid #10b981; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 12px; }
+      .amazing-title { color: #fff; font-size: 24px; font-weight: 900; line-height: 1.1; }
+      .amazing-title span { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+      .select-box-neon { margin-top: 30px; }
+      .select-box-neon label { font-size: 9px; color: #64748b; font-weight: 800; display: block; margin-bottom: 10px; }
+      .neon-input { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 10px; border-radius: 10px; color: #fff; font-size: 11px; outline: none; }
+      .neon-total-box { margin-top: 40px; background: #10b981; padding: 20px; border-radius: 18px; text-align: center; color: #fff; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2); }
+      .neon-total-box span { font-size: 9px; font-weight: 800; opacity: 0.9; }
+      .neon-total-val { font-size: 32px; font-weight: 900; }
+      .amazing-content { flex: 1; padding: 35px; background: #0f172a; }
+      .amazing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+      .neon-card { position: relative; background: #1e293b; border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.3s; }
+      .neon-card:hover { transform: translateY(-5px); border-color: #10b981; background: #243146; }
+      .neon-card-label { color: #94a3b8; font-size: 9px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
+      .neon-card-count { color: #fff; font-size: 24px; font-weight: 900; }
+      .neon-card-count span { font-size: 10px; color: #10b981; margin-left: 4px; }
+      .neon-card-icon { position: absolute; right: 20px; bottom: 20px; color: #334155; transition: 0.3s; }
+      .neon-card:hover .neon-card-icon { color: #10b981; transform: translateX(3px); }
+    </style>`);
+  }
 }
 
+// ==========================================================
+// --- POPUP: NAMA & UNIT KERJA ---
+// ==========================================================
+function showGlobalJabatanPopup(jab) {
+    const list = allData.filter(row => (row[headersGlobal.findIndex(h => h && h.toUpperCase().includes("STATUS ASN"))]||"").toUpperCase().includes(activeCat) && (row[headersGlobal.findIndex(h => h && h.toUpperCase() === "JABATAN")]||"").toString().trim() === jab);
+    renderUnifiedPopup(`Analisis Jabatan: ${jab}`, list);
+}
+
+function triggerUnitPopup(jab, unit) {
+    const list = allData.filter(row => (row[headersGlobal.findIndex(h => h && h.toUpperCase().includes("STATUS ASN"))]||"").toUpperCase().includes(activeCat) && (row[headersGlobal.findIndex(h => h && h.toUpperCase() === "JABATAN")]||"").toString().trim() === jab && (row[headersGlobal.findIndex(h => h && h.toUpperCase().includes("UNIT"))]||"").toString().trim() === unit);
+    renderUnifiedPopup(`${jab} — ${unit}`, list);
+}
+
+function renderUnifiedPopup(title, list) {
+    const idxNama = headersGlobal.findIndex(h => h && h.toUpperCase().includes("NAMA"));
+    const idxUnit = headersGlobal.findIndex(h => h && h.toUpperCase().includes("UNIT"));
+    const rows = list.map(row => `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 12px; font-size: 12px; color: #1e293b;"><b>${row[idxNama]}</b></td><td style="padding: 12px; font-size: 11px; color: #64748b;">${row[idxUnit] || '-'}</td></tr>`).join('');
+    Swal.fire({
+        title: `<div style="font-size:16px; font-weight:900;">${title}</div>`,
+        html: `<div style="max-height: 400px; overflow-y: auto; border-radius: 15px; border: 1px solid #eee;"><table style="width: 100%; border-collapse: collapse; text-align: left;"><thead><tr style="background: #f8fafc;"><th style="padding: 10px; font-size: 10px; color: #94a3b8;">NAMA PEGAWAI</th><th style="padding: 10px; font-size: 10px; color: #94a3b8;">UNIT KERJA</th></tr></thead><tbody>${rows}</tbody></table></div>`,
+        confirmButtonColor: '#10b981', width: '650px'
+    });
+}
 function renderTable(h, v) {
   let displayIndices = [];
   h.forEach((name, index) => {
@@ -816,10 +1491,7 @@ function showDetail(idx) {
   const idxStatus = headersGlobal.findIndex(h => h.toUpperCase().trim() === "STATUS");
   const idxFoto = headersGlobal.findIndex(h => h.toUpperCase().includes("FOTO"));
   const idxAkhirTB = headersGlobal.findIndex(h => h.toUpperCase().includes("AKHIR") && h.toUpperCase().includes("TUGAS"));
-  
-  // Menemukan indeks kolom Jenis Kelamin untuk menentukan avatar
   const idxGender = headersGlobal.findIndex(h => h.toUpperCase().includes("JENIS KELAMIN") || h.toUpperCase() === "GENDER");
-  
   const idxFolder = headersGlobal.findIndex(h => h.toUpperCase().trim() === "DOKUMEN");
 
   $("#drh-instansi-header").text(idxInstansi !== -1 ? (row[idxInstansi] || 'UIN Sunan Ampel Surabaya') : 'UIN Sunan Ampel Surabaya');
@@ -827,11 +1499,11 @@ function showDetail(idx) {
   $("#drh-jenis-header").text(idxJenis !== -1 ? (row[idxJenis] || 'UIN Sunan Ampel Surabaya') : 'UIN Sunan Ampel Surabaya');
   
   // ==========================================
-  // 🔥 LOGIKA WARNA BADGE STATUS
+  // LOGIKA WARNA BADGE STATUS
   // ==========================================
   const statusVal = idxStatus !== -1 ? (row[idxStatus] || 'AKTIF') : 'AKTIF';
   const statusUpper = statusVal.toUpperCase();
-  let badgeBg = "#6c757d"; 
+  let badgeBg = "linear-gradient(135deg, #6c757d, #495057)"; 
   let badgeText = "#ffffff";
 
   if (statusUpper.includes("TUGAS BELAJAR")) {
@@ -839,73 +1511,66 @@ function showDetail(idx) {
       const today = new Date();
       const endDate = new Date(row[idxAkhirTB]);
       const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-      badgeBg = (diffDays <= 365) ? "#dc3545" : "#6f42c1";
-    } else { badgeBg = "#6f42c1"; }
+      badgeBg = (diffDays <= 365) ? "linear-gradient(135deg, #ef4444, #b91c1c)" : "linear-gradient(135deg, #8b5cf6, #6d28d9)";
+    } else { badgeBg = "linear-gradient(135deg, #8b5cf6, #6d28d9)"; }
   } else if (statusUpper.includes("AKTIF") && !statusUpper.includes("TIDAK")) {
-    badgeBg = "#28a745"; 
+    badgeBg = "linear-gradient(135deg, #10b981, #059669)"; 
   } else if (statusUpper.includes("TIDAK AKTIF") || statusUpper.includes("PENSIUN") || statusUpper.includes("KELUAR")) {
-    badgeBg = "#dc3545"; 
+    badgeBg = "linear-gradient(135deg, #f43f5e, #be123c)"; 
   } else if (statusUpper.includes("IJIN BELAJAR") || statusUpper.includes("IZIN BELAJAR")) {
-    badgeBg = "#ffc107"; badgeText = "#000000"; 
+    badgeBg = "linear-gradient(135deg, #f59e0b, #d97706)"; badgeText = "#ffffff"; 
   }
 
-  $("#status-live-badge").html(`<i class="fas fa-check-circle me-1"></i> ${statusVal}`).css({
-    "background-color": badgeBg, "color": badgeText, "padding": "6px 14px", "border-radius": "20px", "font-weight": "bold", "display": "inline-block"
+  $("#status-live-badge").html(`<i class="fas fa-circle me-2" style="font-size:8px"></i> ${statusVal}`).css({
+    "background": badgeBg, "color": badgeText, "padding": "6px 20px", "border-radius": "50px", "font-weight": "800", "display": "inline-block", "box-shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1)", "text-transform": "uppercase", "font-size": "10px", "letter-spacing": "0.5px"
   });
-  $("#drh-status-header").html(`<i class="fas fa-check-circle me-1"></i> ${statusVal}`);
 
   // ==========================================
-  // 🔥 LOGIKA AVATAR DEFAULT (STYLE 3D SEPERTI USER1.JPG)
+  // LOGIKA AVATAR
   // ==========================================
   const genderVal = (idxGender !== -1 && row[idxGender]) ? row[idxGender].toString().toUpperCase() : "";
-  
-  // Link Avatar 3D (Pria Jas & Wanita Berjilbab Jas)
-  const avatarPria = "https://img.freepik.com/free-psd/3d-illustration-person-with-hijab_23-2149436190.jpg"; 
-  const avatarWanita = "https://img.freepik.com/free-psd/3d-illustration-person-with-glasses_23-2149436185.jpg";
-  
-  let defaultAvatar = avatarPria;
-  if (genderVal.startsWith("P") || genderVal.includes("WANITA") || genderVal.includes("PEREMPUAN")) {
-    defaultAvatar = avatarWanita;
-  }
-
-  // Cek apakah ada link foto khusus di kolom foto
-  if(idxFoto !== -1) {
-    const customFoto = row[idxFoto] ? row[idxFoto].toString().trim() : "";
-    $("#drh-img").attr("src", (customFoto.startsWith("http")) ? customFoto : defaultAvatar);
-  } else {
-    $("#drh-img").attr("src", defaultAvatar);
-  }
+  const avatarPria = "https://www.w3schools.com/howto/img_avatar.png"; 
+  const avatarWanita = "https://www.w3schools.com/howto/img_avatar2.png";
+  let defaultAvatar = (genderVal.startsWith("P") || genderVal.includes("WANITA") || genderVal.includes("PEREMPUAN")) ? avatarWanita : avatarPria;
+  const customFoto = (idxFoto !== -1 && row[idxFoto]) ? row[idxFoto].toString().trim() : "";
+  $("#drh-img").attr("src", (customFoto.startsWith("http")) ? customFoto : defaultAvatar);
 
   // ==========================================
-  // MODIFIKASI TOMBOL EDIT
+  // HELPER FUNGSI PROTEKSI LOGIN
   // ==========================================
-  $("#btnEditDrh").show().off('click').on('click', function() {
-      if (isAdminMode) {
-          editData(idx);
-      } else {
-          Swal.fire({
-              title: 'Akses Terbatas',
-              text: "Silakan login sebagai Admin untuk memperbarui data ini.",
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonColor: '#3085d6',
-              cancelButtonColor: '#d33',
-              confirmButtonText: 'Login & Edit Sekarang',
-              cancelButtonText: 'Batal'
-          }).then((result) => {
-              if (result.isConfirmed) {
-                  window.pendingEditIdx = idx; 
-                  $('#detailModal').modal('hide');
-                  if (typeof handleAuthAction === "function") {
-                      handleAuthAction(); 
-                  }
-              }
-          });
-      }
-  });
+  const authProtected = (actionFn) => {
+    if (isAdminMode) {
+      actionFn();
+    } else {
+      Swal.fire({
+        title: 'Akses Terbatas',
+        text: "Silakan login sebagai Admin untuk mengakses fitur ini.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#004d40',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Login Sekarang'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.pendingEditIdx = idx; // Simpan index untuk auto-resume setelah login
+          $('#detailModal').modal('hide');
+          if (typeof handleAuthAction === "function") { handleAuthAction(); }
+        }
+      });
+    }
+  };
 
   // ==========================================
-  // LOGIKA TEKS BERJALAN & KONTEN LAINNYA
+  // GLOBAL ACTION HANDLER (Dipanggil dari HTML String)
+  // ==========================================
+  window.handleProtectedAction = function(type, index, url) {
+      if (type === 'print') authProtected(() => generatePDF(index));
+      if (type === 'edit') authProtected(() => editData(index));
+      if (type === 'file') authProtected(() => window.open(url, '_blank'));
+  };
+
+  // ==========================================
+  // DATA CONTENT (UI)
   // ==========================================
   let tbHtml = "";
   if(idxAkhirTB !== -1 && row[idxAkhirTB]){
@@ -914,31 +1579,27 @@ function showDetail(idx) {
     const endDate = new Date(tglAkhirRaw);
     if (!isNaN(endDate.getTime())) {
       const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-      let alertBg = diffDays <= 365 ? "#f8d7da" : "#d1ecf1";
-      tbHtml = `<div style="background: ${alertBg}; padding: 12px; border-radius: 8px; margin-top: 15px; border: 2px solid #ddd; overflow: hidden; white-space: nowrap; position: relative;">
-          <div style="display: inline-block; padding-left: 100%; animation: marquee-slow 40s linear infinite;">
-            <b>INFO MASA STUDI:</b> Batas Akhir: <u>${tglAkhirRaw}</u> &nbsp;&nbsp; Sisa: <b>${diffDays} Hari</b>
+      let alertStyle = diffDays <= 365 ? "background: #fef2f2; border: 1px solid #fee2e2; color: #991b1b;" : "background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af;";
+      tbHtml = `<div style="${alertStyle} padding: 12px 20px; border-radius: 12px; margin-top: 20px; overflow: hidden; white-space: nowrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+          <div style="display: inline-block; padding-left: 100%; animation: marquee-slow 25s linear infinite; font-weight: 600; font-size: 13px;">
+            <i class="fas fa-info-circle me-2"></i> MASA STUDI: Batas Akhir: <u>${tglAkhirRaw}</u> &nbsp;&nbsp;|&nbsp;&nbsp; Sisa: <b>${diffDays} Hari Lagi</b>
           </div>
         </div>`;
     }
   }
 
-  let btnFolderHtml = "";
-  if (isAdminMode && idxFolder !== -1 && row[idxFolder]) {
-    const link = row[idxFolder].toString().trim();
-    if (link.startsWith('http')) {
-      btnFolderHtml = `<div style="text-align: center; margin-top: 25px;"><a href="${link}" target="_blank" class="btn btn-primary" style="padding: 12px 35px; border-radius: 30px; font-weight: bold;"><i class="fas fa-file-alt me-2"></i> Buka Dokumen Pegawai</a></div>`;
-    }
-  }
-
-  const labelPribadi = ["NIP", "NAMA", "TANGGAL LAHIR", "TEMPAT LAHIR", "UMUR", "USIA","SISA CUTI TAHUNAN"];
+  const labelPribadi = ["NIP", "NAMA", "TANGGAL LAHIR", "TEMPAT LAHIR", "UMUR", "USIA", "SISA CUTI TAHUNAN", "JENIS KELAMIN", "GENDER"];
   let htmlPribadi = "", htmlRiwayat = "";
 
   headersGlobal.forEach((h, i) => {
     const headUpper = h.toUpperCase().trim();
     if(!hiddenFields.some(f => headUpper.includes(f)) && !headUpper.includes("FOTO") && headUpper !== "DOKUMEN") {
-        const fieldHtml = `<div class="drh-field-group"><label>${h}</label><div class="drh-field-value">${row[i] || '-'}</div></div>`;
-        if (labelPribadi.some(p => headUpper === p)) { htmlPribadi += fieldHtml; } 
+        const fieldHtml = `
+          <div class="drh-box">
+            <label>${h}</label>
+            <div class="drh-val">${row[i] || '-'}</div>
+          </div>`;
+        if (labelPribadi.some(p => headUpper.includes(p))) { htmlPribadi += fieldHtml; } 
         else { htmlRiwayat += fieldHtml; }
     }
   });
@@ -946,22 +1607,140 @@ function showDetail(idx) {
   const finalContent = `
     ${tbHtml}
     <style>
-      .drh-section-card { border: 2px solid #ced4da !important; border-radius: 12px !important; margin-top: 20px !important; padding: 20px !important; background: #fff !important; display: block !important; box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important; }
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+      #drh-body-content { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; padding: 10px; border-radius: 20px; }
+      .drh-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; margin-top: 25px; padding: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.02); }
+      .drh-title { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; text-transform: uppercase; letter-spacing: 1px; }
+      .drh-title i { color: #3b82f6; background: #eff6ff; padding: 8px; border-radius: 10px; font-size: 14px; }
+      .drh-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      .drh-box { padding: 12px 15px; background: #ffffff; border: 1px solid #f1f5f9; border-radius: 12px; transition: all 0.2s ease; }
+      .drh-box:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.05); transform: translateY(-2px); }
+      .drh-box label { display: block; font-size: 9px; text-transform: uppercase; color: #94a3b8; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px; }
+      .drh-val { font-size: 13px; color: #334155; font-weight: 700; word-break: break-word; line-height: 1.4; }
+      .drh-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 35px; }
+      .btn-drh { padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; border: none; cursor: pointer; text-decoration: none; }
+      .btn-print { background: #ef4444; color: white; box-shadow: 0 8px 15px rgba(239, 68, 68, 0.2); }
+      .btn-print:hover { background: #dc2626; transform: scale(1.05); }
+      .btn-edit { background: #1e293b; color: white; }
+      .btn-edit:hover { background: #0f172a; transform: scale(1.05); }
+      .btn-file { background: #3b82f6; color: white; }
+      .btn-file:hover { background: #2563eb; transform: scale(1.05); }
+      @media (max-width: 768px) { .drh-grid { grid-template-columns: 1fr 1fr; } }
       @keyframes marquee-slow { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
     </style>
-    <div class="drh-section-card animate__animated animate__fadeIn">
-        <div class="drh-section-title"><i class="fas fa-user-circle"></i> Data Pribadi</div>
-        <div class="drh-data-grid">${htmlPribadi}</div>
+    
+    <div class="drh-card animate__animated animate__fadeIn">
+        <div class="drh-title"><i class="fas fa-id-card"></i> Data Personal</div>
+        <div class="drh-grid">${htmlPribadi}</div>
     </div>
-    <div class="drh-section-card animate__animated animate__fadeIn animate__delay-1s">
-        <div class="drh-section-title"><i class="fas fa-briefcase"></i> Riwayat Pekerjaan & Data Lainnya</div>
-        <div class="drh-data-grid">${htmlRiwayat}</div>
+    
+    <div class="drh-card animate__animated animate__fadeIn animate__delay-1s">
+        <div class="drh-title"><i class="fas fa-briefcase"></i> Riwayat & Karir</div>
+        <div class="drh-grid">${htmlRiwayat}</div>
     </div>
-    ${btnFolderHtml}
+    
+    <div class="drh-actions">
+        <button onclick="handleProtectedAction('print', ${idx})" class="btn-drh btn-print">
+            <i class="fas fa-file-pdf"></i> Cetak Profil
+        </button>
+
+        <button onclick="handleProtectedAction('edit', ${idx})" class="btn-drh btn-edit">
+            <i class="fas fa-pen-nib"></i> Edit Data
+        </button>
+        
+        ${(idxFolder !== -1 && row[idxFolder]) ? `
+        <button onclick="handleProtectedAction('file', ${idx}, '${row[idxFolder]}')" class="btn-drh btn-file">
+            <i class="fas fa-folder-open"></i> Dokumen Digital
+        </button>` : ""}
+    </div>
   `;
 
   $("#drh-body-content").html(finalContent);
   $('#detailModal').modal('show');
+}
+// Pastikan fungsi ini ada di level global (bukan di dalam fungsi lain)
+function generatePDF(idx) {
+  const row = allData[idx];
+  if (!row) {
+    Swal.fire("Error", "Data tidak ditemukan", "error");
+    return;
+  }
+
+  const namaPegawai = row[2] || '-';
+  const nipPegawai = row[1] || '-';
+  
+  // Mengambil foto dari elemen yang ada di modal detail
+  const imgElement = document.getElementById("drh-img");
+  const fotoUrl = imgElement ? imgElement.src : "https://www.w3schools.com/howto/img_avatar.png";
+
+  // Susun Tabel Data untuk Print
+  let tableRows = "";
+  let counter = 1;
+  
+  headersGlobal.forEach((h, i) => {
+    const headUpper = h.toUpperCase().trim();
+    // Abaikan kolom foto, dokumen, dan field yang disembunyikan
+    if(!hiddenFields.some(f => headUpper.includes(f)) && !headUpper.includes("FOTO") && headUpper !== "DOKUMEN") {
+      tableRows += `
+        <tr>
+          <td style="text-align:center; width:30px;">${counter++}</td>
+          <td style="font-weight:bold; background-color:#f2f2f2; width:180px;">${h}</td>
+          <td>${row[i] || '-'}</td>
+        </tr>`;
+    }
+  });
+
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <html>
+    <head>
+      <title>Cetak Profil - ${namaPegawai}</title>
+      <style>
+        @page { size: A4; margin: 15mm; }
+        body { font-family: 'Times New Roman', serif; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .judul { text-decoration: underline; font-weight: bold; font-size: 20px; }
+        .foto-box { float: right; width: 3cm; height: 4cm; border: 1px solid #000; margin-bottom: 10px; }
+        .foto-box img { width: 100%; height: 100%; object-fit: cover; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 8px; font-size: 12px; vertical-align: top; }
+        .footer { margin-top: 50px; float: right; width: 250px; text-align: left; }
+      </style>
+    </head>
+    <body>
+      <div class="foto-box">
+        <img src="${fotoUrl}">
+      </div>
+      <div style="clear:both;"></div>
+      
+      <div class="header">
+        <span class="judul">DAFTAR RIWAYAT HIDUP</span>
+      </div>
+
+      <p style="font-weight: bold;">I. DATA PEGAWAI</p>
+      <table>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
+
+      <div class="footer">
+        <p>Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</p>
+        <p style="margin-bottom: 60px;">Pegawai yang bersangkutan,</p>
+        <p><b>${namaPegawai}</b><br>NIP. ${nipPegawai}</p>
+      </div>
+
+      <script>
+        window.onload = function() {
+          window.print();
+          // window.close(); 
+        };
+      <\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
 }
 function editData(idx) {
     const row = allData[idx];
