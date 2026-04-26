@@ -741,7 +741,7 @@ function handleAuthAction() {
             showCancelButton: true,
             confirmButtonText: 'Sign In',
             confirmButtonColor: '#004d40',
-            showLoaderOnConfirm: true, // Mengaktifkan loading di tombol
+            showLoaderOnConfirm: true,
             preConfirm: () => {
                 const username = Swal.getPopup().querySelector('#swal-username').value;
                 const password = Swal.getPopup().querySelector('#swal-password').value;
@@ -750,47 +750,58 @@ function handleAuthAction() {
                     return false;
                 }
 
-                // Menggunakan fetch ke Web App agar lebih cepat dibanding google.script.run
+                // URL Web App Anda
                 const webAppUrl = "https://script.google.com/macros/s/AKfycby-68Vto-Ps3W-Fekc7QfcND0IZMgWxKo2_M1QVgSWA9TjjI047RjS68OsXr60TtSzD/exec";
                 
-                return fetch(`${webAppUrl}?action=login&user=${encodeURIComponent(username)}&pass=${encodeURIComponent(password)}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error(response.statusText);
-                        return response.json();
-                    })
-                    .catch(error => {
-                        Swal.showValidationMessage(`Request failed: ${error}`);
-                    });
+                // Menambahkan parameter t (timestamp) untuk menghindari cache browser
+                const finalUrl = `${webAppUrl}?action=login&user=${encodeURIComponent(username)}&pass=${encodeURIComponent(password)}&t=${new Date().getTime()}`;
+
+                return fetch(finalUrl, {
+                    method: 'GET',
+                    mode: 'cors', // Pastikan mode CORS aktif
+                    redirect: 'follow' // WAJIB: Mengikuti redirect Google Apps Script
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .catch(error => {
+                    console.error("Fetch Error:", error);
+                    Swal.showValidationMessage(`Koneksi Gagal: Pastikan Deployment diatur ke 'Anyone'`);
+                });
             },
             allowOutsideClick: () => !Swal.isLoading()
         }).then((result) => {
-            if (result.isConfirmed && result.value.success) {
-                localStorage.setItem('si_ida_session', 'true');
-                isAdminMode = true; 
+            if (result && result.isConfirmed && result.value) {
+                if (result.value.success) {
+                    localStorage.setItem('si_ida_session', 'true');
+                    isAdminMode = true; 
 
-                $('#adminInfo, #btnAddData, #btnEditDrh').fadeIn();
-                $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
+                    $('#adminInfo, #btnAddData, #btnEditDrh').fadeIn();
+                    $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    timer: 1000,
-                    showConfirmButton: false
-                });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        timer: 1000,
+                        showConfirmButton: false
+                    });
 
-                if (window.pendingEditIdx !== null && window.pendingEditIdx !== undefined) {
-                    const targetIdx = window.pendingEditIdx;
-                    window.pendingEditIdx = null;
-                    setTimeout(() => { if (typeof editData === "function") editData(targetIdx); }, 600);
+                    if (window.pendingEditIdx !== null && window.pendingEditIdx !== undefined) {
+                        const targetIdx = window.pendingEditIdx;
+                        window.pendingEditIdx = null;
+                        setTimeout(() => { if (typeof editData === "function") editData(targetIdx); }, 600);
+                    } else {
+                        showPage('home-page');
+                    }
                 } else {
-                    showPage('home-page');
+                    Swal.fire('Gagal', result.value.message || 'Username/Password Salah', 'error');
                 }
-            } else if (result.isConfirmed && !result.value.success) {
-                Swal.fire('Gagal', result.value.message || 'Login Salah', 'error');
             }
         });
     }
-}function showPage(p) {
+}
+  function showPage(p) {
   $('.content-page').hide(); $('.tab-item').removeClass('active');
   $('#'+p).fadeIn();
   if(p === 'home-page') { $('#tab-home').addClass('active'); $('#search-container').hide(); } 
