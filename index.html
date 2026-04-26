@@ -859,13 +859,37 @@ function refreshData() {
       });
     });
 }
-function doGet() {
-  const data = getRawData(); // function kamu
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-function showDUK() {
+function doGet(e) {
+  try {
+    const action = e.parameter.action;
+
+    // 1. JIKA REQUEST ADALAH LOGIN
+    if (action === "login") {
+      const user = e.parameter.user;
+      const pass = e.parameter.pass;
+      const loginResult = checkLogin(user, pass); 
+      return ContentService.createTextOutput(JSON.stringify(loginResult))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 2. JIKA REQUEST BIASA (AMBIL DATA)
+    const data = getRawData(); 
+    if (!data) {
+      throw new Error("Fungsi getRawData tidak mengembalikan data apapun.");
+    }
+
+    return ContentService.createTextOutput(JSON.stringify(data))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    const errorOutput = {
+      status: "error",
+      message: err.toString()
+    };
+    return ContentService.createTextOutput(JSON.stringify(errorOutput))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}function showDUK() {
   console.log("Tombol DUK diklik!");
 
   if (typeof allData === 'undefined' || allData.length === 0) {
