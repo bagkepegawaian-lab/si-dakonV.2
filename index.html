@@ -751,7 +751,7 @@ function handleAuthAction() {
                 }
 
                 // URL Web App Anda
-                const webAppUrl = "https://script.google.com/macros/s/AKfycbxxb71o3ti_EsAwTp3cQ376PisFrm6OoZ1HkRJW2PFcKftwFerOwElFyhNUs1HSfIVA/exec";
+                const webAppUrl = "https://script.google.com/macros/s/AKfycbwjeN7Sx7Pk8xAWtNzlVx0OAccT01MGcSyLKg3fgjxVE1pwCKelexKHIqcVoN9tAqli/exec";
                 
                 // Menambahkan parameter t (timestamp) untuk menghindari cache browser
                 const finalUrl = `${webAppUrl}?action=login&user=${encodeURIComponent(username)}&pass=${encodeURIComponent(password)}&t=${new Date().getTime()}`;
@@ -819,7 +819,7 @@ function refreshData() {
   $('#loader-bar').css('width','30%');
 
   // URL App Script Anda
-  const baseUrl = "https://script.google.com/macros/s/AKfycbxxb71o3ti_EsAwTp3cQ376PisFrm6OoZ1HkRJW2PFcKftwFerOwElFyhNUs1HSfIVA/exec";
+  const baseUrl = "https://script.google.com/macros/s/AKfycbwjeN7Sx7Pk8xAWtNzlVx0OAccT01MGcSyLKg3fgjxVE1pwCKelexKHIqcVoN9tAqli/exec";
   
   // Tambahkan parameter ?t= agar GitHub tidak mengambil data cache lama
   const scriptURL = baseUrl + "?t=" + new Date().getTime();
