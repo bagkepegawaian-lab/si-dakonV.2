@@ -829,23 +829,45 @@ function switchASN(cat) {
 function refreshData() {
   $('#loader-bar').css('width','30%');
 
-  fetch("https://script.google.com/macros/s/AKfycby-68Vto-Ps3W-Fekc7QfcND0IZMgWxKo2_M1QVgSWA9TjjI047RjS68OsXr60TtSzD/exec")
-    .then(res => res.json())
+  // URL App Script Anda
+  const baseUrl = "https://script.google.com/macros/s/AKfycby-68Vto-Ps3W-Fekc7QfcND0IZMgWxKo2_M1QVgSWA9TjjI047RjS68OsXr60TtSzD/exec";
+  
+  // Tambahkan parameter ?t= agar GitHub tidak mengambil data cache lama
+  const scriptURL = baseUrl + "?t=" + new Date().getTime();
+
+  fetch(scriptURL)
     .then(res => {
+      if (!res.ok) throw new Error('Network response was not ok');
+      return res.json();
+    })
+    .then(res => {
+      // Validasi struktur data
+      if (!res || !res.values || res.values.length === 0) {
+        throw new Error('Data kosong atau format salah');
+      }
+
       headersGlobal = res.headers;
       allData = res.values;
 
+      // Jalankan fungsi-fungsi render
       buildForm(headersGlobal);
       renderTable(headersGlobal, allData);
-      updateStats();
-      updateHomeStats();
+      updateStats(); // Grafik kurva/doughnut di sini
+      updateHomeStats(); // Grafik dashboard utama di sini
 
       $('#loader-bar').css('width','100%');
-      setTimeout(()=>$('#loader-bar').css('width','0%'), 500);
+      setTimeout(() => $('#loader-bar').css('width','0%'), 500);
     })
     .catch(err => {
-      console.error("ERROR:", err);
-      alert("Gagal ambil data dari server!");
+      console.error("ERROR FETCH:", err);
+      $('#loader-bar').css('background-color', 'red');
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Data Gagal Dimuat',
+        text: 'Pastikan Deployment GAS diatur ke "Anyone" dan Anda sudah mempublikasikan versi terbaru.',
+        confirmButtonColor: '#d33'
+      });
     });
 }
 function doGet() {
