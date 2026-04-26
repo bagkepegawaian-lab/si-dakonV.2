@@ -710,37 +710,27 @@ setInterval(refreshProgressBars, 1000);
 
 function handleAuthAction() {
     if(isAdminMode) { 
-        // PROSES LOGOUT
+        // --- PROSES LOGOUT ---
         Swal.fire({
             title: 'Logout?',
             text: "Anda akan keluar dari Mode Admin",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33', // Ubah ke merah untuk indikasi logout
+            confirmButtonColor: '#d33',
             confirmButtonText: 'Ya, Logout'
         }).then((result) => {
             if (result.isConfirmed) {
                 localStorage.removeItem('si_ida_session');
                 isAdminMode = false;
-                
-                // Sembunyikan elemen-elemen admin
-                $('#adminInfo').fadeOut();
-                $('#btnAddData').fadeOut();
-                $('#btnEditDrh').fadeOut();
-                
-                // Kembalikan teks tombol login
+                $('#adminInfo, #btnAddData, #btnEditDrh').fadeOut();
                 $('#authBtn').html('<i class="fas fa-user-lock me-2"></i>Admin Sign In');
-                
-                // Reset variabel antrean jika ada
                 window.pendingEditIdx = null;
-                window.pendingAction = null;
-
                 showPage('home-page');
-                Swal.fire('Logged Out', 'Anda telah keluar dari Mode Admin', 'success');
+                Swal.fire('Logged Out', 'Anda telah keluar', 'success');
             }
         });
     } else { 
-        // PROSES LOGIN
+        // --- PROSES LOGIN ---
         Swal.fire({
             title: 'Admin Login',
             html: `
@@ -751,68 +741,56 @@ function handleAuthAction() {
             showCancelButton: true,
             confirmButtonText: 'Sign In',
             confirmButtonColor: '#004d40',
+            showLoaderOnConfirm: true, // Mengaktifkan loading di tombol
             preConfirm: () => {
                 const username = Swal.getPopup().querySelector('#swal-username').value;
                 const password = Swal.getPopup().querySelector('#swal-password').value;
                 if (!username || !password) {
                     Swal.showValidationMessage(`Harap isi username dan password`);
+                    return false;
                 }
-                return { username: username, password: password };
-            }
+
+                // Menggunakan fetch ke Web App agar lebih cepat dibanding google.script.run
+                const webAppUrl = "https://script.google.com/macros/s/AKfycby-68Vto-Ps3W-Fekc7QfcND0IZMgWxKo2_M1QVgSWA9TjjI047RjS68OsXr60TtSzD/exec";
+                
+                return fetch(`${webAppUrl}?action=login&user=${encodeURIComponent(username)}&pass=${encodeURIComponent(password)}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error(response.statusText);
+                        return response.json();
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Request failed: ${error}`);
+                    });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
         }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({ 
-                    title: 'Mengecek...', 
-                    allowOutsideClick: false, 
-                    didOpen: () => { Swal.showLoading(); } 
+            if (result.isConfirmed && result.value.success) {
+                localStorage.setItem('si_ida_session', 'true');
+                isAdminMode = true; 
+
+                $('#adminInfo, #btnAddData, #btnEditDrh').fadeIn();
+                $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    timer: 1000,
+                    showConfirmButton: false
                 });
 
-                google.script.run.withSuccessHandler(function(response) {
-                    if (response.success) {
-                        localStorage.setItem('si_ida_session', 'true');
-                        isAdminMode = true; 
-
-                        $('#adminInfo').fadeIn(); 
-                        $('#btnAddData').fadeIn();
-                        $('#btnEditDrh').fadeIn();
-                        $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: 'Selamat datang Admin.',
-                            timer: 1000,
-                            showConfirmButton: false
-                        });
-
-                        // ==========================================
-                        // LOGIKA AUTO-RESUME TINDAKAN TERPENDAM
-                        // ==========================================
-                        if (window.pendingEditIdx !== undefined && window.pendingEditIdx !== null) {
-                            const targetIdx = window.pendingEditIdx;
-                            window.pendingEditIdx = null; // Reset antrean
-                            
-                            // Jeda agar SweetAlert login tertutup dulu
-                            setTimeout(() => {
-                                // Jika sebelumnya klik "Edit"
-                                if (typeof editData === "function") {
-                                    editData(targetIdx); 
-                                }
-                                // Jika Anda ingin menambah auto-resume untuk Cetak/File,
-                                // Anda bisa menambahkan logika window.pendingAction disini
-                            }, 600);
-                        } else {
-                            showPage('home-page');
-                        }
-                    } else {
-                        Swal.fire('Gagal', response.message, 'error');
-                    }
-                }).checkLogin(result.value.username, result.value.password);
+                if (window.pendingEditIdx !== null && window.pendingEditIdx !== undefined) {
+                    const targetIdx = window.pendingEditIdx;
+                    window.pendingEditIdx = null;
+                    setTimeout(() => { if (typeof editData === "function") editData(targetIdx); }, 600);
+                } else {
+                    showPage('home-page');
+                }
+            } else if (result.isConfirmed && !result.value.success) {
+                Swal.fire('Gagal', result.value.message || 'Login Salah', 'error');
             }
         });
     }
-}
-function showPage(p) {
+}function showPage(p) {
   $('.content-page').hide(); $('.tab-item').removeClass('active');
   $('#'+p).fadeIn();
   if(p === 'home-page') { $('#tab-home').addClass('active'); $('#search-container').hide(); } 
