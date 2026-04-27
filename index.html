@@ -673,7 +673,22 @@ function openAddModal() {
     $("#dakon-img-preview").attr("src", ""); // Kosongkan preview foto
     $("#dataModal").modal('show');
 }
+function formatTanggalIndo(dateStr) {
+  if (!dateStr || dateStr === "") return "-";
+  try {
+    const date = new Date(dateStr);
+    // Cek apakah tanggal valid
+    if (isNaN(date.getTime())) return dateStr; 
 
+    const d = date.getDate().toString().padStart(2, '0');
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const y = date.getFullYear();
+    
+    return `${d}-${m}-${y}`;
+  } catch (e) {
+    return dateStr;
+  }
+}
 // Fungsi sakti buat maksa progress bar ngikutin angka
 function refreshProgressBars() {
     // Cari semua elemen yang punya class 'progress-bar'
