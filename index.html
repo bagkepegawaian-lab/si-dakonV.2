@@ -1705,6 +1705,7 @@ function showDetail(idx) {
         <div class="drh-grid">${htmlRiwayat}</div>
     </div>
     
+    
     <div class="drh-actions">
         <button onclick="handleProtectedAction('print', ${idx})" class="btn-drh btn-print">
             <i class="fas fa-file-pdf"></i> Cetak Profil
@@ -1717,12 +1718,37 @@ function showDetail(idx) {
         ${(idxFolder !== -1 && row[idxFolder]) ? `
         <button onclick="handleProtectedAction('file', ${idx}, '${row[idxFolder]}')" class="btn-drh btn-file">
             <i class="fas fa-folder-open"></i> Dokumen Digital
-        </button>` : ""}
+        </button>` 
+          <div class="drh-actions" style="justify-content: center; margin-top: 20px;">
+    <button onclick="handleProtectedAction('duk')" class="btn-drh btn-print" style="background: #2c3e50;">
+        <i class="fas fa-sort-amount-down"></i> Lihat DUK Pegawai
+    </button>
+</div>
+          : ""}
     </div>
   `;
 
   $("#drh-body-content").html(finalContent);
   $('#detailModal').modal('show');
+}
+    function handleProtectedAction(action, index, extra) {
+  // Cek apakah user sudah login (berdasarkan variabel session atau isLogged)
+  if (!isLoggedIn) { // Sesuaikan dengan nama variabel status login Anda
+    alert("Akses Ditolak! Anda harus login terlebih dahulu.");
+    showLoginModal(); // Munculkan modal login jika belum login
+    return;
+  }
+
+  // Jika sudah login, eksekusi perintahnya
+  if (action === 'duk') {
+    showDUK(); // Panggil fungsi untuk menampilkan tabel DUK
+  } else if (action === 'print') {
+    generatePDF(index);
+  } else if (action === 'edit') {
+    openEditForm(index);
+  } else if (action === 'file') {
+    window.open(extra, '_blank');
+  }
 }
 // Pastikan fungsi ini ada di level global (bukan di dalam fungsi lain)
 function generatePDF(idx) {
