@@ -932,7 +932,7 @@ function resetIdleTimer() {
     // Logout otomatis jika diam selama 1 Jam (3600000 ms)
     idleTimer = setTimeout(() => {
         prosesLogoutBersih('Anda otomatis logout karena tidak ada aktivitas selama 1 jam.');
-    }, 3600000); 
+    }, 10000); 
 }
 
 // ==========================================
