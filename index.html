@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
       :root { 
         --tvk-blue: #004d40; 
@@ -328,7 +329,96 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     background: #0f172a;
   }
+  .btn-duk-modern {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(45deg, #004d40, #00796b);
+    color: white;
+    border: none;
+    padding: 2px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-duk-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+.btn-duk-modern .icon {
+    background: rgba(255,255,255,0.2);
+    padding: 10px 15px;
+    border-radius: 50% 0 0 50%;
+    margin-left: -20px;
+    margin-right: 15px;
+}
+.btn-duk-modern .text {
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+    .my-swal-duk table {
+        border: 1px solid #dee2e6;
+    }
+    .my-swal-duk th, .my-swal-duk td {
+        padding: 8px;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+    .my-swal-duk th {
+        background-color: #004d40;
+        color: white;
+    }
+    .btn-cetak-duk {
+    background: #004d40;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,77,64,0.3);
+    transition: 0.3s;
+}
+.btn-cetak-duk:hover {
+    background: #00251a;
+    transform: translateY(-2px);
+}
+#swal2-html-container table td {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 8px;
+    font-size: 12px;
+}
+/* Container yang mengizinkan scroll samping tapi melarang penciutan */
+.wrapper-utama-kunci {
+  width: 100%;
+  overflow-x: auto !important; /* Paksa muncul scroll samping */
+  overflow-y: auto;
+  max-height: 80vh;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+}
 
+/* Tabel dilarang menciut (layout: auto sering jadi biang kerok) */
+.tabel-kunci-mati {
+  width: auto !important; /* Jangan dipaksa 100% kalau kolomnya banyak */
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed !important; /* Kunci mati ukuran kolom */
+}
+
+.main-row:hover {
+  background-color: #f0fdf4 !important;
+}
+
+/* Scrollbar agar terlihat modern */
+.wrapper-utama-kunci::-webkit-scrollbar { height: 10px; width: 8px; }
+.wrapper-utama-kunci::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.wrapper-utama-kunci::-webkit-scrollbar-track { background: #f8fafc; }
 /* Warna default jika tidak ada inline style */
 .pg-pns { background-color: #2e7d32 !important; }
 .pg-pppk { background-color: #f57c00 !important; }
@@ -561,7 +651,10 @@ $('.card').css({
       </div>
       <div id="kontainer-bawah-unit" style="margin-bottom: 50px;"></div>
     </div>
-
+    <button onclick="bukaPopUpDUK()" class="btn-duk-modern">
+        <span class="icon"><i class="fas fa-medal"></i></span>
+        <span class="text">Generate DUK Pegawai</span>
+    </button>
     <div id="database-page" class="content-page" style="display:none">
       <div class="card-white animate__animated animate__fadeIn">
         <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
@@ -569,9 +662,9 @@ $('.card').css({
           <button id="btnAddData" class="btn btn-primary btn-sm rounded-pill px-4" style="background-color: var(--tvk-blue); border: none; display:none" onclick="openAddModal()">
             <i class="fas fa-plus me-2"></i> Tambah Data Baru
           </button>
-        </div>
-    <button id="btn-duk-container" onclick="showDUK()" class="btn-duk" style="display: none;">
-  <i class="fas fa-sort-amount-down"></i> Lihat DUK Pegawai
+      
+    
+</div>
 </button>
         <div class="table-responsive">
           <table id="mainTable" class="table table-hover w-100">
@@ -904,7 +997,271 @@ function doGet(e) {
     return ContentService.createTextOutput(JSON.stringify(errorOutput))
       .setMimeType(ContentService.MimeType.JSON);
   }
-}function showDUK() {
+}
+// 1. Fungsi Proteksi Login
+function bukaDukProteksi() {
+  if (typeof isAdminMode !== 'undefined' && isAdminMode) {
+    generateDUK();
+  } else {
+    Swal.fire({
+      title: 'Akses Terbatas',
+      text: "Fitur DUK hanya untuk Admin. Silakan login terlebih dahulu.",
+      icon: 'lock',
+      confirmButtonText: 'Login Sekarang',
+      showCancelButton: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Panggil fungsi login modal Anda (sesuaikan namanya)
+        if (typeof handleAuthAction === "function") { handleAuthAction(); } 
+        else { $('#loginModal').modal('show'); }
+      }
+    });
+  }
+}
+
+function bukaPopUpDUK() {
+    if (typeof isAdminMode === 'undefined' || !isAdminMode) {
+        Swal.fire('Akses Terbatas', 'Silakan login sebagai Admin.', 'lock');
+        return;
+    }
+
+    const findIdx = (names) => headersGlobal.findIndex(h => 
+        names.some(name => h.toUpperCase().replace(/\s+/g, '').includes(name.toUpperCase().replace(/\s+/g, '')))
+    );
+
+    const idxNip      = findIdx(["NIP"]);
+    const idxNama     = 2; 
+    const idxPangkat  = findIdx(["PANGKAT"]); 
+    const idxGol      = findIdx(["GOL", "RUANG"]);
+    const idxTmt      = findIdx(["TMTPANGGOL", "TMTTERAKHIR"]);
+    const idxJabatan  = findIdx(["JABATAN"]);
+    const idxUmur     = findIdx(["UMUR"]);
+    const idxPend     = findIdx(["PENDIDIKANTERAKHIR", "PENDIDIKAN"]);
+    const idxStatus   = findIdx(["STATUSASN"]);
+
+    let dukList = allData.filter(row => {
+        let val = String(row[idxStatus] || "").toUpperCase().trim();
+        return val.includes("DOSEN PNS") || val.includes("TENDIK PNS");
+    });
+
+    dukList.sort((a, b) => {
+        let gB = String(b[idxGol] || "").trim();
+        let gA = String(a[idxGol] || "").trim();
+        if (gB !== gA) return gB.localeCompare(gA);
+        let tmtA = a[idxTmt] ? new Date(a[idxTmt]) : new Date(8640000000000000);
+        let tmtB = b[idxTmt] ? new Date(b[idxTmt]) : new Date(8640000000000000);
+        if (tmtA - tmtB !== 0) return tmtA - tmtB;
+        return (parseFloat(b[idxUmur]) || 0) - (parseFloat(a[idxUmur]) || 0);
+    });
+
+    let tableRows = dukList.map((row, i) => `
+        <tr class="duk-tr">
+            <td class="cell-center" style="font-weight: bold; color: #059669;">${i + 1}</td>
+            <td class="cell-left no-wrap">
+                <div class="pegawai-nama">${row[idxNama]}</div>
+                <div class="pegawai-nip">NIP. ${row[idxNip] || '-'}</div>
+            </td>
+            <td class="cell-center no-wrap" style="color: #334155; font-weight: 500;">${row[idxPangkat] || '-'}</td>
+            <td class="cell-center no-wrap">
+                <span class="badge-emerald">${row[idxGol] || '-'}</span>
+            </td>
+            <td class="cell-center no-wrap" style="color: #64748b; font-weight: bold;">${String(row[idxTmt] || '-').split('T')[0]}</td>
+            <td class="cell-center no-wrap" style="color: #475569;">${row[idxJabatan] || '-'}</td>
+            <td class="cell-center no-wrap" style="font-weight: 800; color: #064e3b;">${row[idxUmur] || '-'}</td>
+            <td class="cell-center no-wrap" style="color: #64748b; font-size: 11px;">${row[idxPend] || '-'}</td>
+        </tr>
+    `).join('');
+
+    Swal.fire({
+        title: 'DAFTAR URUT KEPANGKATAN',
+        width: '95%',
+        showCloseButton: true,
+        showConfirmButton: false,
+        background: '#f8fafc',
+        html: `
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+            
+            .swal2-popup { font-family: 'Plus Jakarta Sans', sans-serif !important; border-radius: 24px !important; padding: 2rem !important; position: relative; overflow: hidden; }
+            .swal2-title { font-weight: 800 !important; color: #064e3b !important; font-size: 24px !important; text-align: left !important; margin-bottom: 30px !important; letter-spacing: -1px; }
+            
+            /* Tombol Cetak Kanan Atas (Floating) */
+            .btn-floating-print {
+                position: absolute; top: 30px; right: 70px;
+                background: linear-gradient(135deg, #064e3b 0%, #059669 100%);
+                color: white; border: none; padding: 12px 24px; border-radius: 12px;
+                font-weight: 700; font-size: 13px; cursor: pointer;
+                display: flex; align-items: center; gap: 10px;
+                box-shadow: 0 10px 20px -5px rgba(6, 78, 59, 0.4);
+                transition: all 0.3s ease; z-index: 100;
+            }
+            .btn-floating-print:hover { transform: translateY(-2px); box-shadow: 0 15px 25px -5px rgba(6, 78, 59, 0.5); filter: brightness(1.1); }
+
+            /* Watermark Keren */
+            .watermark-bg {
+                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg);
+                font-size: 120px; font-weight: 900; color: rgba(16, 185, 129, 0.03);
+                white-space: nowrap; pointer-events: none; z-index: 0; user-select: none;
+            }
+
+            .container-duk { 
+                position: relative; overflow: auto; max-height: 550px; 
+                border-radius: 16px; border: 1px solid rgba(255,255,255,0.8);
+                box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
+                background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); z-index: 1;
+            }
+
+            .duk-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+            
+            /* Header Style */
+            .duk-table thead th { 
+                position: sticky; top: 0; background: #064e3b; padding: 18px 15px; 
+                font-size: 11px; text-transform: uppercase; color: #ffffff; font-weight: 700;
+                text-align: center; white-space: nowrap; z-index: 10; letter-spacing: 1px;
+            }
+            
+            .duk-table tbody td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+            .duk-tr:hover { background: rgba(16, 185, 129, 0.08) !important; transition: 0.2s; }
+
+            /* Badge & Text */
+            .pegawai-nama { font-weight: 800; color: #1e293b; font-size: 14px; }
+            .pegawai-nip { font-size: 11px; color: #64748b; font-family: 'Courier New', monospace; margin-top: 4px; }
+            
+            .badge-emerald { 
+                background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;
+                padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 11px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            }
+
+            .cell-left { text-align: left !important; }
+            .cell-center { text-align: center !important; }
+            .no-wrap { white-space: nowrap; }
+
+            /* Scrollbar Premium */
+            .container-duk::-webkit-scrollbar { width: 8px; height: 8px; }
+            .container-duk::-webkit-scrollbar-track { background: #f1f5f9; }
+            .container-duk::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #f1f5f9; }
+            .container-duk::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        </style>
+
+        <div class="watermark-bg">OFFICIAL DUK</div>
+
+        <button onclick="generateDUKFull()" class="btn-floating-print">
+            <i class="fas fa-print"></i> CETAK LAPORAN RESMI
+        </button>
+
+        <div class="container-duk">
+            <table class="duk-table">
+                <thead>
+                    <tr>
+                        <th style="border-top-left-radius: 12px;">NO</th>
+                        <th style="text-align: left;"> NAMA/NIP</th>
+                        <th>PANGKAT</th>
+                        <th>GOL</th>
+                        <th>TMT GOLONGAN</th>
+                        <th>JABATAN</th>
+                        <th>USIA</th>
+                        <th style="border-top-right-radius: 12px;">PENDIDIKAN</th>
+                    </tr>
+                </thead>
+                <tbody>${tableRows}</tbody>
+            </table>
+        </div>
+        `
+    });
+}
+function generateDUKFull() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // 'l' untuk Landscape agar kolom lega
+
+    // 1. Ambil Data yang Sudah Difilter & Disortir (Sesuai Logika Pop-up)
+    const findIdx = (names) => headersGlobal.findIndex(h => 
+        names.some(name => h.toUpperCase().replace(/\s+/g, '').includes(name.toUpperCase().replace(/\s+/g, '')))
+    );
+
+    const idxStatus = findIdx(["STATUSASN"]);
+    const idxNip    = findIdx(["NIP"]);
+    const idxNama   = 2;
+    const idxPang   = findIdx(["PANGKAT"]);
+    const idxGol    = findIdx(["GOL", "RUANG"]);
+    const idxTmt    = findIdx(["TMTPANGGOL"]);
+    const idxJab    = findIdx(["JABATAN"]);
+    const idxUmur   = findIdx(["UMUR"]);
+    const idxPend   = findIdx(["PENDIDIKAN"]);
+
+    let dataCetak = allData.filter(row => {
+        let val = String(row[idxStatus] || "").toUpperCase().trim();
+        return val.includes("DOSEN PNS") || val.includes("TENDIK PNS");
+    });
+
+    // Sorting Senioritas (Golongan > TMT > Umur)
+    dataCetak.sort((a, b) => {
+        let gB = String(b[idxGol] || "").trim();
+        let gA = String(a[idxGol] || "").trim();
+        if (gB !== gA) return gB.localeCompare(gA);
+        let tmtA = a[idxTmt] ? new Date(a[idxTmt]) : new Date(8640000000000000);
+        let tmtB = b[idxTmt] ? new Date(b[idxTmt]) : new Date(8640000000000000);
+        if (tmtA - tmtB !== 0) return tmtA - tmtB;
+        return (parseFloat(b[idxUmur]) || 0) - (parseFloat(a[idxUmur]) || 0);
+    });
+
+    // 2. Header Laporan
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("DAFTAR URUT KEPANGKATAN PEGAWAI NEGERI SIPIL", 148, 15, { align: "center" });
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    const tgl = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    doc.text(`Keadaan Per Tanggal: ${tgl}`, 148, 20, { align: "center" });
+
+    // 3. Konfigurasi Tabel AutoTable
+    // Pastikan library jspdf-autotable sudah terpasang
+    const head = [['NO', 'NAMA / NIP', 'PANGKAT', 'GOL', 'TMT PANGGOL', 'JABATAN', 'UMUR', 'PENDIDIKAN']];
+    const body = dataCetak.map((row, i) => [
+        i + 1,
+        `${row[idxNama]}\nNIP. ${row[idxNip] || '-'}`,
+        row[idxPang] || '-',
+        row[idxGol] || '-',
+        String(row[idxTmt] || '-').split('T')[0],
+        row[idxJab] || '-',
+        row[idxUmur] || '-',
+        row[idxPend] || '-'
+    ]);
+
+    doc.autoTable({
+        head: head,
+        body: body,
+        startY: 30,
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { 
+            fillColor: [6, 78, 59], // Hijau Tua Emerald
+            textColor: [255, 255, 255], 
+            halign: 'center',
+            valign: 'middle'
+        },
+        columnStyles: {
+            0: { halign: 'center', cellWidth: 10 },
+            1: { halign: 'left', cellWidth: 50, fontStyle: 'bold' },
+            2: { halign: 'center' },
+            3: { halign: 'center' },
+            4: { halign: 'center' },
+            5: { halign: 'left' },
+            6: { halign: 'center' },
+            7: { halign: 'center' }
+        },
+        didDrawPage: function (data) {
+            // Footer Halaman
+            doc.setFontSize(8);
+            doc.text(`Halaman ${data.pageNumber}`, doc.internal.pageSize.width - 20, doc.internal.pageSize.height - 10);
+        }
+    });
+
+    // 4. Download PDF
+    doc.save(`DUK_PNS_${new Date().getTime()}.pdf`);
+}
+function showDUK() {
   console.log("Tombol DUK diklik!");
 
   if (typeof allData === 'undefined' || allData.length === 0) {
@@ -1618,7 +1975,7 @@ function showDetail(idx) {
         confirmButtonText: 'Login Sekarang'
       }).then((result) => {
         if (result.isConfirmed) {
-          window.pendingEditIdx = idx; // Simpan index untuk auto-resume setelah login
+          window.pendingEditIdx = idx; 
           $('#detailModal').modal('hide');
           if (typeof handleAuthAction === "function") { handleAuthAction(); }
         }
@@ -1626,13 +1983,11 @@ function showDetail(idx) {
     }
   };
 
-  // ==========================================
-  // GLOBAL ACTION HANDLER (Dipanggil dari HTML String)
-  // ==========================================
   window.handleProtectedAction = function(type, index, url) {
       if (type === 'print') authProtected(() => generatePDF(index));
       if (type === 'edit') authProtected(() => editData(index));
       if (type === 'file') authProtected(() => window.open(url, '_blank'));
+      if (type === 'duk') authProtected(() => { if(typeof bukaPopUpDUK === "function") bukaPopUpDUK(); });
   };
 
   // ==========================================
@@ -1671,30 +2026,40 @@ function showDetail(idx) {
   });
 
   const finalContent = `
-    ${tbHtml}
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-      #drh-body-content { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; padding: 10px; border-radius: 20px; }
-      .drh-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; margin-top: 25px; padding: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.02); }
+      #drh-body-content { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; padding: 10px; border-radius: 20px; position: relative; }
+      
+      /* Watermark */
+      .watermark-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); font-size: 100px; font-weight: 900; color: rgba(16, 185, 129, 0.03); white-space: nowrap; pointer-events: none; z-index: 0; }
+
+      .drh-card { position: relative; z-index: 1; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(5px); border: 1px solid #e2e8f0; border-radius: 20px; margin-top: 25px; padding: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.02); }
       .drh-title { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; text-transform: uppercase; letter-spacing: 1px; }
-      .drh-title i { color: #3b82f6; background: #eff6ff; padding: 8px; border-radius: 10px; font-size: 14px; }
+      .drh-title i { color: #059669; background: #ecfdf5; padding: 8px; border-radius: 10px; font-size: 14px; }
+      
       .drh-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
       .drh-box { padding: 12px 15px; background: #ffffff; border: 1px solid #f1f5f9; border-radius: 12px; transition: all 0.2s ease; }
-      .drh-box:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.05); transform: translateY(-2px); }
+      .drh-box:hover { border-color: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1); transform: translateY(-2px); }
       .drh-box label { display: block; font-size: 9px; text-transform: uppercase; color: #94a3b8; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px; }
       .drh-val { font-size: 13px; color: #334155; font-weight: 700; word-break: break-word; line-height: 1.4; }
+      
+      /* Tombol Floating Kanan Atas */
+      .btn-duk-top { position: absolute; top: -10px; right: 10px; background: #064e3b; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 800; font-size: 11px; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(6, 78, 59, 0.2); transition: 0.3s; z-index: 100; }
+      .btn-duk-top:hover { background: #059669; transform: translateY(-2px); }
+
       .drh-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 35px; }
       .btn-drh { padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; border: none; cursor: pointer; text-decoration: none; }
-      .btn-print { background: #ef4444; color: white; box-shadow: 0 8px 15px rgba(239, 68, 68, 0.2); }
-      .btn-print:hover { background: #dc2626; transform: scale(1.05); }
+      .btn-print { background: #059669; color: white; }
       .btn-edit { background: #1e293b; color: white; }
-      .btn-edit:hover { background: #0f172a; transform: scale(1.05); }
       .btn-file { background: #3b82f6; color: white; }
-      .btn-file:hover { background: #2563eb; transform: scale(1.05); }
-      @media (max-width: 768px) { .drh-grid { grid-template-columns: 1fr 1fr; } }
       @keyframes marquee-slow { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
     </style>
     
+    <div class="watermark-overlay">RESMI ASN</div>
+    
+    
+    ${tbHtml}
+
     <div class="drh-card animate__animated animate__fadeIn">
         <div class="drh-title"><i class="fas fa-id-card"></i> Data Personal</div>
         <div class="drh-grid">${htmlPribadi}</div>
@@ -1724,7 +2089,8 @@ function showDetail(idx) {
   $("#drh-body-content").html(finalContent);
   $('#detailModal').modal('show');
 }
-// Pastikan fungsi ini ada di level global (bukan di dalam fungsi lain)
+
+// FUNGSI CETAK PROFIL (PORTRAIT)
 function generatePDF(idx) {
   const row = allData[idx];
   if (!row) {
@@ -1734,18 +2100,14 @@ function generatePDF(idx) {
 
   const namaPegawai = row[2] || '-';
   const nipPegawai = row[1] || '-';
-  
-  // Mengambil foto dari elemen yang ada di modal detail
   const imgElement = document.getElementById("drh-img");
   const fotoUrl = imgElement ? imgElement.src : "https://www.w3schools.com/howto/img_avatar.png";
 
-  // Susun Tabel Data untuk Print
   let tableRows = "";
   let counter = 1;
   
   headersGlobal.forEach((h, i) => {
     const headUpper = h.toUpperCase().trim();
-    // Abaikan kolom foto, dokumen, dan field yang disembunyikan
     if(!hiddenFields.some(f => headUpper.includes(f)) && !headUpper.includes("FOTO") && headUpper !== "DOKUMEN") {
       tableRows += `
         <tr>
@@ -1775,38 +2137,80 @@ function generatePDF(idx) {
       </style>
     </head>
     <body>
-      <div class="foto-box">
-        <img src="${fotoUrl}">
-      </div>
+      <div class="foto-box"><img src="${fotoUrl}"></div>
       <div style="clear:both;"></div>
-      
-      <div class="header">
-        <span class="judul">DAFTAR RIWAYAT HIDUP</span>
-      </div>
-
+      <div class="header"><span class="judul">DAFTAR RIWAYAT HIDUP</span></div>
       <p style="font-weight: bold;">I. DATA PEGAWAI</p>
-      <table>
-        <tbody>
-          ${tableRows}
-        </tbody>
-      </table>
-
+      <table><tbody>${tableRows}</tbody></table>
       <div class="footer">
         <p>Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</p>
         <p style="margin-bottom: 60px;">Pegawai yang bersangkutan,</p>
         <p><b>${namaPegawai}</b><br>NIP. ${nipPegawai}</p>
       </div>
-
-      <script>
-        window.onload = function() {
-          window.print();
-          // window.close(); 
-        };
-      <\/script>
+      <script>window.onload = function() { window.print(); };<\/script>
     </body>
     </html>
   `);
   printWindow.document.close();
+}
+function renderTableUtama(data) {
+  // 1. Definisikan Header dengan Pengunci Lebar yang Sangat Kuat
+  const headerHtml = headersGlobal.map((h, i) => {
+    let lebar = "160px"; // Lebar standar agar tidak menciut
+    const head = h.toUpperCase();
+    
+    // Custom lebar sesuai kepentingan data
+    if (head.includes("NAMA")) lebar = "300px";
+    if (head.includes("NIP")) lebar = "200px";
+    if (head.includes("GOL")) lebar = "120px";
+    if (head.includes("NO") || head === "ID") lebar = "60px";
+    if (head.includes("JABATAN")) lebar = "250px";
+
+    // Gunakan inline style min-width DAN max-width agar tidak bisa diganggu gugat
+    return `<th style="min-width: ${lebar}; width: ${lebar}; max-width: ${lebar}; background: #064e3b; color: white; position: sticky; top: 0; z-index: 10; padding: 15px; border-bottom: 3px solid #10b981; text-align: center; font-size: 11px; white-space: nowrap;">
+              ${h.toUpperCase()}
+            </th>`;
+  }).join('');
+
+  // 2. Render Baris Data
+  const rowsHtml = data.map((row, rowIndex) => {
+    const cells = row.map((cell, cellIndex) => {
+      let alignment = "center";
+      let weight = "normal";
+      
+      if (headersGlobal[cellIndex].toUpperCase().includes("NAMA")) {
+        alignment = "left";
+        weight = "bold";
+      }
+
+      // Pastikan TD juga punya lebar yang sama dengan TH
+      let lebarTd = "160px";
+      const head = headersGlobal[cellIndex].toUpperCase();
+      if (head.includes("NAMA")) lebarTd = "300px";
+      if (head.includes("NIP")) lebarTd = "200px";
+      if (head.includes("GOL")) lebarTd = "120px";
+      if (head.includes("NO") || head === "ID") lebarTd = "60px";
+      if (head.includes("JABATAN")) lebarTd = "250px";
+
+      return `<td style="min-width: ${lebarTd}; width: ${lebarTd}; max-width: ${lebarTd}; text-align: ${alignment}; font-weight: ${weight}; padding: 12px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #334155;">
+                ${cell || '-'}
+              </td>`;
+    }).join('');
+
+    return `<tr onclick="showDetail(${rowIndex})" style="cursor:pointer;" class="main-row">${cells}</tr>`;
+  }).join('');
+
+  // 3. Gabungkan dalam Container dengan Scroll Horizontal Paksa
+  const finalHtml = `
+    <div class="wrapper-utama-kunci">
+      <table class="tabel-kunci-mati">
+        <thead><tr>${headerHtml}</tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById("tabel-data-pegawai").innerHTML = finalHtml;
 }
 function editData(idx) {
     const row = allData[idx];
