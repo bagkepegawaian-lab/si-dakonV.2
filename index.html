@@ -816,9 +816,11 @@ function refreshProgressBars() {
 setInterval(refreshProgressBars, 1000);
 
 
+// ==========================================
+// 1. FUNGSI AUTH UTAMA (LOGIN/LOGOUT)
+// ==========================================
 function handleAuthAction() {
     if(isAdminMode) { 
-        // --- PROSES LOGOUT ---
         Swal.fire({
             title: 'Logout?',
             text: "Anda akan keluar dari Mode Admin",
@@ -828,17 +830,10 @@ function handleAuthAction() {
             confirmButtonText: 'Ya, Logout'
         }).then((result) => {
             if (result.isConfirmed) {
-                localStorage.removeItem('si_ida_session');
-                isAdminMode = false;
-                $('#adminInfo, #btnAddData, #btnEditDrh').fadeOut();
-                $('#authBtn').html('<i class="fas fa-user-lock me-2"></i>Admin Sign In');
-                window.pendingEditIdx = null;
-                showPage('home-page');
-                Swal.fire('Logged Out', 'Anda telah keluar', 'success');
+                prosesLogoutBersih('Anda telah keluar');
             }
         });
     } else { 
-        // --- PROSES LOGIN ---
         Swal.fire({
             title: 'Admin Login',
             html: `
@@ -857,24 +852,14 @@ function handleAuthAction() {
                     Swal.showValidationMessage(`Harap isi username dan password`);
                     return false;
                 }
-
-                // URL Web App Anda
                 const webAppUrl = "https://script.google.com/macros/s/AKfycby23aF4UE_2GGFdgFISf78RkHfZBDhV8Abpvhj_XoSHjI4QorVxPPNl0VMXKw-1S_H-/exec";
-                
-                // Menambahkan parameter t (timestamp) untuk menghindari cache browser
                 const finalUrl = `${webAppUrl}?action=login&user=${encodeURIComponent(username)}&pass=${encodeURIComponent(password)}&t=${new Date().getTime()}`;
-
-                return fetch(finalUrl, {
-                    method: 'GET',
-                    mode: 'cors', // Pastikan mode CORS aktif
-                    redirect: 'follow' // WAJIB: Mengikuti redirect Google Apps Script
-                })
+                return fetch(finalUrl, { method: 'GET', mode: 'cors', redirect: 'follow' })
                 .then(response => {
                     if (!response.ok) throw new Error('Network response was not ok');
                     return response.json();
                 })
                 .catch(error => {
-                    console.error("Fetch Error:", error);
                     Swal.showValidationMessage(`Koneksi Gagal: Pastikan Deployment diatur ke 'Anyone'`);
                 });
             },
@@ -882,18 +867,23 @@ function handleAuthAction() {
         }).then((result) => {
             if (result && result.isConfirmed && result.value) {
                 if (result.value.success) {
+                    // SET SESSION & TIMESTAMP UNTUK 1 JAM
                     localStorage.setItem('si_ida_session', 'true');
+                    localStorage.setItem('si_ida_timestamp', new Date().getTime()); 
+                    
                     isAdminMode = true; 
-
                     $('#adminInfo, #btnAddData, #btnEditDrh').fadeIn();
                     $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
 
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil!',
-                        timer: 1000,
+                        text: 'Sesi aktif selama 1 jam aktivitas',
+                        timer: 1500,
                         showConfirmButton: false
                     });
+
+                    resetIdleTimer(); // Mulai hitung mundur aktivitas
 
                     if (window.pendingEditIdx !== null && window.pendingEditIdx !== undefined) {
                         const targetIdx = window.pendingEditIdx;
@@ -909,11 +899,89 @@ function handleAuthAction() {
         });
     }
 }
-  function showPage(p) {
-  $('.content-page').hide(); $('.tab-item').removeClass('active');
-  $('#'+p).fadeIn();
-  if(p === 'home-page') { $('#tab-home').addClass('active'); $('#search-container').hide(); } 
-  else { $('#search-container').show(); $('#tab-'+(p==='database-page'?'database':activeCat)).addClass('active'); }
+
+// ==========================================
+// 2. LOGIKA TIMEOUT (DIPANGGIL SAAT REFRESH)
+// ==========================================
+function checkSessionTimeout() {
+    const session = localStorage.getItem('si_ida_session');
+    const timestamp = localStorage.getItem('si_ida_timestamp');
+    const satuJam = 60 * 60 * 1000; // 1 Jam tepat
+    const sekarang = new Date().getTime();
+
+    if (session === 'true' && timestamp) {
+        if (sekarang - timestamp > satuJam) {
+            prosesLogoutBersih('Sesi login Anda telah habis (1 jam).');
+        } else {
+            isAdminMode = true;
+            $('#adminInfo, #btnAddData, #btnEditDrh').show();
+            $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
+            resetIdleTimer(); // Jalankan ulang timer aktivitas
+        }
+    }
+}
+
+// ==========================================
+// 3. LOGIKA IDLE (TIDAK ADA AKTIVITAS)
+// ==========================================
+let idleTimer;
+
+function resetIdleTimer() {
+    if (!isAdminMode) return;
+    clearTimeout(idleTimer);
+    // Logout otomatis jika diam selama 1 Jam (3600000 ms)
+    idleTimer = setTimeout(() => {
+        prosesLogoutBersih('Anda otomatis logout karena tidak ada aktivitas selama 1 jam.');
+    }, 1000); 
+}
+
+// ==========================================
+// 4. FUNGSI CLEAN LOGOUT (UNTUK SEMUA KONDISI)
+// ==========================================
+function prosesLogoutBersih(pesan) {
+    localStorage.removeItem('si_ida_session');
+    localStorage.removeItem('si_ida_timestamp');
+    isAdminMode = false;
+    clearTimeout(idleTimer);
+
+    $('#adminInfo, #btnAddData, #btnEditDrh').fadeOut();
+    $('#authBtn').html('<i class="fas fa-user-lock me-2"></i>Admin Sign In');
+    
+    Swal.fire({
+        title: pesan.includes('keluar') ? 'Logout' : 'Sesi Berakhir',
+        text: pesan,
+        icon: pesan.includes('keluar') ? 'success' : 'info',
+        confirmButtonColor: '#004d40'
+    }).then(() => {
+        showPage('home-page');
+        location.reload(); 
+    });
+}
+
+// ==========================================
+// 5. EVENT LISTENERS
+// ==========================================
+window.onload = function() {
+    checkSessionTimeout();
+
+    // Deteksi aktivitas user untuk reset timer
+    const activityEvents = ['mousemove', 'keypress', 'touchstart', 'click', 'scroll'];
+    activityEvents.forEach(evt => {
+        document.addEventListener(evt, resetIdleTimer, true);
+    });
+};
+
+function showPage(p) {
+    $('.content-page').hide(); 
+    $('.tab-item').removeClass('active');
+    $('#'+p).fadeIn();
+    if(p === 'home-page') { 
+        $('#tab-home').addClass('active'); 
+        $('#search-container').hide(); 
+    } else { 
+        $('#search-container').show(); 
+        $('#tab-'+(p==='database-page'?'database':activeCat)).addClass('active'); 
+    }
 }
 
 function switchASN(cat) {
