@@ -2641,33 +2641,56 @@ function renderTableUtama(data) {
     document.getElementById("tabel-data-pegawai").innerHTML = finalHtml;
 }
 function editData(idx) {
+    // 0. Cek Akses Admin (Mencegah non-admin melakukan edit)
+    if (typeof isAdminMode !== 'undefined' && !isAdminMode) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Akses Ditolak',
+            text: 'Silakan login sebagai Admin terlebih dahulu!'
+        });
+        return;
+    }
+
+    // Pastikan data pada indeks tersebut ada
+    if (!allData || !allData[idx]) {
+        console.error("Data tidak ditemukan pada indeks:", idx);
+        return;
+    }
+
     const row = allData[idx];
     
     // 1. Reset Form & Set Row Index
     $("#pegawaiForm")[0].reset();
-    $("#row_index").val(idx + 2); // Baris di Sheet = Index + 2
+    // Baris di Spreadsheet = Index Array + 2 (Header di Baris 1, Data mulai Baris 2)
+    $("#row_index").val(idx + 2); 
 
-    // 2. Isi Input col_0, col_1, dst
-    headersGlobal.forEach((h, i) => {
-        const input = $(`#col_${i}`);
-        if (input.length) {
-            input.val(row[i] || "");
-        }
-    });
+    // 2. Isi Input col_0, col_1, dst secara dinamis
+    if (typeof headersGlobal !== 'undefined' && Array.isArray(headersGlobal)) {
+        headersGlobal.forEach((h, i) => {
+            const input = $(`#col_${i}`);
+            if (input.length) {
+                input.val(row[i] || "");
+            }
+        });
+    }
 
     // 3. LOGIKA PREVIEW FOTO
-    const idxFoto = headersGlobal.findIndex(h => h.toUpperCase().includes("FOTO"));
+    const idxFoto = headersGlobal ? headersGlobal.findIndex(h => h.toUpperCase().includes("FOTO")) : -1;
     if (idxFoto !== -1 && row[idxFoto]) {
         $("#dakon-img-preview").attr("src", row[idxFoto]).show();
     } else {
         $("#dakon-img-preview").attr("src", "").hide();
     }
 
-    // 4. Transisi Modal
-    $('#detailModal').modal('hide');
-    setTimeout(() => {
+    // 4. Transisi Modal (Tutup modal detail jika sedang terbuka, lalu buka modal edit)
+    if ($('#detailModal').length && $('#detailModal').is(':visible')) {
+        $('#detailModal').modal('hide');
+        setTimeout(() => {
+            $('#dataModal').modal('show');
+        }, 400);
+    } else {
         $('#dataModal').modal('show');
-    }, 400);
+    }
 }
 // Fungsi kompresi gambar (Sangat mempercepat upload)
 // Fungsi untuk mengecilkan ukuran gambar secara instan sebelum upload
