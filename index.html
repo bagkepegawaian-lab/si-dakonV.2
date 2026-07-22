@@ -2640,6 +2640,9 @@ function renderTableUtama(data) {
 
     document.getElementById("tabel-data-pegawai").innerHTML = finalHtml;
 }
+// ==========================================
+// 1. FUNGSI EDIT DATA
+// ==========================================
 function editData(idx) {
     // 0. Cek Akses Admin (Mencegah non-admin melakukan edit)
     if (typeof isAdminMode !== 'undefined' && !isAdminMode) {
@@ -2691,6 +2694,100 @@ function editData(idx) {
     } else {
         $('#dataModal').modal('show');
     }
+}
+
+// ==========================================
+// 2. EVENT LISTENER SUBMIT FORM (SIMPAN/UPDATE)
+// ==========================================
+$(document).ready(function() {
+    $('#pegawaiForm').on('submit', function(e) {
+        e.preventDefault();
+
+        // Loading Indicator
+        Swal.fire({
+            title: 'Menyimpan Data...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        const formData = {};
+        const rowIndex = $('#row_index').val();
+        if (rowIndex) {
+            formData['row_index'] = rowIndex;
+        }
+
+        // Ambil data dari elemen input col_0, col_1, dst.
+        if (typeof headersGlobal !== 'undefined' && Array.isArray(headersGlobal)) {
+            headersGlobal.forEach((h, i) => {
+                const val = $(`#col_${i}`).val();
+                formData[`col_${i}`] = val !== undefined ? val : "";
+            });
+        }
+
+        // Pengecekan apakah ada file foto yang dipilih
+        // (Menyesuaikan dengan selector input foto yang umum)
+        const fileInput = $('#input-foto')[0] || $('input[type="file"]')[0]; 
+        
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(evt) {
+                formData['base64Data'] = evt.target.result;
+                formData['fileName'] = file.name;
+                kirimDataKeBackend(formData);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // Jika tidak ada foto baru yang diupload, langsung kirim data teks
+            kirimDataKeBackend(formData);
+        }
+    });
+});
+
+// ==========================================
+// 3. FUNGSI KIRIM DATA VIA FETCH (KE APPS SCRIPT)
+// ==========================================
+function kirimDataKeBackend(payload) {
+    // Memastikan SCRIPT_URL_BOS sudah terdefinisi
+    const targetUrl = (typeof SCRIPT_URL_BOS !== 'undefined') ? SCRIPT_URL_BOS : SPREADSHEET_URL;
+
+    fetch(targetUrl, {
+        method: 'POST',
+        mode: 'no-cors', // Penting untuk mencegah error CORS di GitHub Pages
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(() => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Data pegawai berhasil diperbarui/disimpan.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+
+        $('#dataModal').modal('hide');
+        
+        // Memanggil fungsi refresh/load data jika ada, atau reload otomatis
+        if (typeof loadData === 'function') {
+            loadData();
+        } else if (typeof refreshData === 'function') {
+            refreshData();
+        } else {
+            setTimeout(() => { location.reload(); }, 1500);
+        }
+    })
+    .catch(err => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: 'Terjadi kesalahan saat mengirim data: ' + err
+        });
+    });
 }
 // Fungsi kompresi gambar (Sangat mempercepat upload)
 // Fungsi untuk mengecilkan ukuran gambar secara instan sebelum upload
