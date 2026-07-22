@@ -598,64 +598,36 @@ $('.card').css({
 </div>
 
 
-<div id="search-container" class="search-panel animate__animated animate__fadeInUp animate__delay-1s" style="display:none">
-  <div class="row g-3">
-    <!-- 1. CARI NAMA PEGAWAI -->
-    <div class="col-md-3">
-      <div class="input-group-custom">
-        <i class="fas fa-search"></i>
-        <div>
-          <label id="label-search">Cari Nama Pegawai</label>
-          <input type="text" id="quickSearch" placeholder="Masukkan nama..." onkeyup="applyFilter()">
+<div class="container">
+  <div id="search-container" class="search-panel animate__animated animate__fadeInUp animate__delay-1s" style="display:none">
+   
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="input-group-custom">
+          <i class="fas fa-search"></i>
+          <div><label id="label-search">Cari Nama Pegawai</label><input type="text" id="quickSearch" placeholder="Masukkan Nama/NIP..."></div>
         </div>
       </div>
-    </div>
-
-    <!-- 2. NIP -->
-    <div class="col-md-3">
-      <div class="input-group-custom">
-        <i class="fas fa-id-card"></i>
-        <div>
-          <label>NIP</label>
-          <input type="text" id="inputNip" placeholder="Nomor Identitas" onkeyup="applyFilter()">
+      <div class="col-md-3">
+        <div class="input-group-custom">
+          <i class="fas fa-id-card"></i>
+          <div><label>NIP</label><input type="text" id="inputNip" placeholder="Nomor Identitas"></div>
         </div>
       </div>
-    </div>
-
-    <!-- 3. UNIT KERJA -->
-    <div class="col-md-3">
-      <div class="input-group-custom">
-        <i class="fas fa-university"></i>
-        <div>
-          <label>Unit Kerja</label>
-          <select id="filterUnit" onchange="applyFilter()" style="border:none; outline:none; background:transparent; width:100%; cursor:pointer; color:inherit; font-size:inherit;">
-            <option value="">Semua Unit</option>
-          </select>
+      <div class="col-md-3">
+        <div class="input-group-custom">
+          <i class="fas fa-university"></i>
+          <div><label>Unit Kerja</label><input type="text" value="Semua Unit" readonly style="cursor:pointer"></div>
         </div>
       </div>
-    </div>
-
-    <!-- 4. GOLONGAN / PANGKAT (DITAMBAHKAN) -->
-    <div class="col-md-2">
-      <div class="input-group-custom">
-        <i class="fas fa-award"></i>
-        <div>
-          <label>Golongan / Pangkat</label>
-          <select id="filterPangkat" onchange="applyFilter()" style="border:none; outline:none; background:transparent; width:100%; cursor:pointer; color:inherit; font-size:inherit;">
-            <option value="">Semua Golongan</option>
-          </select>
-        </div>
+      <div class="col-md-2">
+        <button class="btn-search" onclick="showPage('database-page')">
+            <i class="fas fa-arrow-right"></i>
+        </button>
       </div>
-    </div>
-
-    <!-- 5. TOMBOL CARI -->
-    <div class="col-md-1">
-      <button class="btn-search" onclick="executeSearch()">
-        <i class="fas fa-arrow-right"></i>
-      </button>
     </div>
   </div>
-</div>
+
   <div id="main-wrapper" class="mt-5 pb-5">
     <div id="home-page" class="content-page animate__animated animate__fadeIn">
         <div class="row g-4 mb-5">
@@ -2911,66 +2883,6 @@ $("#fileFoto").on('change', function() {
         reader.readAsDataURL(file);
     }
 });
-    // Memuat opsi Dropdown secara otomatis berdasarkan isi Spreadsheet
-function populateFilterOptions() {
-  if (!allData || allData.length === 0 || !headersGlobal) return;
-
-  const idxUnit = headersGlobal.findIndex(h => h.toUpperCase().includes("UNIT") || h.toUpperCase().includes("JABATAN"));
-  const idxPangkat = headersGlobal.findIndex(h => h.toUpperCase().includes("PANGKAT") || h.toUpperCase().includes("GOLONGAN"));
-
-  // Option Unit Kerja
-  if (idxUnit !== -1) {
-    const units = [...new Set(allData.map(r => r[idxUnit]))].filter(Boolean).sort();
-    let optUnit = '<option value="">Semua Unit</option>';
-    units.forEach(u => optUnit += `<option value="${u}">${u}</option>`);
-    $('#filterUnit').html(optUnit);
-  }
-
-  // Option Golongan / Pangkat
-  if (idxPangkat !== -1) {
-    const pangkats = [...new Set(allData.map(r => r[idxPangkat]))].filter(Boolean).sort();
-    let optPangkat = '<option value="">Semua Golongan</option>';
-    pangkats.forEach(p => optPangkat += `<option value="${p}">${p}</option>`);
-    $('#filterPangkat').html(optPangkat);
-  }
-}
-
-// Fungsi Eksekusi Filter
-function applyFilter() {
-  if (!allData || !headersGlobal) return;
-
-  const valNama = $('#quickSearch').val().toLowerCase().trim();
-  const valNip = $('#inputNip').val().toLowerCase().trim();
-  const valUnit = $('#filterUnit').val().toLowerCase().trim();
-  const valPangkat = $('#filterPangkat').val().toLowerCase().trim();
-
-  const idxNama = headersGlobal.findIndex(h => h.toUpperCase().includes("NAMA"));
-  const idxNip = headersGlobal.findIndex(h => h.toUpperCase().includes("NIP") || h.toUpperCase().includes("NIDN") || h.toUpperCase().includes("ID"));
-  const idxUnit = headersGlobal.findIndex(h => h.toUpperCase().includes("UNIT") || h.toUpperCase().includes("JABATAN"));
-  const idxPangkat = headersGlobal.findIndex(h => h.toUpperCase().includes("PANGKAT") || h.toUpperCase().includes("GOLONGAN"));
-
-  const filteredData = allData.filter(row => {
-    const matchNama = idxNama !== -1 ? (row[idxNama] || "").toLowerCase().includes(valNama) : true;
-    const matchNip = idxNip !== -1 ? (row[idxNip] || "").toLowerCase().includes(valNip) : true;
-    const matchUnit = idxUnit !== -1 ? (valUnit === "" || (row[idxUnit] || "").toLowerCase() === valUnit) : true;
-    const matchPangkat = idxPangkat !== -1 ? (valPangkat === "" || (row[idxPangkat] || "").toLowerCase() === valPangkat) : true;
-
-    return matchNama && matchNip && matchUnit && matchPangkat;
-  });
-
-  // Render ulang tabel
-  if (typeof renderTable === 'function') {
-    renderTable(filteredData);
-  }
-}
-
-// Fungsi Tombol Panah Kanan
-function executeSearch() {
-  applyFilter();
-  if (typeof showPage === 'function') {
-    showPage('database-page');
-  }
-}
 function buildForm(h) {
   let html = "";
   h.forEach((name, i) => {
