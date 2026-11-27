@@ -864,7 +864,7 @@
                 <th class="text-center" style="width: 50px;">No</th>
                 <th style="min-width: 200px;">Nama Pegawai</th>
                 <th style="width: 170px;">NIP</th>
-                <th style="min-width: 170px;">Jabatan Utama</th>
+                <th style="min-width: 170px;">Jabatan Fungsional</th>
                 <th style="min-width: 220px;">Jabatan Strukural / Tambahan</th>
                 <th style="min-width: 180px;">Unit Kerja</th>
                 <th class="text-center" style="width: 110px;">Aksi</th>
@@ -927,7 +927,7 @@
               <input type="text" id="pjb_nip" class="form-control bg-light rounded-3" readonly>
             </div>
             <div class="col-6">
-              <label class="form-label small fw-bold text-muted">Jabatan Utama</label>
+              <label class="form-label small fw-bold text-muted">Jabatan Fungsional</label>
               <input type="text" id="pjb_jabatan_utama" class="form-control bg-light rounded-3" readonly>
             </div>
           </div>
@@ -2288,7 +2288,7 @@ function exportPejabatPDF() {
   doc.text("DAFTAR PEJABAT UIN SUNAN AMPEL SURABAYA", pageWidth / 2, 16, { align: "center" });
 
   doc.autoTable({
-    head: [['No', 'Nama Pegawai', 'NIP', 'Jabatan Utama', 'Jabatan Struktural / Tambahan', 'Unit Kerja']],
+    head: [['No', 'Nama Pegawai', 'NIP', 'Jabatan Fungsional', 'Jabatan Tambahan', 'Unit Kerja']],
     body: pejabatList,
     startY: 23,
     theme: 'grid',
