@@ -1,0 +1,2935 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sertifikasi & Diklat - SI DAKON KEPEGAWAIAN</title>
+    <base target="_top">
+    <!-- Google Fonts Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- jsPDF & AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <!-- SheetJS (XLSX) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      :root {
+        --tvk-blue: #004d40;
+        --tvk-blue-dark: #00332b;
+        --tvk-accent: #ffb74d;
+        --tvk-bg: #f4f7f6;
+        --font-main: 'Poppins', sans-serif;
+      }
+
+      body {
+        background-color: var(--tvk-bg);
+        font-family: var(--font-main);
+        margin: 0;
+        color: #1e293b;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Indikator Loading Bar Atas */
+      #loader-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: var(--tvk-accent);
+        z-index: 9999;
+        width: 0%;
+        transition: width 0.3s ease;
+      }
+
+      /* Top Navigation Bar */
+      .top-nav {
+        background: rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(4px);
+        padding: 10px 0;
+        color: white;
+        font-size: 0.84rem;
+        position: absolute;
+        width: 100%;
+        z-index: 20;
+      }
+
+      .top-nav a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        opacity: 0.92;
+        transition: 0.25s;
+      }
+
+      .top-nav a:hover {
+        opacity: 1;
+        color: var(--tvk-accent);
+      }
+
+      /* Hero Header dengan Clip-Path Ellipse */
+      .hero-container {
+        background: linear-gradient(rgba(0, 77, 64, 0.89), rgba(0, 37, 31, 0.96)),
+                    url('https://uinsa.ac.id/wp-content/uploads/2023/08/Twin-Towers-UINSA.jpg');
+        background-size: cover;
+        background-position: center;
+        min-height: 270px;
+        padding-top: 72px;
+        padding-bottom: 88px;
+        color: white;
+        clip-path: ellipse(150% 100% at 50% 0%);
+        position: relative;
+      }
+
+      .brand-logo {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: white;
+        text-decoration: none;
+        letter-spacing: -0.5px;
+      }
+
+      .brand-logo span {
+        font-weight: 300;
+        color: var(--tvk-accent);
+      }
+
+      /* Filter Panel Melayang */
+      .filter-panel {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 24px 26px;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
+        margin-top: -72px;
+        position: relative;
+        z-index: 10;
+        border: 1px solid #e2e8f0;
+      }
+
+      .filter-panel .form-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.5px;
+        color: #64748b;
+      }
+
+      .filter-panel .form-control,
+      .filter-panel .form-select {
+        border-radius: 10px;
+        border-color: #cbd5e1;
+        font-size: 0.85rem;
+        padding: 0.55rem 0.85rem;
+      }
+
+      .filter-panel .form-control:focus,
+      .filter-panel .form-select:focus {
+        border-color: var(--tvk-blue);
+        box-shadow: 0 0 0 3px rgba(0, 77, 64, 0.1);
+      }
+
+      /* Banner Peringatan Masa Berlaku yang Elegan */
+      .alert-expired-custom {
+        background: linear-gradient(90deg, #fffbeb 0%, #fef2f2 100%);
+        border: 1px solid #fed7aa;
+        border-left: 4px solid #dc2626;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-top: 18px;
+        margin-bottom: 0;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.06);
+      }
+
+      /* Kartu Statistik */
+      .stat-card {
+        background: #ffffff;
+        padding: 20px 22px;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        height: 100%;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--tvk-blue), #10b981);
+      }
+
+      .stat-card.stat-card-warn::before {
+        background: linear-gradient(90deg, #f59e0b, #dc2626);
+      }
+
+      .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      }
+
+      .stat-card .stat-title {
+        color: #64748b;
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-card h3 {
+        font-weight: 800;
+        font-size: 2rem;
+        margin: 0;
+        color: var(--tvk-blue);
+        line-height: 1.15;
+      }
+
+      .stat-card .stat-sub {
+        font-size: 0.74rem;
+        color: #64748b;
+        margin-top: 6px;
+      }
+
+      .stat-icon-circle {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+      }
+
+      /* Container Tabel Utama */
+      .card-white {
+        background: #ffffff;
+        padding: 24px 26px;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+      }
+
+      /* Banner Info Sandbox / Koneksi */
+      .connection-notice {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-size: 0.8rem;
+        margin-bottom: 16px;
+      }
+
+      table.dataTable thead th {
+        background: #f8fafc;
+        color: var(--tvk-blue);
+        white-space: nowrap !important;
+        padding: 13px 12px !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+      }
+
+      table.dataTable tbody td {
+        vertical-align: middle;
+        padding: 13px 12px !important;
+        font-size: 0.83rem;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      /* Highlight lembut untuk baris mendekati / melewati masa berlaku */
+      tr.row-expired {
+        background-color: #fff5f5 !important;
+      }
+      tr.row-expired:hover {
+        background-color: #fee2e2 !important;
+      }
+      tr.row-warning {
+        background-color: #fffdf0 !important;
+      }
+      tr.row-warning:hover {
+        background-color: #fef3c7 !important;
+      }
+
+      .badge-jenis {
+        background: #e6f4f1;
+        color: #004d40;
+        padding: 5px 11px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.72rem;
+        display: inline-block;
+        white-space: nowrap;
+      }
+
+      /* Badge Status Masa Berlaku */
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 0.71rem;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+      .status-pill-expired {
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fca5a5;
+      }
+      .status-pill-warning {
+        background: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fcd34d;
+      }
+      .status-pill-active {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #86efac;
+      }
+      .status-pill-lifetime {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+      }
+
+      .btn-emerald {
+        background: var(--tvk-blue);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 9px 22px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: 0.25s;
+      }
+
+      .btn-emerald:hover {
+        background: var(--tvk-blue-dark);
+        color: white;
+        transform: translateY(-1px);
+      }
+
+      .modal-form-header {
+        background: linear-gradient(135deg, var(--tvk-blue), var(--tvk-blue-dark));
+        color: white;
+        padding: 1.2rem 1.6rem;
+      }
+
+      .modal-section-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--tvk-blue);
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 6px;
+        margin-bottom: 12px;
+      }
+
+      /* Dropzone Import Excel */
+      .import-dropzone {
+        border: 2px dashed #94a3b8;
+        border-radius: 16px;
+        background: #f8fafc;
+        padding: 28px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+      .import-dropzone:hover,
+      .import-dropzone.dragover {
+        border-color: #059669;
+        background: #ecfdf5;
+      }
+
+      /* Action Group Berkas Sertifikat */
+      .cert-action-group {
+        display: inline-flex;
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 50px;
+        padding: 3px;
+        gap: 3px;
+      }
+
+      .btn-cert-view {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #004d40;
+        background: transparent;
+        text-decoration: none;
+        transition: 0.2s;
+      }
+
+      .btn-cert-view:hover {
+        background: #e0f2f1;
+        color: #00332b;
+      }
+
+      .btn-cert-dl {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 11px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #ffffff;
+        background: linear-gradient(135deg, #059669, #004d40);
+        text-decoration: none;
+        box-shadow: 0 2px 5px rgba(5, 150, 105, 0.22);
+        transition: 0.2s;
+      }
+
+      .btn-cert-dl:hover {
+        color: #ffffff;
+        filter: brightness(1.06);
+        transform: translateY(-1px);
+      }
+
+      /* Kotak Status Folder Kolom Dokumen */
+      .folder-status-box {
+        border-radius: 10px;
+        padding: 9px 13px;
+        font-size: 0.79rem;
+        margin-top: 8px;
+        display: none;
+      }
+
+      .folder-status-ok {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+        display: block;
+      }
+
+      .folder-status-smartchip {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        display: block;
+      }
+
+      .folder-status-warn {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        display: block;
+      }
+    </style>
+</head>
+<body>
+
+<!-- Loader Bar -->
+<div id="loader-bar"></div>
+
+<!-- Top Navigation -->
+<div class="top-nav">
+  <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>Aplikasi SI DAKON KEPEGAWAIAN</div>
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <a href="index.html"><i class="fas fa-arrow-left me-1"></i>Kembali ke Beranda</a>
+      <button type="button" id="btnToggleAdmin" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-0 ms-2" style="font-size: 0.75rem;" onclick="toggleAdminSession()">
+        <i class="fas fa-user-lock me-1"></i>Admin Mode
+      </button>
+      <span id="adminBadge" class="ms-2 fw-bold text-warning" style="display:none;">
+        <i class="fas fa-check-circle me-1"></i>ADMIN MODE
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Hero Header -->
+<div class="hero-container">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <a href="index.html" class="brand-logo">Aplikasi<span> SI DAKON</span></a>
+        <p class="mb-0 mt-1 text-white-50 small">Manajemen Sertifikasi, Pelatihan, Seminar &amp; Monitoring Masa Berlaku Kompetensi Pegawai</p>
+      </div>
+      <!-- Tombol Aksi Sejajar & Selalu Mudah Diakses -->
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-light rounded-pill px-3 fw-semibold btn-sm" onclick="bukaRekapAnalisis()">
+          <i class="fas fa-chart-pie text-success me-1"></i> Rekap &amp; Analisis
+        </button>
+        <button class="btn btn-light rounded-pill px-3 fw-semibold btn-sm" onclick="cetakPDFSertifikasi()">
+          <i class="fas fa-file-pdf text-danger me-1"></i> Cetak PDF
+        </button>
+        <button id="btnTemplateSertifikasi" class="btn btn-outline-light rounded-pill px-3 fw-semibold btn-sm" style="display:none;" onclick="downloadTemplateSertifikasiExcel()" title="Unduh file Excel template beserta panduan dan daftar pegawai">
+          <i class="fas fa-file-excel me-1"></i> Template Excel
+        </button>
+        <button id="btnImportSertifikasi" class="btn btn-success rounded-pill px-3 fw-semibold btn-sm shadow-sm" style="display:none;" onclick="bukaModalImportExcel()" title="Import banyak data sertifikat sekaligus dari file Excel">
+          <i class="fas fa-file-upload me-1"></i> Import Massal
+        </button>
+        <button id="btnInputSertifikasi" class="btn btn-warning rounded-pill px-4 fw-bold btn-sm text-dark" style="display:none;" onclick="bukaModalTambah()">
+          <i class="fas fa-plus me-1"></i> Input Satuan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Container -->
+<div class="container pb-5">
+  <!-- Filter Panel -->
+  <div class="filter-panel mb-4">
+    <div class="row g-3 align-items-end">
+      <div class="col-lg-4 col-md-6">
+        <label class="form-label fw-bold mb-1">PENCARIAN CEPAT</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 10px 0 0 10px;"><i class="fas fa-search"></i></span>
+          <input type="text" id="filterSearch" class="form-control border-start-0" style="border-radius: 0 10px 10px 0;" placeholder="Cari Nama, NIP, Judul, atau Nomor...">
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label fw-bold mb-1">JENIS KEGIATAN</label>
+        <select id="filterJenis" class="form-select">
+          <option value="">Semua Jenis Kegiatan</option>
+          <option value="Sertifikat Pendidik">Sertifikat Pendidik (Serdos)</option>
+          <option value="Diklat Teknis">Diklat Teknis</option>
+          <option value="Diklat Kepemimpinan">Diklat Kepemimpinan</option>
+          <option value="Workshop / Bimtek">Workshop / Bimtek</option>
+          <option value="Seminar / Konferensi">Seminar / Konferensi</option>
+          <option value="Sertifikasi Kompetensi">Sertifikasi Kompetensi</option>
+        </select>
+      </div>
+      <div class="col-lg-2 col-md-5">
+        <label class="form-label fw-bold mb-1">STATUS BERLAKU</label>
+        <select id="filterStatus" class="form-select">
+          <option value="">Semua Status</option>
+          <option value="perlu_perhatian">Perlu Perhatian</option>
+          <option value="segera_habis">Segera Habis (&le;30 Hari)</option>
+          <option value="expired">Sudah Kedaluwarsa</option>
+          <option value="aktif">Masih Berlaku</option>
+          <option value="seumur_hidup">Seumur Hidup</option>
+        </select>
+      </div>
+      <div class="col-lg-1 col-md-4">
+        <label class="form-label fw-bold mb-1">TAHUN</label>
+        <select id="filterTahun" class="form-select">
+          <option value="">Semua</option>
+        </select>
+      </div>
+      <div class="col-lg-2 col-md-3">
+        <button class="btn btn-outline-secondary w-100 fw-semibold" style="border-radius: 10px; padding: 0.55rem 0.85rem; font-size: 0.85rem;" onclick="resetFilter()">
+          <i class="fas fa-sync-alt me-1"></i> Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Banner Alert Peringatan Masa Berlaku Otomatis -->
+    <div id="alert-expired-banner" class="alert alert-expired-custom d-flex flex-wrap justify-content-between align-items-center gap-2" style="display:none !important;">
+      <div class="d-flex align-items-center gap-2 small text-dark">
+        <span class="badge bg-danger rounded-pill px-2 py-1"><i class="fas fa-bell me-1"></i>PERINGATAN MASA BERLAKU</span>
+        <span id="alert-expired-text"></span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-warning fw-semibold rounded-pill px-3 text-dark" onclick="$('#filterStatus').val('segera_habis').trigger('change')">
+          Lihat Segera Habis
+        </button>
+        <button type="button" class="btn btn-sm btn-danger fw-semibold rounded-pill px-3" onclick="$('#filterStatus').val('expired').trigger('change')">
+          Lihat Kedaluwarsa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistik Ringkas (4 Kartu Sejajar Rapi - Semua Dapat Diklik) -->
+  <div class="row g-3 g-md-4 mb-4">
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card" style="cursor:pointer;" onclick="bukaDetailStatistik('total_sertifikat')" title="Klik untuk melihat daftar semua sertifikat & nama pegawai">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="stat-title">Total Sertifikat</div>
+            <h3 id="stat-total-sertifikat">0</h3>
+          </div>
+          <div class="stat-icon-circle bg-success bg-opacity-10 text-success">
+            <i class="fas fa-certificate"></i>
+          </div>
+        </div>
+        <div class="stat-sub">Arsip diklat &amp; kompetensi</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card" style="cursor:pointer;" onclick="bukaDetailStatistik('pegawai_unik')" title="Klik untuk melihat daftar nama pegawai tersertifikasi">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="stat-title">Pegawai Tersertifikasi</div>
+            <h3 id="stat-total-pegawai" style="color: #00796b;">0</h3>
+          </div>
+          <div class="stat-icon-circle bg-primary bg-opacity-10 text-primary">
+            <i class="fas fa-user-check"></i>
+          </div>
+        </div>
+        <div class="stat-sub">Pegawai unik terdata</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card" style="cursor:pointer;" onclick="bukaDetailStatistik('akumulasi_jp')" title="Klik untuk melihat rincian akumulasi JP per pegawai">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="stat-title">Akumulasi Jam Pelajaran</div>
+            <h3 id="stat-total-jp" style="color: #f57c00;">0 JP</h3>
+          </div>
+          <div class="stat-icon-circle bg-warning bg-opacity-10 text-warning">
+            <i class="fas fa-clock"></i>
+          </div>
+        </div>
+        <div class="stat-sub">Total jam pengembangan kompetensi</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card stat-card-warn" style="cursor:pointer;" onclick="bukaDetailStatistik('perlu_perpanjang')" title="Klik untuk melihat nama pegawai yang sertifikatnya perlu diperpanjang">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="stat-title">Perlu Perpanjangan</div>
+            <h3 id="stat-perlu-perhatian" style="color: #dc2626;">0</h3>
+          </div>
+          <div class="stat-icon-circle bg-danger bg-opacity-10 text-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+        </div>
+        <div class="stat-sub" id="stat-perlu-perhatian-sub">0 kedaluwarsa &bull; 0 segera habis</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diagram Pie Perbandingan Jenis Diklat / Sertifikasi -->
+  <div class="card-white mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom gap-2">
+      <div>
+        <h5 class="fw-bold m-0" style="color: var(--tvk-blue);">Perbandingan Berdasarkan Jenis Diklat</h5>
+        <small class="text-muted">Klik bagian diagram atau kategori di samping untuk melihat daftar nama pegawai</small>
+      </div>
+      <span id="badge-chart-jenis-total" class="badge rounded-pill px-3 py-2 fw-semibold" style="background: #e6f4f1; color: #004d40; font-size: 0.76rem;">
+        Total: 0 Sertifikat
+      </span>
+    </div>
+    <div class="row align-items-center g-4">
+      <div class="col-lg-4 col-md-5">
+        <div style="height: 220px; position: relative;">
+          <canvas id="pieChartJenisDiklat"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-8 col-md-7">
+        <div id="legendJenisDiklatContainer" class="row g-2">
+          <div class="col-12 text-center text-muted py-4 small">Memuat diagram perbandingan...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabel Riwayat Sertifikasi -->
+  <div class="card-white">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom gap-2">
+      <div>
+        <h5 class="fw-bold m-0" style="color: var(--tvk-blue);">Riwayat Sertifikasi &amp; Diklat Pegawai</h5>
+        <small class="text-muted">Arsip digital sertifikat terintegrasi dengan masing-masing pegawai &amp; dipantau masa berlakunya</small>
+      </div>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span id="connectionStatusBadge" class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill" style="display:none;">
+          <i class="fas fa-cloud-check me-1"></i>Terhubung ke Server
+        </span>
+        <button id="btnTableTemplateExcel" class="btn btn-sm btn-outline-primary rounded-pill px-3" style="display:none;" onclick="downloadTemplateSertifikasiExcel()">
+          <i class="fas fa-download me-1"></i> Template Excel
+        </button>
+        <button id="btnTableImportExcel" class="btn btn-sm btn-success rounded-pill px-3" style="display:none;" onclick="bukaModalImportExcel()">
+          <i class="fas fa-file-excel me-1"></i> Import Banyak Data
+        </button>
+        <button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="muatSemuaData(true)">
+          <i class="fas fa-rotate me-1"></i> Segarkan
+        </button>
+      </div>
+    </div>
+
+    <!-- Info Jika Dibuka dari Preview Sandbox atau Cache Lokal -->
+    <div id="sandboxNoticeBox" class="connection-notice d-none">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <i class="fas fa-info-circle me-1"></i>
+          <span id="sandboxNoticeText">Menampilkan data cadangan lokal. Jika dibuka di preview Canvas, koneksi ke Google Apps Script dibatasi oleh browser; buka di hosting asli untuk sinkronisasi langsung.</span>
+        </div>
+        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" onclick="muatSemuaData(true)">Coba Sinkron Ulang</button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <!-- Tetap 9 kolom konsisten agar DataTables 100% stabil -->
+      <table id="sertifikasiTable" class="table table-hover align-middle w-100">
+        <thead>
+          <tr>
+            <th class="text-center" style="width: 42px;">No</th>
+            <th>Pegawai (Nama &amp; NIP)</th>
+            <th>Jenis</th>
+            <th>Judul Kegiatan &amp; Nomor</th>
+            <th>Penyelenggara</th>
+            <th>Tanggal &amp; Masa Berlaku</th>
+            <th class="text-center">JP</th>
+            <th class="text-center">Berkas &amp; Download</th>
+            <th class="text-center" id="th-aksi-sertifikat">Aksi</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Import Massal dari Excel (Dengan Pratinjau & Validasi) -->
+<div class="modal fade" id="modalImportExcel" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+      <div class="modal-form-header d-flex justify-content-between align-items-center">
+        <h5 class="m-0 fw-bold"><i class="fas fa-file-excel me-2"></i>Import Massal Sertifikasi &amp; Diklat dari Excel</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- Langkah 1: Unduh Template -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25 mb-3 gap-2">
+          <div>
+            <div class="fw-bold text-success small"><i class="fas fa-1 me-1"></i> Belum punya format Excel-nya?</div>
+            <div class="text-muted" style="font-size: 0.8rem;">Unduh template resmi yang sudah dilengkapi contoh baris, panduan pengisian, dan daftar referensi NIP/Nama pegawai.</div>
+          </div>
+          <button type="button" class="btn btn-success btn-sm rounded-pill px-3 fw-semibold" onclick="downloadTemplateSertifikasiExcel()">
+            <i class="fas fa-download me-1"></i> Unduh Template Excel (.xlsx)
+          </button>
+        </div>
+
+        <!-- Langkah 2: Pilih File Excel -->
+        <div class="modal-section-label"><i class="fas fa-upload me-1"></i>Langkah 2: Pilih atau Seret File Excel (.xlsx / .xls)</div>
+        <div id="importDropzone" class="import-dropzone mb-3" role="button" tabindex="0">
+          <i class="fas fa-cloud-upload-alt fa-2x text-success mb-2"></i>
+          <div class="fw-bold text-dark">Klik di sini untuk memilih file Excel, atau seret file ke area ini</div>
+          <div class="small text-muted mt-1 mb-3">Mendukung format <code>.xlsx</code> dan <code>.xls</code> (Bisa memuat puluhan hingga ratusan baris sekaligus)</div>
+          <button type="button" id="btnPilihFileExcel" class="btn btn-outline-success btn-sm rounded-pill px-4 fw-semibold">
+            <i class="fas fa-folder-open me-1"></i> Pilih File dari Komputer
+          </button>
+        </div>
+        <input type="file" id="importSertifikasiFile" class="d-none" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" onchange="prosesBacaFileExcelImport(this)">
+
+        <!-- Area Pratinjau Hasil Pembacaan Excel -->
+        <div id="importPreviewSection" style="display:none;">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+            <div>
+              <span class="fw-bold text-dark small"><i class="fas fa-table me-1 text-success"></i>Pratinjau Data Excel:</span>
+              <span id="importSummaryBadge" class="badge bg-primary ms-1">0 baris valid</span>
+              <span id="importWarningBadge" class="badge bg-warning text-dark ms-1" style="display:none;">0 baris dilewati</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="resetPreviewImportExcel()">
+              <i class="fas fa-times me-1"></i> Ganti File
+            </button>
+          </div>
+
+          <div class="table-responsive border rounded-3" style="max-height: 310px;">
+            <table class="table table-sm table-hover table-bordered m-0" style="font-size: 0.78rem;">
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th class="text-center" style="width: 36px;">No</th>
+                  <th>NIP &amp; Nama Pegawai</th>
+                  <th>Match DataPegawai</th>
+                  <th>Jenis</th>
+                  <th>Judul &amp; Nomor</th>
+                  <th>Penyelenggara</th>
+                  <th>Tgl Terbit</th>
+                  <th>Berlaku Sampai</th>
+                  <th class="text-center">JP</th>
+                </tr>
+              </thead>
+              <tbody id="importPreviewTbody"></tbody>
+            </table>
+          </div>
+          <div class="form-text mt-2" style="font-size: 0.76rem;">
+            <i class="fas fa-info-circle text-primary me-1"></i>
+            Kolom <b>Match Pegawai</b> menunjukkan kecocokan NIP/Nama dengan data master pegawai sehingga arsip berkas otomatis tertaut.
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-light border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div id="importAdminWarning" class="small text-warning fw-semibold" style="display:none;">
+          <i class="fas fa-lock me-1"></i>Anda akan diminta login Admin saat menekan tombol Simpan Import.
+        </div>
+        <div class="ms-auto d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
+          <button type="button" id="btnEksekusiImport" class="btn btn-emerald px-4" disabled onclick="eksekusiImportMassal()">
+            <i class="fas fa-save me-2"></i>Simpan Semua Data (<span id="btnImportCount">0</span>)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah / Edit Sertifikasi Satuan -->
+<div class="modal fade" id="modalSertifikat" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+      <form id="formSertifikat">
+        <input type="hidden" id="srt_id">
+        <input type="hidden" id="srt_existing_link">
+        <input type="hidden" id="srt_folder_url" value="">
+        <input type="hidden" id="srt_folder_id" value="">
+        <input type="hidden" id="srt_dokumen_raw" value="">
+
+        <div class="modal-form-header d-flex justify-content-between align-items-center">
+          <h5 class="m-0 fw-bold" id="modalSertifikatTitle"><i class="fas fa-award me-2"></i>Input Riwayat Sertifikasi / Diklat</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <!-- Bagian 1: Identitas Pegawai -->
+          <div class="modal-section-label"><i class="fas fa-user-tie me-1"></i>1. Identitas Pegawai</div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-12">
+              <label class="form-label small fw-bold text-muted">Cari Nama atau NIP Pegawai <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-user-search text-success"></i></span>
+                <input type="text" id="srt_pegawai_search" list="datalistPegawai" class="form-control" placeholder="Ketik minimal 3 huruf nama atau NIP..." autocomplete="off" required>
+                <button type="button" class="btn btn-outline-secondary" onclick="resetPilihanPegawai(true)" title="Hapus Pilihan"><i class="fas fa-times"></i></button>
+              </div>
+              <datalist id="datalistPegawai"></datalist>
+              <div id="srt_folder_info" class="folder-status-box"></div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-muted">NIP</label>
+              <input type="text" id="srt_nip" class="form-control bg-light font-monospace" readonly>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-muted">Nama Pegawai</label>
+              <input type="text" id="srt_nama" class="form-control bg-light" readonly>
+            </div>
+          </div>
+
+          <!-- Bagian 2: Detail Sertifikat & Masa Berlaku -->
+          <div class="modal-section-label"><i class="fas fa-certificate me-1"></i>2. Detail Sertifikat &amp; Masa Berlaku</div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-muted">Jenis Kegiatan <span class="text-danger">*</span></label>
+              <select id="srt_jenis" class="form-select" required>
+                <option value="Sertifikat Pendidik">Sertifikat Pendidik (Serdos)</option>
+                <option value="Diklat Teknis">Diklat Teknis</option>
+                <option value="Diklat Kepemimpinan">Diklat Kepemimpinan</option>
+                <option value="Workshop / Bimtek">Workshop / Bimtek</option>
+                <option value="Seminar / Konferensi">Seminar / Konferensi</option>
+                <option value="Sertifikasi Kompetensi">Sertifikasi Kompetensi</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-muted">Nomor Sertifikat <span class="text-danger">*</span></label>
+              <input type="text" id="srt_nomor" class="form-control" placeholder="Contoh: 1234/UN.07/KP.02/2026" required>
+            </div>
+
+            <div class="col-md-7">
+              <label class="form-label small fw-bold text-muted">Judul Sertifikasi / Diklat <span class="text-danger">*</span></label>
+              <input type="text" id="srt_judul" class="form-control" placeholder="Nama lengkap pelatihan / diklat / sertifikasi" required>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label small fw-bold text-muted">Instansi Penyelenggara <span class="text-danger">*</span></label>
+              <input type="text" id="srt_penyelenggara" class="form-control" placeholder="Contoh: Pusdiklat / BNSP / LKPP" required>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-bold text-muted">Tanggal SK / Terbit <span class="text-danger">*</span></label>
+              <input type="date" id="srt_tanggal" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold text-muted">Masa Berlaku (Tahun)</label>
+              <select id="srt_masa_tahun" class="form-select">
+                <option value="">Seumur Hidup</option>
+                <option value="1">1 Tahun</option>
+                <option value="2">2 Tahun</option>
+                <option value="3">3 Tahun</option>
+                <option value="4">4 Tahun</option>
+                <option value="5">5 Tahun</option>
+                <option value="custom">Pilih Tanggal Manual</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Berlaku Sampai <span class="fw-normal text-secondary">(Otomatis)</span></label>
+              <input type="date" id="srt_expired" class="form-control">
+              <div id="srt_expired_hint" class="form-text" style="font-size: 11px;">Otomatis dihitung dari Tanggal SK + Masa Berlaku.</div>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small fw-bold text-muted">Jumlah JP</label>
+              <input type="number" id="srt_jp" class="form-control" min="0" value="0">
+            </div>
+          </div>
+
+          <!-- Bagian 3: Arsip Berkas Digital -->
+          <div class="modal-section-label"><i class="fas fa-file-upload me-1"></i>3. Arsip Berkas Digital</div>
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label small fw-bold text-muted">Unggah Berkas Sertifikat (PDF / JPG / PNG, Maksimal 5MB)</label>
+              <input type="file" id="srt_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+              <div id="srt_existing_file_note" class="form-text text-muted small mt-1"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-light border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-emerald px-4"><i class="fas fa-save me-2"></i>Simpan Riwayat</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts: jQuery, Bootstrap 5, DataTables -->
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+const SCRIPT_URL_BOS = "https://script.google.com/macros/s/AKfycby23aF4UE_2GGFdgFISf78RkHfZBDhV8Abpvhj_XoSHjI4QorVxPPNl0VMXKw-1S_H-/exec";
+const PEGAWAI_CACHE_KEY = 'si_dakon_pegawai_cache_v1';
+const SERTIFIKASI_CACHE_KEY = 'si_dakon_sertifikasi_cache_v1';
+
+let daftarPegawai = [];
+let dataSertifikasi = [];
+let dtSertifikasi = null;
+let isOfflineOrSandbox = false;
+let parsedImportItems = [];
+
+/**
+ * Menghitung status masa berlaku sertifikat (ambang batas peringatan: 30 hari)
+ */
+function cekStatusMasaBerlaku(tanggalExpired) {
+  if (!tanggalExpired) {
+    return {
+      kode: 'seumur_hidup',
+      label: 'Seumur Hidup',
+      pillClass: 'status-pill-lifetime',
+      icon: 'fa-infinity',
+      sisaHari: null
+    };
+  }
+  const expDate = new Date(tanggalExpired + 'T23:59:59');
+  if (isNaN(expDate.getTime())) {
+    return {
+      kode: 'seumur_hidup',
+      label: 'Seumur Hidup',
+      pillClass: 'status-pill-lifetime',
+      icon: 'fa-infinity',
+      sisaHari: null
+    };
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffTime = expDate.getTime() - today.getTime();
+  const sisaHari = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (sisaHari < 0) {
+    return {
+      kode: 'expired',
+      label: `Kedaluwarsa (${Math.abs(sisaHari)} hr lalu)`,
+      pillClass: 'status-pill-expired',
+      icon: 'fa-times-circle',
+      sisaHari
+    };
+  } else if (sisaHari <= 30) {
+    return {
+      kode: 'segera_habis',
+      label: sisaHari === 0 ? 'Habis Hari Ini!' : `Segera Habis (${sisaHari} hr lagi)`,
+      pillClass: 'status-pill-warning',
+      icon: 'fa-exclamation-circle',
+      sisaHari
+    };
+  } else {
+    return {
+      kode: 'aktif',
+      label: `Berlaku (${sisaHari} hr lagi)`,
+      pillClass: 'status-pill-active',
+      icon: 'fa-check-circle',
+      sisaHari
+    };
+  }
+}
+
+/**
+ * Mengecek validitas sesi login Admin di localStorage
+ */
+function cekStatusAdmin() {
+  try {
+    const session = localStorage.getItem('si_ida_session') === 'true';
+    const timestamp = parseInt(localStorage.getItem('si_ida_timestamp') || '0', 10);
+    const satuJam = 60 * 60 * 1000;
+    if (!session) return false;
+    if (timestamp && (Date.now() - timestamp > satuJam)) {
+      localStorage.removeItem('si_ida_session');
+      localStorage.removeItem('si_ida_timestamp');
+      return false;
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+let isAdmin = cekStatusAdmin();
+
+function perbaruiTampilanAdmin() {
+  isAdmin = cekStatusAdmin();
+  if (isAdmin) {
+    $('#adminBadge, #btnInputSertifikasi, #btnTemplateSertifikasi, #btnImportSertifikasi, #btnTableTemplateExcel, #btnTableImportExcel').show();
+    $('#importAdminWarning').hide();
+    $('#btnToggleAdmin').html('<i class="fas fa-sign-out-alt me-1"></i>Logout').removeClass('btn-outline-warning').addClass('btn-warning text-dark');
+  } else {
+    $('#adminBadge, #btnInputSertifikasi, #btnTemplateSertifikasi, #btnImportSertifikasi, #btnTableTemplateExcel, #btnTableImportExcel').hide();
+    $('#importAdminWarning').show();
+    $('#btnToggleAdmin').html('<i class="fas fa-user-lock me-1"></i>Admin Mode').removeClass('btn-warning text-dark').addClass('btn-outline-warning');
+  }
+  if (dtSertifikasi) {
+    renderTabelSertifikasi();
+  }
+}
+
+function toggleAdminSession(onSuccessCallback = null) {
+  if (isAdmin && !onSuccessCallback) {
+    Swal.fire({
+      title: 'Logout?',
+      text: 'Anda akan keluar dari Mode Admin',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Ya, Logout',
+      cancelButtonText: 'Batal'
+    }).then(res => {
+      if (res.isConfirmed) {
+        localStorage.removeItem('si_ida_session');
+        localStorage.removeItem('si_ida_timestamp');
+        perbaruiTampilanAdmin();
+        Swal.fire({ icon: 'success', title: 'Logout Berhasil', timer: 1200, showConfirmButton: false });
+      }
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: 'Admin Login',
+    html: `
+      <input type="text" id="swal-username" class="swal2-input" placeholder="Username">
+      <input type="password" id="swal-password" class="swal2-input" placeholder="Password">
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'Sign In',
+    confirmButtonColor: '#004d40',
+    showLoaderOnConfirm: true,
+    preConfirm: () => {
+      const username = Swal.getPopup().querySelector('#swal-username').value;
+      const password = Swal.getPopup().querySelector('#swal-password').value;
+      if (!username || !password) {
+        Swal.showValidationMessage('Harap isi username dan password');
+        return false;
+      }
+      const finalUrl = `${SCRIPT_URL_BOS}?action=login&user=${encodeURIComponent(username)}&pass=${encodeURIComponent(password)}&t=${Date.now()}`;
+      return fetch(finalUrl, { method: 'GET', mode: 'cors', redirect: 'follow' })
+        .then(r => {
+          if (!r.ok) throw new Error('Network error');
+          return r.json();
+        })
+        .catch(() => {
+          Swal.showValidationMessage('Koneksi gagal ke server.');
+        });
+    },
+    allowOutsideClick: () => !Swal.isLoading()
+  }).then(result => {
+    if (result && result.isConfirmed && result.value) {
+      if (result.value.success) {
+        localStorage.setItem('si_ida_session', 'true');
+        localStorage.setItem('si_ida_timestamp', String(Date.now()));
+        perbaruiTampilanAdmin();
+        if (typeof onSuccessCallback === 'function') {
+          onSuccessCallback();
+        } else {
+          Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Admin Mode aktif', timer: 1300, showConfirmButton: false });
+        }
+      } else {
+        Swal.fire('Gagal', result.value.message || 'Username / Password salah', 'error');
+      }
+    }
+  });
+}
+
+function extractDriveFolderId(urlOrId) {
+  if (!urlOrId) return '';
+  const str = String(urlOrId).trim();
+  if (!str || str === '-' || str.toLowerCase() === 'null' || str.toLowerCase() === 'undefined') return '';
+
+  const folderPathMatch = str.match(/\/folders\/([a-zA-Z0-9_-]{10,})/);
+  if (folderPathMatch && folderPathMatch[1]) {
+    return folderPathMatch[1];
+  }
+
+  const queryIdMatch = str.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (queryIdMatch && queryIdMatch[1]) {
+    return queryIdMatch[1];
+  }
+
+  if (/^[a-zA-Z0-9_-]{15,60}$/.test(str) && !str.includes('http') && !str.includes(' ')) {
+    return str;
+  }
+
+  return '';
+}
+
+function normalizeNip(nip) {
+  return String(nip || '').replace(/^'/, '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+}
+
+function parseDataPegawaiSheet(resPegawai) {
+  if (!resPegawai || !Array.isArray(resPegawai.headers) || !Array.isArray(resPegawai.values)) {
+    return [];
+  }
+
+  const headers = resPegawai.headers.map(h => String(h || '').toUpperCase().trim());
+  const idxNip = headers.findIndex(h => h.includes('NIP'));
+  const idxNama = headers.findIndex(h => h.includes('NAMA'));
+  let idxDokumen = headers.findIndex(h => h === 'DOKUMEN');
+  if (idxDokumen === -1) {
+    idxDokumen = headers.findIndex(h => h.includes('DOKUMEN') || h.includes('FOLDER'));
+  }
+
+  return resPegawai.values.map(row => {
+    let rawDokumen = idxDokumen !== -1 ? String(row[idxDokumen] || '').trim() : '';
+    let extractedId = extractDriveFolderId(rawDokumen);
+
+    if (!extractedId) {
+      const driveCell = row.find(cell => {
+        const s = String(cell || '').trim();
+        return s.includes('drive.google.com') && (s.includes('/folders/') || s.includes('id='));
+      });
+      if (driveCell) {
+        rawDokumen = String(driveCell).trim();
+        extractedId = extractDriveFolderId(rawDokumen);
+      }
+    }
+
+    const normalizedUrl = rawDokumen.startsWith('http')
+      ? rawDokumen
+      : (extractedId ? `https://drive.google.com/drive/folders/${extractedId}` : '');
+
+    const hasSmartChipLabel = !extractedId && rawDokumen !== '' && rawDokumen !== '-' && !rawDokumen.startsWith('http');
+
+    return {
+      nip: String(row[idxNip !== -1 ? idxNip : 1] || '').replace(/^'/, '').trim(),
+      nama: String(row[idxNama !== -1 ? idxNama : 2] || '').trim(),
+      dokumenRaw: rawDokumen,
+      folderUrl: normalizedUrl,
+      folderId: extractedId,
+      hasSmartChipLabel: hasSmartChipLabel
+    };
+  }).filter(p => p.nama !== '');
+}
+
+function cariPegawaiDiMaster(nip, nama) {
+  const cleanNip = normalizeNip(nip);
+  const cleanNama = String(nama || '').trim().toLowerCase();
+
+  let found = null;
+  if (cleanNip) {
+    found = daftarPegawai.find(p => normalizeNip(p.nip) === cleanNip);
+  }
+  if (!found && cleanNama) {
+    found = daftarPegawai.find(p => p.nama.toLowerCase() === cleanNama);
+  }
+  return found || null;
+}
+
+function isiDropdownPegawai() {
+  const optionsHtml = daftarPegawai.map(p => {
+    const label = `${p.nama} (${p.nip || 'Tanpa NIP'})`;
+    const safeVal = label.replace(/"/g, '&quot;');
+    return `<option value="${safeVal}"></option>`;
+  }).join('');
+  $('#datalistPegawai').html(optionsHtml);
+}
+
+function perbaruiInfoFolderPegawai(folderUrl, customFolderId = '', dokumenRaw = '') {
+  const $info = $('#srt_folder_info');
+  if (!$info.length) return;
+
+  const namaVal = $('#srt_nama').val().trim();
+  if (!namaVal) {
+    $info.removeClass('folder-status-ok folder-status-smartchip folder-status-warn').html('').hide();
+    return;
+  }
+
+  const folderId = customFolderId || extractDriveFolderId(folderUrl);
+  const validUrl = folderUrl || (folderId ? `https://drive.google.com/drive/folders/${folderId}` : '');
+  const rawLabel = String(dokumenRaw || $('#srt_dokumen_raw').val() || '').trim();
+
+  if (folderId) {
+    $info
+      .removeClass('folder-status-smartchip folder-status-warn')
+      .addClass('folder-status-ok')
+      .html(
+        `<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">` +
+        `  <span><i class="fas fa-folder-open me-1"></i> <b>Direktori Arsip Pegawai Terdeteksi</b></span>` +
+        `  <a href="${validUrl}" target="_blank" class="fw-bold text-success text-decoration-underline"><i class="fas fa-external-link-alt me-1"></i>Buka Direktori</a>` +
+        `</div>`
+      )
+      .show();
+  } else if (rawLabel && rawLabel !== '-') {
+    $info
+      .removeClass('folder-status-ok folder-status-warn')
+      .addClass('folder-status-smartchip')
+      .html(
+        `<i class="fas fa-folder me-1"></i> <b>Direktori Arsip Terdeteksi:</b> <code>${rawLabel}</code>. Berkas yang diunggah akan otomatis diarahkan ke arsip pegawai ini.`
+      )
+      .show();
+  } else {
+    $info
+      .removeClass('folder-status-ok folder-status-smartchip')
+      .addClass('folder-status-warn')
+      .html(
+        `<i class="fas fa-info-circle me-1"></i> <b>Info Arsip:</b> Direktori arsip pegawai akan otomatis dicocokkan oleh sistem saat unggah berkas.`
+      )
+      .show();
+  }
+}
+
+function resetPilihanPegawai(clearInput = true) {
+  if (clearInput) $('#srt_pegawai_search').val('').focus();
+  $('#srt_nip').val('');
+  $('#srt_nama').val('');
+  $('#srt_folder_url').val('');
+  $('#srt_folder_id').val('');
+  $('#srt_dokumen_raw').val('');
+  perbaruiInfoFolderPegawai('', '', '');
+}
+
+/**
+ * Memparsing respons data sertifikasi dengan aman
+ */
+function parseDataSertifikasiResponse(resSertifikasi) {
+  let rawRows = [];
+  if (Array.isArray(resSertifikasi)) {
+    rawRows = resSertifikasi;
+  } else if (resSertifikasi && Array.isArray(resSertifikasi.values)) {
+    rawRows = resSertifikasi.values;
+  } else if (resSertifikasi && Array.isArray(resSertifikasi.data)) {
+    rawRows = resSertifikasi.data;
+  }
+
+  return rawRows.map((row, idx) => {
+    if (Array.isArray(row)) {
+      const rawExp = row.length > 10 ? row[10] : '';
+      const tglExp = formatTanggalInput(rawExp);
+      return {
+        rowIndex: idx + 2,
+        id: String(row[0] || `SRT-${idx + 1}`).trim(),
+        nip: String(row[1] || '').replace(/^'/, '').trim(),
+        nama: String(row[2] || '').trim(),
+        jenis: String(row[3] || '-').trim(),
+        nomor: String(row[4] || '-').trim(),
+        judul: String(row[5] || '-').trim(),
+        penyelenggara: String(row[6] || '-').trim(),
+        tanggal: formatTanggalInput(row[7]),
+        tanggalTampil: formatTanggalIndo(row[7]),
+        jp: parseFloat(row[8]) || 0,
+        link: String(row[9] || '').trim(),
+        tanggalExpired: tglExp,
+        tanggalExpiredTampil: tglExp ? formatTanggalIndo(tglExp) : ''
+      };
+    } else if (row && typeof row === 'object') {
+      const rawExp = row.tanggalExpired || row.TANGGAL_EXPIRED || row.masaBerlaku || '';
+      const tglExp = formatTanggalInput(rawExp);
+      return {
+        rowIndex: idx + 2,
+        id: String(row.id || row.ID || `SRT-${idx + 1}`).trim(),
+        nip: String(row.nip || row.NIP || '').replace(/^'/, '').trim(),
+        nama: String(row.nama || row.NAMA || '').trim(),
+        jenis: String(row.jenis || row.JENIS || '-').trim(),
+        nomor: String(row.nomor || row.NOMOR || '-').trim(),
+        judul: String(row.judul || row.JUDUL || '-').trim(),
+        penyelenggara: String(row.penyelenggara || row.PENYELENGGARA || '-').trim(),
+        tanggal: formatTanggalInput(row.tanggal || row.TANGGAL),
+        tanggalTampil: formatTanggalIndo(row.tanggal || row.TANGGAL),
+        jp: parseFloat(row.jp || row.JP) || 0,
+        link: String(row.link || row.LINK || '').trim(),
+        tanggalExpired: tglExp,
+        tanggalExpiredTampil: tglExp ? formatTanggalIndo(tglExp) : ''
+      };
+    }
+    return null;
+  }).filter(item => item && (item.nama || item.judul !== '-'));
+}
+
+async function muatSemuaData(forceRefresh = false) {
+  $('#loader-bar').css('width', '35%');
+
+  if (!forceRefresh) {
+    try {
+      const cachedPegawai = localStorage.getItem(PEGAWAI_CACHE_KEY);
+      if (cachedPegawai) {
+        const parsedPegawai = JSON.parse(cachedPegawai);
+        const cachedList = parseDataPegawaiSheet(parsedPegawai);
+        if (cachedList.length > 0) {
+          daftarPegawai = cachedList;
+          isiDropdownPegawai();
+        }
+      }
+      const cachedSertifikat = localStorage.getItem(SERTIFIKASI_CACHE_KEY);
+      if (cachedSertifikat) {
+        const parsedSertifikat = JSON.parse(cachedSertifikat);
+        if (Array.isArray(parsedSertifikat) && parsedSertifikat.length > 0) {
+          dataSertifikasi = parsedSertifikat;
+          isiFilterTahun();
+          perbaruiStatistik();
+          renderTabelSertifikasi();
+        }
+      }
+    } catch (e) {}
+  }
+
+  try {
+    const [resPegawai, resSertifikasi] = await Promise.all([
+      fetch(`${SCRIPT_URL_BOS}?t=${Date.now()}`).then(r => r.json()),
+      fetch(`${SCRIPT_URL_BOS}?action=getSertifikasi&t=${Date.now()}`).then(r => r.json())
+    ]);
+
+    $('#loader-bar').css('width', '80%');
+    isOfflineOrSandbox = false;
+    $('#sandboxNoticeBox').addClass('d-none');
+    $('#connectionStatusBadge').show();
+
+    if (resPegawai && Array.isArray(resPegawai.headers) && Array.isArray(resPegawai.values)) {
+      daftarPegawai = parseDataPegawaiSheet(resPegawai);
+      isiDropdownPegawai();
+      try {
+        localStorage.setItem(PEGAWAI_CACHE_KEY, JSON.stringify({
+          headers: resPegawai.headers,
+          values: resPegawai.values
+        }));
+      } catch (e) {}
+    }
+
+    dataSertifikasi = parseDataSertifikasiResponse(resSertifikasi);
+    try {
+      localStorage.setItem(SERTIFIKASI_CACHE_KEY, JSON.stringify(dataSertifikasi));
+    } catch (e) {}
+
+    isiFilterTahun();
+    perbaruiStatistik();
+    renderTabelSertifikasi();
+    cekPrefillUrlParams();
+
+    $('#loader-bar').css('width', '100%');
+    setTimeout(() => $('#loader-bar').css('width', '0%'), 400);
+  } catch (err) {
+    console.warn('Koneksi ke server GAS dibatasi atau terputus:', err);
+    isOfflineOrSandbox = true;
+    $('#loader-bar').css('width', '0%');
+    $('#connectionStatusBadge').hide();
+    $('#sandboxNoticeBox').removeClass('d-none');
+
+    if (dataSertifikasi.length === 0) {
+      $('#sandboxNoticeText').html(
+        'Belum ada data yang ditampilkan karena koneksi ke server dibatasi di preview browser ini. ' +
+        'Silakan buka halaman ini di alamat aplikasi resmi Anda agar data terhubung langsung.'
+      );
+    } else {
+      $('#sandboxNoticeText').html(
+        `Menampilkan <b>${dataSertifikasi.length} data</b> dari penyimpanan lokal terakhir karena sinkronisasi ke server sedang terputus.`
+      );
+    }
+
+    isiFilterTahun();
+    perbaruiStatistik();
+    renderTabelSertifikasi();
+  }
+}
+
+let prefillSudahDiproses = false;
+function cekPrefillUrlParams() {
+  if (prefillSudahDiproses) return;
+  const params = new URLSearchParams(window.location.search);
+  const nipParam = params.get('nip');
+  const namaParam = params.get('nama');
+  if (nipParam || namaParam) {
+    prefillSudahDiproses = true;
+    if (isAdmin) {
+      bukaModalTambah(nipParam || '', namaParam || '');
+    } else {
+      $('#filterSearch').val(namaParam || nipParam || '').trigger('input');
+    }
+  }
+}
+
+function formatTanggalIndo(val) {
+  if (!val) return '-';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return String(val);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+/**
+ * Mengonversi berbagai format tanggal (Date object, serial number Excel, YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY) ke YYYY-MM-DD
+ */
+function formatTanggalInput(val) {
+  if (val === null || val === undefined || val === '') return '';
+
+  // Tangani serial number tanggal dari Excel (misal: 46157)
+  if (typeof val === 'number' && val > 20000 && val < 90000) {
+    const utcDays = Math.floor(val - 25569);
+    const utcValue = utcDays * 86400;
+    const dateInfo = new Date(utcValue * 1000);
+    if (!isNaN(dateInfo.getTime())) {
+      const y = dateInfo.getUTCFullYear();
+      const m = String(dateInfo.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(dateInfo.getUTCDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+  }
+
+  const str = String(val).trim();
+  if (!str || str === '-') return '';
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.substring(0, 10);
+
+  // Format DD/MM/YYYY atau DD-MM-YYYY
+  const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmyMatch) {
+    const day = dmyMatch[1].padStart(2, '0');
+    const month = dmyMatch[2].padStart(2, '0');
+    const year = dmyMatch[3];
+    return `${year}-${month}-${day}`;
+  }
+
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function isiFilterTahun() {
+  const tahunSet = new Set();
+  dataSertifikasi.forEach(item => {
+    if (item.tanggal && item.tanggal.length >= 4) {
+      tahunSet.add(item.tanggal.substring(0, 4));
+    }
+  });
+  const sortedYears = Array.from(tahunSet).sort((a, b) => b.localeCompare(a));
+  const currentVal = $('#filterTahun').val();
+  let html = '<option value="">Semua</option>';
+  sortedYears.forEach(yr => {
+    html += `<option value="${yr}">${yr}</option>`;
+  });
+  $('#filterTahun').html(html);
+  if (currentVal) $('#filterTahun').val(currentVal);
+}
+
+function getFilteredSertifikasi() {
+  const q = ($('#filterSearch').val() || '').trim().toLowerCase();
+  const fJenis = ($('#filterJenis').val() || '').trim();
+  const fStatus = ($('#filterStatus').val() || '').trim();
+  const fTahun = ($('#filterTahun').val() || '').trim();
+
+  return dataSertifikasi.filter(item => {
+    if (fJenis && item.jenis !== fJenis) return false;
+    if (fTahun && (!item.tanggal || !item.tanggal.startsWith(fTahun))) return false;
+
+    if (fStatus) {
+      const st = cekStatusMasaBerlaku(item.tanggalExpired).kode;
+      if (fStatus === 'perlu_perhatian') {
+        if (st !== 'expired' && st !== 'segera_habis') return false;
+      } else if (st !== fStatus) {
+        return false;
+      }
+    }
+
+    if (q) {
+      const gabung = `${item.nama} ${item.nip} ${item.judul} ${item.nomor} ${item.penyelenggara} ${item.jenis}`.toLowerCase();
+      if (!gabung.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function perbaruiStatistik() {
+  const filtered = getFilteredSertifikasi();
+
+  const totalSertifikat = filtered.length;
+  const pegawaiUnik = new Set(filtered.map(i => normalizeNip(i.nip) || i.nama.toLowerCase()).filter(Boolean)).size;
+  const totalJP = filtered.reduce((acc, cur) => acc + (Number(cur.jp) || 0), 0);
+
+  const jmlExpired = dataSertifikasi.filter(i => cekStatusMasaBerlaku(i.tanggalExpired).kode === 'expired').length;
+  const jmlSegeraHabis = dataSertifikasi.filter(i => cekStatusMasaBerlaku(i.tanggalExpired).kode === 'segera_habis').length;
+  const totalPerluPerhatian = jmlExpired + jmlSegeraHabis;
+
+  $('#stat-total-sertifikat').text(totalSertifikat);
+  $('#stat-total-pegawai').text(pegawaiUnik);
+  $('#stat-total-jp').text(`${totalJP} JP`);
+  $('#stat-perlu-perhatian').text(totalPerluPerhatian);
+  $('#stat-perlu-perhatian-sub').text(`${jmlExpired} kedaluwarsa • ${jmlSegeraHabis} segera habis`);
+
+  if (totalPerluPerhatian > 0) {
+    $('#alert-expired-text').html(
+      `Terdapat <b>${jmlSegeraHabis} sertifikat akan habis (&le;30 hari)</b> dan <b>${jmlExpired} sertifikat sudah kedaluwarsa</b>.`
+    );
+    $('#alert-expired-banner').attr('style', 'display: flex !important;');
+  } else {
+    $('#alert-expired-banner').attr('style', 'display: none !important;');
+  }
+
+  renderPieChartJenisDiklat(filtered);
+}
+
+let pieChartJenisInstance = null;
+
+/**
+ * Merender Diagram Pie perbandingan berdasarkan jenis diklat & sertifikasi
+ */
+function renderPieChartJenisDiklat(items) {
+  const canvas = document.getElementById('pieChartJenisDiklat');
+  if (!canvas) return;
+
+  const total = items.length;
+  $('#badge-chart-jenis-total').text(`Total: ${total} Sertifikat`);
+
+  if (total === 0) {
+    if (pieChartJenisInstance) {
+      pieChartJenisInstance.destroy();
+      pieChartJenisInstance = null;
+    }
+    $('#legendJenisDiklatContainer').html(
+      '<div class="col-12 text-center text-muted py-4 small">Belum ada data sertifikasi pada filter ini.</div>'
+    );
+    return;
+  }
+
+  const jenisMap = {};
+  items.forEach(it => {
+    const j = it.jenis || 'Lainnya';
+    if (!jenisMap[j]) jenisMap[j] = { count: 0, jp: 0 };
+    jenisMap[j].count += 1;
+    jenisMap[j].jp += (Number(it.jp) || 0);
+  });
+
+  const sorted = Object.entries(jenisMap).sort((a, b) => b[1].count - a[1].count);
+  const labels = sorted.map(e => e[0]);
+  const counts = sorted.map(e => e[1].count);
+  const palette = ['#004d40', '#ffb74d', '#0288d1', '#10b981', '#8b5cf6', '#f43f5e', '#14b8a6', '#f97316'];
+  const colors = labels.map((_, idx) => palette[idx % palette.length]);
+
+  const legendHtml = sorted.map(([jenisLabel, info], idx) => {
+    const color = colors[idx];
+    const pct = ((info.count / total) * 100).toFixed(1);
+    const safeJenis = jenisLabel.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    return `
+      <div class="col-sm-6">
+        <div onclick="bukaDetailJenisDiklat('${safeJenis}')" class="px-3 py-2 rounded-3 border bg-white h-100 d-flex flex-column justify-content-center" style="cursor:pointer; transition:all 0.2s ease; border-color:#e2e8f0 !important;" onmouseover="this.style.borderColor='${color}'; this.style.backgroundColor='#f8fafc'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#ffffff'">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="d-flex align-items-center gap-2 text-truncate pe-2">
+              <span style="width:9px; height:9px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
+              <span class="fw-semibold text-dark text-truncate" style="font-size:0.78rem;" title="${safeJenis}">${jenisLabel}</span>
+            </div>
+            <div class="text-nowrap">
+              <span class="fw-bold" style="color:${color}; font-size:0.85rem;">${info.count}</span>
+              <span class="text-muted ms-1" style="font-size:0.7rem;">(${pct}%)</span>
+            </div>
+          </div>
+          <div class="progress" style="height:4px; border-radius:10px; background-color:#f1f5f9;">
+            <div class="progress-bar" style="width:${pct}%; background-color:${color}; border-radius:10px;"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  $('#legendJenisDiklatContainer').html(legendHtml);
+
+  const ctx = canvas.getContext('2d');
+  if (pieChartJenisInstance) pieChartJenisInstance.destroy();
+  pieChartJenisInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: counts,
+        backgroundColor: colors,
+        borderColor: '#ffffff',
+        borderWidth: 2,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      cutout: '68%',
+      onHover: (evt, elements) => {
+        evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+      },
+      onClick: (evt, elements) => {
+        if (elements.length > 0) {
+          const jenisDipilih = labels[elements[0].index];
+          bukaDetailJenisDiklat(jenisDipilih);
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const val = context.parsed || 0;
+              const pct = ((val / total) * 100).toFixed(1);
+              return ` ${context.label}: ${val} sertifikat (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Menampilkan modal daftar nama pegawai untuk kategori jenis diklat tertentu
+ */
+function bukaDetailJenisDiklat(jenisLabel) {
+  const filtered = getFilteredSertifikasi().filter(i => (i.jenis || 'Lainnya') === jenisLabel);
+  if (filtered.length === 0) return;
+
+  const rowsHtml = filtered.map((it, idx) => `
+    <tr>
+      <td class="text-center text-muted">${idx + 1}</td>
+      <td>
+        <div class="fw-bold text-dark">${it.nama || '-'}</div>
+        <div class="font-monospace text-muted" style="font-size:11px;">NIP. ${it.nip || '-'}</div>
+      </td>
+      <td>
+        <div class="fw-semibold">${it.judul}</div>
+        <div class="text-muted" style="font-size:11px;">${it.penyelenggara} &bull; ${it.tanggalTampil}</div>
+      </td>
+      <td class="text-center fw-bold text-success">${it.jp} JP</td>
+    </tr>
+  `).join('');
+
+  Swal.fire({
+    title: `<span style="color:#004d40; font-weight:800; font-size:17px;"><i class="fas fa-award me-2"></i>${jenisLabel} (${filtered.length})</span>`,
+    width: '780px',
+    html: `
+      <div class="table-responsive border rounded-3 text-start mt-2" style="max-height:380px;">
+        <table class="table table-sm table-hover align-middle m-0" style="font-size:12px;">
+          <thead class="table-light sticky-top">
+            <tr>
+              <th class="text-center" style="width:40px;">No</th>
+              <th>Nama &amp; NIP Pegawai</th>
+              <th>Judul Kegiatan &amp; Penyelenggara</th>
+              <th class="text-center" style="width:70px;">JP</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: '<i class="fas fa-filter me-1"></i> Saring di Tabel Utama',
+    cancelButtonText: 'Tutup',
+    confirmButtonColor: '#004d40'
+  }).then(res => {
+    if (res.isConfirmed) {
+      $('#filterJenis').val(jenisLabel).trigger('change');
+      document.getElementById('sertifikasiTable').scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+}
+
+/**
+ * Menampilkan pop-up daftar nama pegawai saat salah satu dari 4 kartu statistik diklik
+ */
+function bukaDetailStatistik(tipe) {
+  const filtered = getFilteredSertifikasi();
+
+  if (tipe === 'total_sertifikat') {
+    if (filtered.length === 0) {
+      Swal.fire('Data Kosong', 'Belum ada data sertifikat pada filter ini.', 'info');
+      return;
+    }
+    const rowsHtml = filtered.map((it, idx) => `
+      <tr>
+        <td class="text-center text-muted">${idx + 1}</td>
+        <td>
+          <div class="fw-bold text-dark">${it.nama || '-'}</div>
+          <div class="font-monospace text-muted" style="font-size:11px;">NIP. ${it.nip || '-'}</div>
+        </td>
+        <td><span class="badge-jenis">${it.jenis}</span></td>
+        <td>
+          <div class="fw-semibold">${it.judul}</div>
+          <div class="text-muted" style="font-size:11px;">No: ${it.nomor} &bull; ${it.tanggalTampil}</div>
+        </td>
+        <td class="text-center fw-bold text-success">${it.jp} JP</td>
+      </tr>
+    `).join('');
+
+    Swal.fire({
+      title: `<span style="color:#004d40; font-weight:800; font-size:17px;"><i class="fas fa-certificate me-2"></i>Daftar Semua Sertifikat (${filtered.length})</span>`,
+      width: '860px',
+      html: `
+        <div class="table-responsive border rounded-3 text-start mt-2" style="max-height:400px;">
+          <table class="table table-sm table-hover align-middle m-0" style="font-size:12px;">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th class="text-center" style="width:40px;">No</th>
+                <th>Nama &amp; NIP Pegawai</th>
+                <th>Jenis</th>
+                <th>Judul Sertifikat</th>
+                <th class="text-center">JP</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      `,
+      confirmButtonText: 'Tutup',
+      confirmButtonColor: '#004d40'
+    });
+    return;
+  }
+
+  if (tipe === 'pegawai_unik' || tipe === 'akumulasi_jp') {
+    if (filtered.length === 0) {
+      Swal.fire('Data Kosong', 'Belum ada data pegawai pada filter ini.', 'info');
+      return;
+    }
+    const mapPegawai = {};
+    filtered.forEach(it => {
+      const key = normalizeNip(it.nip) || it.nama.toLowerCase();
+      if (!key) return;
+      if (!mapPegawai[key]) {
+        mapPegawai[key] = { nama: it.nama, nip: it.nip, jumlah: 0, jp: 0, daftarJudul: [] };
+      }
+      mapPegawai[key].jumlah += 1;
+      mapPegawai[key].jp += (Number(it.jp) || 0);
+      mapPegawai[key].daftarJudul.push(it.judul);
+    });
+
+    const listPegawai = Object.values(mapPegawai).sort((a, b) =>
+      tipe === 'akumulasi_jp' ? (b.jp - a.jp || b.jumlah - a.jumlah) : (b.jumlah - a.jumlah || b.jp - a.jp)
+    );
+
+    const rowsHtml = listPegawai.map((p, idx) => `
+      <tr>
+        <td class="text-center text-muted">${idx + 1}</td>
+        <td>
+          <div class="fw-bold text-dark">${p.nama || '-'}</div>
+          <div class="font-monospace text-muted" style="font-size:11px;">NIP. ${p.nip || '-'}</div>
+        </td>
+        <td><div class="small text-muted">${p.daftarJudul.join(', ')}</div></td>
+        <td class="text-center fw-semibold">${p.jumlah} Sertifikat</td>
+        <td class="text-center fw-bold text-warning" style="color:#e65100 !important;">${p.jp} JP</td>
+      </tr>
+    `).join('');
+
+    const judulModal = tipe === 'pegawai_unik'
+      ? `Daftar Pegawai Tersertifikasi (${listPegawai.length} Orang)`
+      : `Rincian Akumulasi Jam Pelajaran (${listPegawai.reduce((a, b) => a + b.jp, 0)} JP)`;
+
+    Swal.fire({
+      title: `<span style="color:#004d40; font-weight:800; font-size:17px;"><i class="fas fa-users me-2"></i>${judulModal}</span>`,
+      width: '860px',
+      html: `
+        <div class="table-responsive border rounded-3 text-start mt-2" style="max-height:400px;">
+          <table class="table table-sm table-hover align-middle m-0" style="font-size:12px;">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th class="text-center" style="width:40px;">No</th>
+                <th>Nama &amp; NIP Pegawai</th>
+                <th>Riwayat Kegiatan</th>
+                <th class="text-center" style="width:105px;">Jumlah</th>
+                <th class="text-center" style="width:85px;">Total JP</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      `,
+      confirmButtonText: 'Tutup',
+      confirmButtonColor: '#004d40'
+    });
+    return;
+  }
+
+  if (tipe === 'perlu_perpanjang') {
+    const listPerhatian = dataSertifikasi.filter(i => {
+      const st = cekStatusMasaBerlaku(i.tanggalExpired).kode;
+      return st === 'expired' || st === 'segera_habis';
+    });
+
+    if (listPerhatian.length === 0) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Semua Sertifikat Aman',
+        text: 'Tidak ada sertifikat yang kedaluwarsa atau akan habis dalam 30 hari ke depan.',
+        confirmButtonColor: '#004d40'
+      });
+      return;
+    }
+
+    const rowsHtml = listPerhatian.map((it, idx) => {
+      const st = cekStatusMasaBerlaku(it.tanggalExpired);
+      return `
+        <tr>
+          <td class="text-center text-muted">${idx + 1}</td>
+          <td>
+            <div class="fw-bold text-dark">${it.nama || '-'}</div>
+            <div class="font-monospace text-muted" style="font-size:11px;">NIP. ${it.nip || '-'}</div>
+          </td>
+          <td>
+            <div class="fw-semibold">${it.judul}</div>
+            <div class="text-muted" style="font-size:11px;">${it.jenis}</div>
+          </td>
+          <td class="text-nowrap">${it.tanggalExpiredTampil || '-'}</td>
+          <td><span class="status-pill ${st.pillClass}"><i class="fas ${st.icon}"></i>${st.label}</span></td>
+        </tr>
+      `;
+    }).join('');
+
+    Swal.fire({
+      title: `<span style="color:#dc2626; font-weight:800; font-size:17px;"><i class="fas fa-exclamation-triangle me-2"></i>Daftar Sertifikat Perlu Perpanjangan (${listPerhatian.length})</span>`,
+      width: '860px',
+      html: `
+        <div class="table-responsive border rounded-3 text-start mt-2" style="max-height:400px;">
+          <table class="table table-sm table-hover align-middle m-0" style="font-size:12px;">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th class="text-center" style="width:40px;">No</th>
+                <th>Nama &amp; NIP Pegawai</th>
+                <th>Sertifikat</th>
+                <th>Berlaku Sampai</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: '<i class="fas fa-filter me-1"></i> Tampilkan di Tabel Utama',
+      cancelButtonText: 'Tutup',
+      confirmButtonColor: '#dc2626'
+    }).then(res => {
+      if (res.isConfirmed) {
+        $('#filterStatus').val('perlu_perhatian').trigger('change');
+        document.getElementById('sertifikasiTable').scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  }
+}
+
+function getDirectDownloadUrl(url) {
+  if (!url) return '';
+  const fileMatch = url.match(/\/file\/d\/([-\w]{20,})/) || url.match(/[?&]id=([-\w]{20,})/);
+  if (fileMatch && fileMatch[1] && !url.includes('/folders/')) {
+    return `https://drive.google.com/uc?export=download&id=${fileMatch[1]}`;
+  }
+  return url;
+}
+
+function getDrivePreviewUrl(url) {
+  if (!url) return '';
+  const fileMatch = url.match(/\/file\/d\/([-\w]{20,})/) || url.match(/[?&]id=([-\w]{20,})/);
+  if (fileMatch && fileMatch[1] && !url.includes('/folders/')) {
+    return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
+  }
+  return url;
+}
+
+function previewBerkasSertifikat(link, judul) {
+  const previewUrl = getDrivePreviewUrl(link);
+  const dlUrl = getDirectDownloadUrl(link);
+  Swal.fire({
+    title: `<span style="color:#004d40; font-weight:800; font-size:16px;"><i class="fas fa-file-alt me-2"></i>Preview: ${judul || 'Sertifikat'}</span>`,
+    width: '860px',
+    html: `
+      <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; height:490px; background:#f8fafc;">
+        <iframe src="${previewUrl}" width="100%" height="100%" style="border:none;" allow="autoplay"></iframe>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: '<i class="fas fa-download me-1"></i> Unduh Berkas',
+    cancelButtonText: 'Tutup',
+    confirmButtonColor: '#059669'
+  }).then(res => {
+    if (res.isConfirmed) {
+      window.open(dlUrl, '_blank');
+    }
+  });
+}
+
+function renderTabelSertifikasi() {
+  const filtered = getFilteredSertifikasi();
+
+  if (dtSertifikasi) {
+    dtSertifikasi.destroy();
+    dtSertifikasi = null;
+  }
+
+  const tbodyHtml = filtered.map((item, idx) => {
+    const pegawaiInfo = cariPegawaiDiMaster(item.nip, item.nama);
+    const hasFolder = pegawaiInfo && pegawaiInfo.folderId;
+    const folderBadge = hasFolder
+      ? `<a href="${pegawaiInfo.folderUrl}" target="_blank" class="badge bg-success bg-opacity-10 text-success text-decoration-none mt-1" title="Direktori Arsip Pegawai"><i class="fas fa-folder-open me-1"></i>Arsip Pegawai</a>`
+      : '';
+
+    const statusExp = cekStatusMasaBerlaku(item.tanggalExpired);
+    const rowClass = statusExp.kode === 'expired'
+      ? 'row-expired'
+      : (statusExp.kode === 'segera_habis' ? 'row-warning' : '');
+
+    const expDateLine = item.tanggalExpired
+      ? `<div class="small text-muted">Exp: <span class="fw-semibold text-dark">${item.tanggalExpiredTampil}</span></div>`
+      : '';
+
+    const tanggalMasaBerlakuHtml = `
+      <div class="small text-muted">Terbit: <span class="text-dark">${item.tanggalTampil}</span></div>
+      ${expDateLine}
+      <div class="mt-1">
+        <span class="status-pill ${statusExp.pillClass}">
+          <i class="fas ${statusExp.icon}"></i>${statusExp.label}
+        </span>
+      </div>
+    `;
+
+    const link = item.link;
+    const judulEsc = item.judul.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const dlUrl = getDirectDownloadUrl(link);
+
+    const berkasHtml = link && link.startsWith('http')
+      ? `<div class="cert-action-group">
+           <button type="button" onclick="previewBerkasSertifikat('${link}', '${judulEsc}')" class="btn-cert-view border-0"><i class="fas fa-eye"></i>Preview</button>
+           <a href="${dlUrl}" target="_blank" download class="btn-cert-dl"><i class="fas fa-arrow-down"></i>Unduh</a>
+         </div>`
+      : '<span class="badge bg-light text-muted border">Belum ada file</span>';
+
+    const aksiHtml = isAdmin
+      ? `<div class="text-nowrap">
+           <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 me-1" onclick="bukaModalEdit('${item.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+           <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2" onclick="hapusSertifikasi('${item.id}')" title="Hapus"><i class="fas fa-trash"></i></button>
+         </div>`
+      : '<span class="text-muted small">-</span>';
+
+    return `
+      <tr class="${rowClass}">
+        <td class="text-center fw-bold text-muted">${idx + 1}</td>
+        <td>
+          <div class="fw-bold text-dark">${item.nama || '-'}</div>
+          <div class="small text-muted font-monospace">NIP. ${item.nip || '-'}</div>
+          ${folderBadge}
+        </td>
+        <td><span class="badge-jenis">${item.jenis}</span></td>
+        <td>
+          <div class="fw-semibold text-dark">${item.judul}</div>
+          <div class="small text-muted">No: ${item.nomor}</div>
+        </td>
+        <td>${item.penyelenggara}</td>
+        <td class="text-nowrap">${tanggalMasaBerlakuHtml}</td>
+        <td class="text-center fw-bold text-success">${item.jp} JP</td>
+        <td class="text-center">${berkasHtml}</td>
+        <td class="text-center">${aksiHtml}</td>
+      </tr>
+    `;
+  }).join('');
+
+  $('#sertifikasiTable tbody').html(tbodyHtml);
+
+  dtSertifikasi = $('#sertifikasiTable').DataTable({
+    pageLength: 10,
+    language: {
+      search: "Filter Tabel:",
+      zeroRecords: "Belum ada data sertifikasi / diklat ditemukan",
+      info: "Menampilkan _START_ - _END_ dari _TOTAL_ sertifikat",
+      infoEmpty: "Tidak ada data",
+      paginate: { previous: "Sebelumnya", next: "Berikutnya" }
+    }
+  });
+}
+
+function resetFilter() {
+  $('#filterSearch').val('');
+  $('#filterJenis').val('');
+  $('#filterStatus').val('');
+  $('#filterTahun').val('');
+  perbaruiStatistik();
+  renderTabelSertifikasi();
+}
+
+function bukaModalTambah(prefillNip = '', prefillNama = '') {
+  if (!isAdmin) {
+    Swal.fire('Akses Terbatas', 'Silakan login sebagai Admin terlebih dahulu.', 'warning');
+    return;
+  }
+
+  $('#formSertifikat')[0].reset();
+  $('#srt_id').val('');
+  $('#srt_existing_link').val('');
+  $('#srt_folder_url').val('');
+  $('#srt_folder_id').val('');
+  $('#srt_dokumen_raw').val('');
+  $('#srt_masa_tahun').val('');
+  $('#srt_expired').val('');
+  $('#srt_expired_hint').text('Otomatis dihitung dari Tanggal SK + Masa Berlaku.');
+  $('#srt_existing_file_note').text('');
+  $('#srt_folder_info').removeClass('folder-status-ok folder-status-smartchip folder-status-warn').html('').hide();
+  $('#modalSertifikatTitle').html('<i class="fas fa-award me-2"></i>Input Riwayat Sertifikasi / Diklat');
+
+  if (prefillNip || prefillNama) {
+    const found = cariPegawaiDiMaster(prefillNip, prefillNama);
+    if (found) {
+      $('#srt_pegawai_search').val(`${found.nama} (${found.nip || 'Tanpa NIP'})`).trigger('change');
+    } else {
+      $('#srt_pegawai_search').val(prefillNama || prefillNip || '');
+      $('#srt_nip').val(prefillNip || '');
+      $('#srt_nama').val(prefillNama || '');
+      perbaruiInfoFolderPegawai('', '', '');
+    }
+  }
+
+  $('#modalSertifikat').modal('show');
+}
+
+function bukaModalEdit(id) {
+  if (!isAdmin) return;
+  const item = dataSertifikasi.find(s => s.id === id);
+  if (!item) return;
+
+  $('#formSertifikat')[0].reset();
+  $('#srt_id').val(item.id);
+  $('#srt_existing_link').val(item.link || '');
+  $('#modalSertifikatTitle').html('<i class="fas fa-edit me-2"></i>Edit Riwayat Sertifikasi / Diklat');
+
+  const found = cariPegawaiDiMaster(item.nip, item.nama);
+  if (found) {
+    $('#srt_pegawai_search').val(`${found.nama} (${found.nip || 'Tanpa NIP'})`).trigger('change');
+  } else {
+    $('#srt_pegawai_search').val(item.nama || item.nip || '');
+    $('#srt_nip').val(item.nip);
+    $('#srt_nama').val(item.nama);
+    $('#srt_folder_url').val('');
+    $('#srt_folder_id').val('');
+    $('#srt_dokumen_raw').val('');
+    perbaruiInfoFolderPegawai('', '', '');
+  }
+
+  $('#srt_jenis').val(item.jenis);
+  $('#srt_nomor').val(item.nomor);
+  $('#srt_judul').val(item.judul);
+  $('#srt_penyelenggara').val(item.penyelenggara);
+  $('#srt_tanggal').val(item.tanggal);
+  $('#srt_expired').val(item.tanggalExpired || '');
+  sinkronDropdownMasaBerlakuDariTanggal();
+  $('#srt_jp').val(item.jp);
+
+  if (item.link) {
+    $('#srt_existing_file_note').html(`<i class="fas fa-paperclip text-success me-1"></i>Berkas saat ini sudah tersimpan. Biarkan kosong jika tidak ingin mengganti file.`);
+  } else {
+    $('#srt_existing_file_note').text('');
+  }
+
+  $('#modalSertifikat').modal('show');
+}
+
+/**
+ * Menghitung otomatis tanggal kedaluwarsa (Berlaku Sampai) berdasarkan Tanggal SK + Durasi Tahun
+ */
+function hitungTanggalExpiredDariTahun() {
+  const tglSk = $('#srt_tanggal').val().trim();
+  const durasi = $('#srt_masa_tahun').val();
+
+  if (durasi === 'custom') {
+    $('#srt_expired_hint').text('Silakan pilih tanggal kedaluwarsa secara manual.');
+    return;
+  }
+
+  if (!durasi) {
+    $('#srt_expired').val('');
+    $('#srt_expired_hint').text('Sertifikat berlaku seumur hidup (tanpa batas waktu).');
+    return;
+  }
+
+  const tahunTambah = parseInt(durasi, 10);
+  if (!tglSk || isNaN(tahunTambah)) {
+    $('#srt_expired_hint').text('Pilih Tanggal SK terlebih dahulu untuk menghitung otomatis.');
+    return;
+  }
+
+  const parts = tglSk.split('-').map(Number);
+  if (parts.length !== 3) return;
+
+  const dExp = new Date(parts[0] + tahunTambah, parts[1] - 1, parts[2]);
+  if (dExp.getMonth() !== parts[1] - 1) {
+    dExp.setDate(0);
+  }
+
+  const expIso = `${dExp.getFullYear()}-${String(dExp.getMonth() + 1).padStart(2, '0')}-${String(dExp.getDate()).padStart(2, '0')}`;
+  $('#srt_expired').val(expIso);
+  $('#srt_expired_hint').html(`<span class="text-success fw-semibold">Otomatis terhitung ${tahunTambah} tahun sejak Tanggal SK (${formatTanggalIndo(expIso)}).</span>`);
+}
+
+/**
+ * Menyelaraskan pilihan dropdown Masa Berlaku (Tahun) saat mode edit atau saat tanggal diubah manual
+ */
+function sinkronDropdownMasaBerlakuDariTanggal() {
+  const tglSk = $('#srt_tanggal').val().trim();
+  const tglExp = $('#srt_expired').val().trim();
+
+  if (!tglExp) {
+    $('#srt_masa_tahun').val('');
+    $('#srt_expired_hint').text('Sertifikat berlaku seumur hidup (tanpa batas waktu).');
+    return;
+  }
+
+  if (!tglSk) {
+    $('#srt_masa_tahun').val('custom');
+    $('#srt_expired_hint').text('Tanggal kedaluwarsa diatur manual.');
+    return;
+  }
+
+  const pSk = tglSk.split('-').map(Number);
+  let matchedTahun = '';
+  for (let yr = 1; yr <= 5; yr++) {
+    const dTest = new Date(pSk[0] + yr, pSk[1] - 1, pSk[2]);
+    if (dTest.getMonth() !== pSk[1] - 1) dTest.setDate(0);
+    const isoTest = `${dTest.getFullYear()}-${String(dTest.getMonth() + 1).padStart(2, '0')}-${String(dTest.getDate()).padStart(2, '0')}`;
+    if (isoTest === tglExp) {
+      matchedTahun = String(yr);
+      break;
+    }
+  }
+
+  if (matchedTahun) {
+    $('#srt_masa_tahun').val(matchedTahun);
+    $('#srt_expired_hint').html(`<span class="text-success fw-semibold">Masa berlaku ${matchedTahun} tahun sejak Tanggal SK.</span>`);
+  } else {
+    $('#srt_masa_tahun').val('custom');
+    $('#srt_expired_hint').text('Tanggal kedaluwarsa diatur manual.');
+  }
+}
+
+function fileToBase64Clean(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      const base64Only = result.includes(',') ? result.split(',')[1] : result;
+      resolve(base64Only);
+    };
+    reader.onerror = err => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
+function safeJenisName(jenis) {
+  return String(jenis || 'Diklat').replace(/[^a-zA-Z0-9]+/g, '_');
+}
+
+$('#formSertifikat').on('submit', async function(e) {
+  e.preventDefault();
+  if (!isAdmin) return;
+
+  const id = $('#srt_id').val().trim();
+  const nip = $('#srt_nip').val().trim();
+  const nama = $('#srt_nama').val().trim();
+  const jenis = $('#srt_jenis').val().trim();
+  const nomor = $('#srt_nomor').val().trim();
+  const judul = $('#srt_judul').val().trim();
+  const penyelenggara = $('#srt_penyelenggara').val().trim();
+  const tanggal = $('#srt_tanggal').val().trim();
+  const tanggalExpired = $('#srt_expired').val().trim();
+  const jp = parseFloat($('#srt_jp').val()) || 0;
+  const existingLink = $('#srt_existing_link').val().trim();
+
+  if (!nama) {
+    Swal.fire('Pegawai Belum Dipilih', 'Silakan ketik dan pilih nama pegawai dari daftar yang tersedia.', 'warning');
+    return;
+  }
+
+  let folderUrl = $('#srt_folder_url').val().trim();
+  let folderId = $('#srt_folder_id').val().trim() || extractDriveFolderId(folderUrl);
+
+  if (!folderId) {
+    const matchedPegawai = cariPegawaiDiMaster(nip, nama);
+    if (matchedPegawai && matchedPegawai.folderId) {
+      folderUrl = matchedPegawai.folderUrl;
+      folderId = matchedPegawai.folderId;
+    }
+  }
+
+  const fileInput = document.getElementById('srt_file');
+  const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+  if (file) {
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      Swal.fire('Ukuran File Terlalu Besar', 'Maksimal ukuran file sertifikat adalah 5 MB.', 'warning');
+      return;
+    }
+  }
+
+  Swal.fire({
+    title: 'Menyimpan Riwayat...',
+    html: file
+      ? `Mengunggah berkas dan menyimpannya ke direktori arsip pegawai (<code>${nama}</code>)...`
+      : 'Menyimpan data sertifikasi ke sistem...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  try {
+    let base64Data = '';
+    let fileName = '';
+    let mimeType = '';
+
+    if (file) {
+      base64Data = await fileToBase64Clean(file);
+      const ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : '';
+      const safeJudul = judul.replace(/[^a-zA-Z0-9_-]+/g, '_').substring(0, 40);
+      const safeNama = nama.replace(/[^a-zA-Z0-9_-]+/g, '_').substring(0, 30);
+      fileName = `Sertifikat_${safeJenisName(jenis)}_${safeNama}_${safeJudul}${ext}`;
+      mimeType = file.type || 'application/pdf';
+    }
+
+    const payload = {
+      action: 'saveSertifikasi',
+      id: id,
+      nip: nip,
+      nama: nama,
+      jenis: jenis,
+      nomor: nomor,
+      judul: judul,
+      penyelenggara: penyelenggara,
+      tanggal: tanggal,
+      tanggalExpired: tanggalExpired,
+      jp: jp,
+      existingLink: existingLink,
+      folderUrl: folderUrl,
+      folderId: folderId,
+      targetFolderId: folderId,
+      parentFolderId: folderId,
+      dokumenFolderUrl: folderUrl,
+      base64Data: base64Data,
+      fileName: fileName,
+      mimeType: mimeType
+    };
+
+    const response = await fetch(SCRIPT_URL_BOS, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+
+    let resJson = null;
+    try {
+      resJson = await response.json();
+    } catch (parseErr) {}
+
+    if (resJson && (resJson.success === false || resJson.status === 'error')) {
+      throw new Error(resJson.message || 'Gagal menyimpan data di server GAS.');
+    }
+
+    $('#modalSertifikat').modal('hide');
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil Disimpan!',
+      text: file
+        ? 'Sertifikat berhasil diunggah ke arsip digital pegawai.'
+        : 'Data riwayat sertifikasi berhasil diperbarui.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    setTimeout(() => muatSemuaData(true), 900);
+  } catch (err) {
+    console.error('Error submit sertifikat:', err);
+    const errMsg = String(err.message || '');
+    if (errMsg.includes('handleSertifikasiPost is not defined')) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Fungsi Backend GAS Belum Ditambahkan',
+        width: '650px',
+        html: `
+          <div class="text-start small">
+            <p>Server Google Apps Script Anda memanggil fungsi <code>handleSertifikasiPost(data)</code> yang belum ada di file <b>Code.gs</b>.</p>
+            <p class="mb-1 fw-bold">Silakan tambahkan fungsi berikut di Google Apps Script Anda, lalu klik <i>Deploy &gt; Manage deployments &gt; Edit &gt; New version</i>:</p>
+            <textarea id="gas-snippet-box" class="form-control font-monospace" rows="9" readonly style="font-size:11px; background:#f8fafc;">function handleSertifikasiPost(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Sertifikasi');
+  if (!sheet) {
+    sheet = ss.insertSheet('Sertifikasi');
+    sheet.appendRow(['ID', 'NIP', 'NAMA', 'JENIS', 'NOMOR', 'JUDUL', 'PENYELENGGARA', 'TANGGAL', 'JP', 'LINK', 'TANGGAL_EXPIRED']);
+  }
+  var fileUrl = data.existingLink || '';
+  if (data.base64Data && data.fileName) {
+    var blob = Utilities.newBlob(Utilities.base64Decode(data.base64Data), data.mimeType || 'application/pdf', data.fileName);
+    var folder = (data.folderId) ? DriveApp.getFolderById(data.folderId) : DriveApp.getRootFolder();
+    var file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    fileUrl = file.getUrl();
+  }
+  var id = data.id || ('SRT-' + new Date().getTime());
+  var rowValues = [id, "'" + (data.nip || ''), data.nama, data.jenis, data.nomor, data.judul, data.penyelenggara, data.tanggal, Number(data.jp) || 0, fileUrl, data.tanggalExpired || ''];
+  var rows = sheet.getDataRange().getValues();
+  var updated = false;
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(id)) {
+      sheet.getRange(i + 1, 1, 1, rowValues.length).setValues([rowValues]);
+      updated = true;
+      break;
+    }
+  }
+  if (!updated) sheet.appendRow(rowValues);
+  return ContentService.createTextOutput(JSON.stringify({ success: true, id: id, link: fileUrl })).setMimeType(ContentService.MimeType.JSON);
+}</textarea>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-copy me-1"></i> Salin Kode GAS',
+        cancelButtonText: 'Tutup',
+        confirmButtonColor: '#004d40'
+      }).then(r => {
+        if (r.isConfirmed) {
+          const el = document.getElementById('gas-snippet-box');
+          if (el) {
+            el.select();
+            document.execCommand('copy');
+            Swal.fire({ icon: 'success', title: 'Kode Disalin!', text: 'Tempelkan di editor Google Apps Script (Code.gs) lalu Deploy ulang.', timer: 2000, showConfirmButton: false });
+          }
+        }
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal Menyimpan',
+        text: errMsg || 'Terjadi kesalahan saat mengirim data ke server.',
+        confirmButtonColor: '#d33'
+      });
+    }
+  }
+});
+
+function hapusSertifikasi(id) {
+  if (!isAdmin) return;
+  const item = dataSertifikasi.find(s => s.id === id);
+  if (!item) return;
+
+  Swal.fire({
+    title: 'Hapus Riwayat Sertifikasi?',
+    text: `Sertifikat "${item.judul}" milik ${item.nama} akan dihapus dari daftar.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    confirmButtonText: 'Ya, Hapus',
+    cancelButtonText: 'Batal'
+  }).then(async res => {
+    if (res.isConfirmed) {
+      Swal.fire({ title: 'Menghapus...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      try {
+        await fetch(SCRIPT_URL_BOS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'deleteSertifikat',
+            id: item.id,
+            rowIndex: item.rowIndex
+          })
+        });
+        Swal.fire({ icon: 'success', title: 'Terhapus!', timer: 1400, showConfirmButton: false });
+        setTimeout(() => muatSemuaData(true), 700);
+      } catch (e) {
+        Swal.fire('Gagal', 'Tidak dapat menghapus data sertifikasi.', 'error');
+      }
+    }
+  });
+}
+
+function downloadTemplateSertifikasiExcel() {
+  if (!cekStatusAdmin()) {
+    Swal.fire('Akses Terbatas', 'Fitur ekspor Template Excel hanya dapat digunakan oleh Admin.', 'warning');
+    return;
+  }
+
+  if (typeof XLSX === 'undefined') {
+    Swal.fire('Error', 'Library Excel belum dimuat.', 'error');
+    return;
+  }
+
+  const p1 = daftarPegawai[0] || { nip: "198501012010011001", nama: "Contoh Nama Pegawai Pertama" };
+  const p2 = daftarPegawai[1] || { nip: "199002022015032002", nama: "Contoh Nama Pegawai Kedua" };
+
+  const sampleData = [
+    {
+      NIP: p1.nip,
+      NAMA: p1.nama,
+      JENIS: "Diklat Teknis",
+      NOMOR: "001/DIKLAT/2026",
+      JUDUL: "Pelatihan Kepemimpinan Administrator",
+      PENYELENGGARA: "Pusdiklat Kemenag RI",
+      TANGGAL: "2026-05-15",
+      MASA_BERLAKU_TAHUN: 3,
+      TANGGAL_EXPIRED: "",
+      JP: 40,
+      LINK_SERTIFIKAT: ""
+    },
+    {
+      NIP: p2.nip,
+      NAMA: p2.nama,
+      JENIS: "Sertifikat Pendidik",
+      NOMOR: "202500192837",
+      JUDUL: "Sertifikat Pendidik Dosen Profesional",
+      PENYELENGGARA: "Kemendikbudristek",
+      TANGGAL: "2025-11-20",
+      MASA_BERLAKU_TAHUN: "",
+      TANGGAL_EXPIRED: "",
+      JP: 0,
+      LINK_SERTIFIKAT: ""
+    }
+  ];
+
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: InputDataSertifikasi
+  const wsInput = XLSX.utils.json_to_sheet(sampleData);
+  wsInput['!cols'] = [
+    { wch: 22 }, { wch: 30 }, { wch: 22 }, { wch: 22 },
+    { wch: 36 }, { wch: 26 }, { wch: 15 }, { wch: 20 },
+    { wch: 18 }, { wch: 8 }, { wch: 32 }
+  ];
+  XLSX.utils.book_append_sheet(wb, wsInput, "InputDataSertifikasi");
+
+  // Sheet 2: PanduanPengisian
+  const panduanRows = [
+    { KOLOM: "NIP", WAJIB: "Disarankan", KETERANGAN: "NIP Pegawai (lihat sheet ReferensiPegawai agar otomatis tertaut ke arsip pegawai)." },
+    { KOLOM: "NAMA", WAJIB: "Wajib", KETERANGAN: "Nama lengkap pegawai sesuai data kepegawaian." },
+    { KOLOM: "JENIS", WAJIB: "Wajib", KETERANGAN: "Pilihan: Sertifikat Pendidik, Diklat Teknis, Diklat Kepemimpinan, Workshop / Bimtek, Seminar / Konferensi, Sertifikasi Kompetensi." },
+    { KOLOM: "NOMOR", WAJIB: "Disarankan", KETERANGAN: "Nomor seri / nomor registrasi sertifikat." },
+    { KOLOM: "JUDUL", WAJIB: "Wajib", KETERANGAN: "Nama lengkap kegiatan diklat / pelatihan / sertifikasi." },
+    { KOLOM: "PENYELENGGARA", WAJIB: "Disarankan", KETERANGAN: "Instansi / lembaga penerbit sertifikat." },
+    { KOLOM: "TANGGAL", WAJIB: "Disarankan", KETERANGAN: "Tanggal SK / terbit sertifikat dengan format YYYY-MM-DD (contoh: 2026-05-15)." },
+    { KOLOM: "MASA_BERLAKU_TAHUN", WAJIB: "Opsional", KETERANGAN: "Isi angka tahun (contoh: 3) untuk menghitung otomatis tanggal kedaluwarsa sejak TANGGAL. Kosongkan jika seumur hidup." },
+    { KOLOM: "TANGGAL_EXPIRED", WAJIB: "Opsional", KETERANGAN: "Tanggal kedaluwarsa manual (YYYY-MM-DD). Jika MASA_BERLAKU_TAHUN diisi, kolom ini boleh dikosongkan." },
+    { KOLOM: "JP", WAJIB: "Opsional", KETERANGAN: "Angka jumlah Jam Pelajaran (contoh: 40)." },
+    { KOLOM: "LINK_SERTIFIKAT", WAJIB: "Opsional", KETERANGAN: "Tautan berkas digital sertifikat jika sudah tersedia." }
+  ];
+  const wsPanduan = XLSX.utils.json_to_sheet(panduanRows);
+  wsPanduan['!cols'] = [{ wch: 24 }, { wch: 15 }, { wch: 80 }];
+  XLSX.utils.book_append_sheet(wb, wsPanduan, "PanduanPengisian");
+
+  // Sheet 3: ReferensiPegawai (dari DataPegawai)
+  const refPegawaiRows = daftarPegawai.length > 0
+    ? daftarPegawai.map((p, idx) => ({ NO: idx + 1, NIP: p.nip || "-", NAMA_PEGAWAI: p.nama }))
+    : [{ NO: 1, NIP: "198501012010011001", NAMA_PEGAWAI: "Data pegawai belum termuat, pastikan terhubung ke server" }];
+  const wsRef = XLSX.utils.json_to_sheet(refPegawaiRows);
+  wsRef['!cols'] = [{ wch: 6 }, { wch: 24 }, { wch: 38 }];
+  XLSX.utils.book_append_sheet(wb, wsRef, "ReferensiPegawai");
+
+  XLSX.writeFile(wb, "Template_Import_Sertifikasi_SI_DAKON.xlsx");
+}
+
+function bukaModalImportExcel() {
+  if (!cekStatusAdmin()) {
+    Swal.fire('Akses Terbatas', 'Fitur Import Massal hanya dapat digunakan oleh Admin.', 'warning');
+    return;
+  }
+
+  resetPreviewImportExcel();
+  perbaruiTampilanAdmin();
+  $('#modalImportExcel').modal('show');
+}
+
+function resetPreviewImportExcel() {
+  parsedImportItems = [];
+  $('#importSertifikasiFile').val('');
+  $('#importPreviewSection').hide();
+  $('#importPreviewTbody').html('');
+  $('#btnEksekusiImport').prop('disabled', true);
+  $('#btnImportCount').text('0');
+}
+
+function prosesBacaFileExcelImport(inputOrFile) {
+  const file = inputOrFile && inputOrFile.files ? inputOrFile.files[0] : inputOrFile;
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array' });
+      const sheetName = wb.SheetNames.includes('InputDataSertifikasi') ? 'InputDataSertifikasi' : wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+      if (!rows || rows.length === 0) {
+        Swal.fire('File Kosong', 'Tidak ditemukan baris data pada sheet Excel yang dipilih.', 'warning');
+        return;
+      }
+
+      const validList = [];
+      let skippedCount = 0;
+
+      rows.forEach(r => {
+        const getCol = (...keys) => {
+          for (const k of keys) {
+            const foundKey = Object.keys(r).find(rk => rk.trim().toUpperCase() === k.toUpperCase());
+            if (foundKey !== undefined && String(r[foundKey]).trim() !== '') {
+              return String(r[foundKey]).trim();
+            }
+          }
+          return '';
+        };
+
+        const rawNip = getCol('NIP', 'NIP PEGAWAI').replace(/^'/, '');
+        const rawNama = getCol('NAMA', 'NAMA PEGAWAI', 'PEGAWAI');
+        const judul = getCol('JUDUL', 'JUDUL KEGIATAN', 'JUDUL SERTIFIKASI', 'NAMA DIKLAT');
+
+        if (!rawNama && !judul) {
+          skippedCount++;
+          return;
+        }
+        if (!judul) {
+          skippedCount++;
+          return;
+        }
+
+        const matched = cariPegawaiDiMaster(rawNip, rawNama);
+        const rawTgl = r.TANGGAL !== undefined ? r.TANGGAL : getCol('TANGGAL', 'TANGGAL SK', 'TANGGAL TERBIT', 'TGL');
+        const rawExp = r.TANGGAL_EXPIRED !== undefined ? r.TANGGAL_EXPIRED : getCol('TANGGAL_EXPIRED', 'EXPIRED', 'BERLAKU SAMPAI', 'MASA BERLAKU');
+        const rawTahunBerlaku = parseInt(getCol('MASA_BERLAKU_TAHUN', 'MASA BERLAKU TAHUN', 'TAHUN BERLAKU', 'DURASI'), 10);
+
+        const tglTerbitIso = formatTanggalInput(rawTgl);
+        let tglExpiredIso = formatTanggalInput(rawExp);
+
+        // Jika TANGGAL_EXPIRED kosong namun MASA_BERLAKU_TAHUN diisi, hitung otomatis dari tanggal SK
+        if (!tglExpiredIso && tglTerbitIso && !isNaN(rawTahunBerlaku) && rawTahunBerlaku > 0) {
+          const pts = tglTerbitIso.split('-').map(Number);
+          const dCalc = new Date(pts[0] + rawTahunBerlaku, pts[1] - 1, pts[2]);
+          if (dCalc.getMonth() !== pts[1] - 1) dCalc.setDate(0);
+          tglExpiredIso = `${dCalc.getFullYear()}-${String(dCalc.getMonth() + 1).padStart(2, '0')}-${String(dCalc.getDate()).padStart(2, '0')}`;
+        }
+
+        validList.push({
+          nip: rawNip || (matched ? matched.nip : ''),
+          nama: rawNama || (matched ? matched.nama : ''),
+          matchedMaster: !!matched,
+          jenis: getCol('JENIS', 'JENIS KEGIATAN') || 'Diklat Teknis',
+          nomor: getCol('NOMOR', 'NOMOR SERTIFIKAT') || '-',
+          judul: judul,
+          penyelenggara: getCol('PENYELENGGARA', 'INSTANSI') || '-',
+          tanggal: tglTerbitIso,
+          tanggalExpired: tglExpiredIso,
+          jp: parseFloat(getCol('JP', 'JUMLAH JP')) || 0,
+          link: getCol('LINK_SERTIFIKAT', 'LINK', 'URL'),
+          folderUrl: matched ? matched.folderUrl : '',
+          folderId: matched ? matched.folderId : ''
+        });
+      });
+
+      if (validList.length === 0) {
+        Swal.fire('Format Tidak Valid', 'Pastikan file Excel memiliki minimal kolom NAMA dan JUDUL yang terisi.', 'warning');
+        return;
+      }
+
+      parsedImportItems = validList;
+      $('#importSummaryBadge').text(`${validList.length} baris valid siap disimpan`);
+      if (skippedCount > 0) {
+        $('#importWarningBadge').text(`${skippedCount} baris kosong dilewati`).show();
+      } else {
+        $('#importWarningBadge').hide();
+      }
+
+      const previewHtml = validList.map((it, idx) => {
+        const matchBadge = it.matchedMaster
+          ? '<span class="badge bg-success bg-opacity-10 text-success border border-success"><i class="fas fa-check me-1"></i>Cocok</span>'
+          : '<span class="badge bg-secondary bg-opacity-10 text-secondary border">Manual</span>';
+        return `
+          <tr>
+            <td class="text-center text-muted">${idx + 1}</td>
+            <td><div class="fw-bold">${it.nama || '-'}</div><div class="font-monospace text-muted" style="font-size:11px;">${it.nip || '-'}</div></td>
+            <td class="text-center">${matchBadge}</td>
+            <td>${it.jenis}</td>
+            <td><div class="fw-semibold">${it.judul}</div><div class="text-muted" style="font-size:11px;">No: ${it.nomor}</div></td>
+            <td>${it.penyelenggara}</td>
+            <td class="text-nowrap">${it.tanggal ? formatTanggalIndo(it.tanggal) : '-'}</td>
+            <td class="text-nowrap">${it.tanggalExpired ? formatTanggalIndo(it.tanggalExpired) : '<span class="text-muted">Seumur Hidup</span>'}</td>
+            <td class="text-center fw-bold text-success">${it.jp}</td>
+          </tr>
+        `;
+      }).join('');
+
+      $('#importPreviewTbody').html(previewHtml);
+      $('#importPreviewSection').show();
+      $('#btnEksekusiImport').prop('disabled', false);
+      $('#btnImportCount').text(validList.length);
+    } catch (err) {
+      console.error('Error parse Excel:', err);
+      Swal.fire('Gagal Membaca Excel', 'Pastikan file berformat .xlsx atau .xls yang tidak rusak.', 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function eksekusiImportMassal() {
+  if (!parsedImportItems || parsedImportItems.length === 0) return;
+
+  if (!cekStatusAdmin()) {
+    toggleAdminSession(() => eksekusiImportMassal());
+    return;
+  }
+
+  const total = parsedImportItems.length;
+  let berhasil = 0;
+  let gagal = 0;
+
+  Swal.fire({
+    title: 'Mengimpor Data Sertifikasi...',
+    html: `
+      <div class="mb-2 small text-muted">Menyimpan <b id="imp-curr">0</b> dari <b>${total}</b> data ke spreadsheet...</div>
+      <div class="progress" style="height: 12px; border-radius: 50px;">
+        <div id="imp-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 0%;"></div>
+      </div>
+    `,
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  for (let i = 0; i < total; i++) {
+    const item = parsedImportItems[i];
+    try {
+      const resp = await fetch(SCRIPT_URL_BOS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'saveSertifikasi',
+          nip: item.nip,
+          nama: item.nama,
+          jenis: item.jenis,
+          nomor: item.nomor,
+          judul: item.judul,
+          penyelenggara: item.penyelenggara,
+          tanggal: item.tanggal,
+          tanggalExpired: item.tanggalExpired,
+          jp: item.jp,
+          existingLink: item.link,
+          folderUrl: item.folderUrl,
+          folderId: item.folderId
+        })
+      });
+      let resJson = null;
+      try { resJson = await resp.json(); } catch (e) {}
+      if (resJson && (resJson.success === false || resJson.status === 'error')) {
+        gagal++;
+      } else {
+        berhasil++;
+      }
+    } catch (e) {
+      gagal++;
+    }
+
+    const pct = Math.round(((i + 1) / total) * 100);
+    $('#imp-curr').text(i + 1);
+    $('#imp-progress-bar').css('width', `${pct}%`);
+  }
+
+  $('#modalImportExcel').modal('hide');
+  resetPreviewImportExcel();
+
+  Swal.fire({
+    icon: berhasil > 0 ? 'success' : 'error',
+    title: 'Proses Import Selesai',
+    html: `Berhasil menyimpan <b>${berhasil}</b> data sertifikasi.${gagal > 0 ? `<br><span class="text-danger small">${gagal} baris gagal terkirim.</span>` : ''}`,
+    confirmButtonColor: '#004d40'
+  });
+
+  setTimeout(() => muatSemuaData(true), 800);
+}
+
+function bukaRekapAnalisis() {
+  const filtered = getFilteredSertifikasi();
+  if (filtered.length === 0) {
+    Swal.fire('Data Kosong', 'Belum ada data sertifikasi untuk dianalisis.', 'info');
+    return;
+  }
+
+  const jenisMap = {};
+  const pegawaiMap = {};
+
+  filtered.forEach(item => {
+    jenisMap[item.jenis] = (jenisMap[item.jenis] || 0) + 1;
+    const key = `${item.nama} (${item.nip || '-'})`;
+    if (!pegawaiMap[key]) {
+      pegawaiMap[key] = { nama: item.nama, nip: item.nip, jumlah: 0, jp: 0 };
+    }
+    pegawaiMap[key].jumlah += 1;
+    pegawaiMap[key].jp += (Number(item.jp) || 0);
+  });
+
+  const topPegawai = Object.values(pegawaiMap).sort((a, b) => b.jp - a.jp || b.jumlah - a.jumlah);
+  const rowsHtml = topPegawai.map((p, idx) => `
+    <tr>
+      <td class="text-center">${idx + 1}</td>
+      <td class="fw-bold">${p.nama}</td>
+      <td class="font-monospace small">${p.nip || '-'}</td>
+      <td class="text-center">${p.jumlah}</td>
+      <td class="text-center fw-bold text-success">${p.jp} JP</td>
+    </tr>
+  `).join('');
+
+  Swal.fire({
+    title: '<span style="color:#004d40; font-weight:800; font-size:18px;"><i class="fas fa-chart-pie me-2"></i>Rekap &amp; Analisis Sertifikasi</span>',
+    width: '880px',
+    html: `
+      <div class="row g-3 text-start mt-1">
+        <div class="col-md-5">
+          <div class="p-3 border rounded-4 bg-light h-100">
+            <h6 class="fw-bold text-dark small text-uppercase mb-3">Komposisi Jenis Kegiatan</h6>
+            <div style="height:230px;"><canvas id="chartJenisSertifikasi"></canvas></div>
+          </div>
+        </div>
+        <div class="col-md-7">
+          <div class="p-3 border rounded-4 bg-white h-100">
+            <h6 class="fw-bold text-dark small text-uppercase mb-2">Rekapitulasi JP Per Pegawai</h6>
+            <div class="table-responsive" style="max-height:240px;">
+              <table class="table table-sm table-bordered m-0" style="font-size:12px;">
+                <thead class="table-light">
+                  <tr><th class="text-center">No</th><th>Nama Pegawai</th><th>NIP</th><th class="text-center">Sertifikat</th><th class="text-center">Total JP</th></tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+    confirmButtonText: 'Tutup',
+    confirmButtonColor: '#004d40',
+    didOpen: () => {
+      const ctx = document.getElementById('chartJenisSertifikasi').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(jenisMap),
+          datasets: [{
+            data: Object.values(jenisMap),
+            backgroundColor: ['#004d40', '#ffb74d', '#0288d1', '#10b981', '#8b5cf6', '#f43f5e']
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
+        }
+      });
+    }
+  });
+}
+
+function cetakPDFSertifikasi() {
+  const filtered = getFilteredSertifikasi();
+  if (filtered.length === 0) {
+    Swal.fire('Data Kosong', 'Tidak ada data sertifikasi untuk dicetak.', 'info');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('l', 'mm', 'a4');
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const tglCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("REKAPITULASI SERTIFIKASI & DIKLAT PEGAWAI", pageWidth / 2, 15, { align: "center" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Total Data: ${filtered.length} Sertifikat`, pageWidth / 2, 20.5, { align: "center" });
+
+  const body = filtered.map((item, i) => {
+    const st = cekStatusMasaBerlaku(item.tanggalExpired);
+    const expStr = item.tanggalExpired ? `${item.tanggalExpiredTampil}\n(${st.label})` : 'Seumur Hidup';
+    return [
+      i + 1,
+      `${item.nama}\nNIP. ${item.nip || '-'}`,
+      item.jenis,
+      `${item.judul}\nNo: ${item.nomor}`,
+      item.penyelenggara,
+      item.tanggalTampil,
+      expStr,
+      `${item.jp} JP`
+    ];
+  });
+
+  doc.autoTable({
+    head: [['No', 'Nama & NIP Pegawai', 'Jenis', 'Judul & Nomor Sertifikat', 'Penyelenggara', 'Tgl Terbit', 'Masa Berlaku', 'JP']],
+    body: body,
+    startY: 25,
+    theme: 'grid',
+    styles: { fontSize: 7.5, cellPadding: 2.2, valign: 'middle' },
+    headStyles: { fillColor: [0, 77, 64], textColor: [255, 255, 255], halign: 'center' },
+    columnStyles: {
+      0: { halign: 'center', cellWidth: 9 },
+      5: { halign: 'center', cellWidth: 22 },
+      6: { halign: 'center', cellWidth: 28 },
+      7: { halign: 'center', cellWidth: 15 }
+    },
+    didDrawPage: function() {
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text(`Dicetak: ${tglCetak}`, pageWidth - 14, pageHeight - 8, { align: "right" });
+    }
+  });
+
+  const pdfUrl = doc.output('bloburl');
+  Swal.fire({
+    title: '<span style="color:#004d40; font-weight:800; font-size:16px;"><i class="fas fa-file-pdf text-danger me-2"></i>Preview Laporan Sertifikasi</span>',
+    width: '920px',
+    html: `<div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; height:480px;"><iframe src="${pdfUrl}" width="100%" height="100%" style="border:none;"></iframe></div>`,
+    showCancelButton: true,
+    confirmButtonText: '<i class="fas fa-download me-1"></i> Unduh PDF',
+    cancelButtonText: 'Tutup',
+    confirmButtonColor: '#004d40'
+  }).then(res => {
+    if (res.isConfirmed) {
+      doc.save(`Laporan_Sertifikasi_Pegawai_${Date.now()}.pdf`);
+    }
+  });
+}
+
+$(document).ready(function() {
+  perbaruiTampilanAdmin();
+  muatSemuaData(false);
+
+  // Event pencarian & filter real-time
+  $('#filterSearch').on('input', function() {
+    perbaruiStatistik();
+    renderTabelSertifikasi();
+  });
+  $('#filterJenis, #filterStatus, #filterTahun').on('change', function() {
+    perbaruiStatistik();
+    renderTabelSertifikasi();
+  });
+
+  // Perhitungan otomatis masa berlaku dari Tanggal SK + Masa Berlaku (Tahun)
+  $('#srt_tanggal, #srt_masa_tahun').on('change', function() {
+    hitungTanggalExpiredDariTahun();
+  });
+  $('#srt_expired').on('change', function() {
+    sinkronDropdownMasaBerlakuDariTanggal();
+  });
+
+  // Drag & Drop serta Klik pada area Import Excel
+  const dropzone = document.getElementById('importDropzone');
+  const fileInputImport = document.getElementById('importSertifikasiFile');
+  const btnPilihFile = document.getElementById('btnPilihFileExcel');
+
+  if (btnPilihFile && fileInputImport) {
+    btnPilihFile.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      fileInputImport.value = '';
+      fileInputImport.click();
+    });
+  }
+
+  if (dropzone && fileInputImport) {
+    dropzone.addEventListener('click', function(e) {
+      if (e.target.closest('#btnPilihFileExcel')) return;
+      fileInputImport.value = '';
+      fileInputImport.click();
+    });
+    dropzone.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInputImport.value = '';
+        fileInputImport.click();
+      }
+    });
+    dropzone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', function() {
+      dropzone.classList.remove('dragover');
+    });
+    dropzone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        prosesBacaFileExcelImport(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
+  $('#srt_pegawai_search').on('input change', function() {
+    const val = $(this).val().trim();
+    if (!val) {
+      resetPilihanPegawai(false);
+      return;
+    }
+
+    const qLower = val.toLowerCase();
+    let p = daftarPegawai.find(item => `${item.nama} (${item.nip || 'Tanpa NIP'})`.toLowerCase() === qLower) ||
+            daftarPegawai.find(item => item.nama.toLowerCase() === qLower || (item.nip && item.nip.toLowerCase() === qLower));
+
+    if (!p && val.length >= 3) {
+      const matches = daftarPegawai.filter(item =>
+        item.nama.toLowerCase().includes(qLower) || (item.nip && item.nip.toLowerCase().includes(qLower))
+      );
+      if (matches.length === 1) {
+        p = matches[0];
+      }
+    }
+
+    if (p) {
+      $('#srt_nip').val(p.nip);
+      $('#srt_nama').val(p.nama);
+      $('#srt_folder_url').val(p.folderUrl || '');
+      $('#srt_folder_id').val(p.folderId || '');
+      $('#srt_dokumen_raw').val(p.dokumenRaw || '');
+      perbaruiInfoFolderPegawai(p.folderUrl || '', p.folderId || '', p.dokumenRaw || '');
+    } else {
+      $('#srt_nip').val('');
+      $('#srt_nama').val('');
+      $('#srt_folder_url').val('');
+      $('#srt_folder_id').val('');
+      $('#srt_dokumen_raw').val('');
+      perbaruiInfoFolderPegawai('', '', '');
+    }
+  });
+});
+</script>
+</body>
+</html>
