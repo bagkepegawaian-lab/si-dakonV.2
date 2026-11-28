@@ -508,6 +508,94 @@
           background-color: var(--tvk-blue) !important;
           color: #ffffff !important;
       }
+
+      /* ANIMASI PERAYAAN LOGIN ADMIN BERHASIL */
+      @keyframes confettiFall {
+        0% { transform: translateY(-20px) rotate(0deg) scale(1); opacity: 1; }
+        100% { transform: translateY(350px) rotate(540deg) scale(0.55); opacity: 0; }
+      }
+      @keyframes mascotBounce {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        25% { transform: translateY(-13px) rotate(-5deg); }
+        50% { transform: translateY(0) rotate(4deg); }
+        75% { transform: translateY(-6px) rotate(-3deg); }
+      }
+      @keyframes waveHand {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(24deg); }
+        50% { transform: rotate(-12deg); }
+        75% { transform: rotate(22deg); }
+      }
+      @keyframes eyeBlink {
+        0%, 88%, 100% { transform: scaleY(1); }
+        94% { transform: scaleY(0.1); }
+      }
+      @keyframes ringPulse {
+        0% { transform: scale(0.88); opacity: 0.85; }
+        100% { transform: scale(1.48); opacity: 0; }
+      }
+      @keyframes cardShimmer {
+        0% { transform: translateX(-140%) skewX(-20deg); }
+        100% { transform: translateX(260%) skewX(-20deg); }
+      }
+      .login-celebrate-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(145deg, #004d40 0%, #022c22 100%);
+        border: 2px solid rgba(255, 183, 77, 0.6);
+        border-radius: 26px;
+        padding: 32px 24px 28px;
+        color: #ffffff;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        font-family: 'Poppins', sans-serif;
+      }
+      .login-celebrate-card::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 45%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+        animation: cardShimmer 1.8s ease-in-out 0.2s;
+        pointer-events: none;
+      }
+      .mascot-wrap {
+        position: relative;
+        width: 112px;
+        height: 112px;
+        margin: 0 auto 14px;
+        animation: mascotBounce 1.4s ease-in-out infinite;
+      }
+      .mascot-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 3px solid #ffb74d;
+        animation: ringPulse 1.5s ease-out infinite;
+      }
+      .mascot-eye {
+        transform-origin: center;
+        transform-box: fill-box;
+        animation: eyeBlink 2.6s infinite;
+      }
+      .mascot-hand {
+        transform-origin: 84px 66px;
+        animation: waveHand 0.85s ease-in-out infinite;
+      }
+      .admin-pill-glow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 183, 77, 0.18);
+        border: 1px solid rgba(255, 183, 77, 0.55);
+        color: #ffb74d;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 5px 14px;
+        border-radius: 50px;
+        margin-bottom: 10px;
+      }
     </style>
 </head>
 <body>
@@ -545,9 +633,6 @@
       </div>
       <a href="sertifikasi.html" class="tab-item" id="tab-sertifikasi" onclick="return handleSertifikasiNav(event)" style="text-decoration: none; display: none;">
         <i class="fas fa-award"></i><span>Sertifikasi</span>
-      </a>
-      <a href="audit.html" class="tab-item" id="tab-audit" onclick="return handleAuditNav(event)" style="text-decoration: none; display: none;">
-        <i class="fas fa-clipboard-check"></i><span>Audit</span>
       </a>
       <div class="tab-item" id="tab-database" onclick="showPage('database-page')">
         <i class="fas fa-server"></i><span>Database</span>
@@ -668,7 +753,7 @@
             <div class="col-lg-8">
               <div class="home-card">
                 <div class="mb-4">
-                  <h5 class="fw-bold m-0" style="color: var(--tvk-blue)">Data Golongan & Ruang</h5>
+                  <h5 class="fw-bold m-0" style="color: var(--tvk-blue)">Data Golongan &amp; Ruang</h5>
                   <small class="text-muted">Komposisi pangkat seluruh pegawai aktif</small>
                 </div>
                 <div style="height: 320px;"><canvas id="homeGolonganChart"></canvas></div>
@@ -706,7 +791,7 @@
       <div class="d-flex flex-wrap justify-content-between align-items-center bg-white p-3 rounded-4 border mb-4 shadow-sm gap-2">
         <div>
           <h6 class="m-0 fw-bold" style="color: var(--tvk-blue);" id="rekap-filter-title">Dashboard Data Dosen</h6>
-          <small class="text-muted">Filter tampilan & unduh data berdasarkan status kepegawaian</small>
+          <small class="text-muted">Filter tampilan &amp; unduh data berdasarkan status kepegawaian</small>
         </div>
         <div class="d-flex flex-wrap align-items-center gap-2">
           <button class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold" onclick="exportRekapASNExcel()">
@@ -923,7 +1008,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-2">
           <div>
             <h5 class="fw-bold m-0" style="color: var(--tvk-blue)">Database Pegawai Aktif</h5>
-            <small class="text-muted">Export data otomatis mengikuti hasil pencarian & filter aktif</small>
+            <small class="text-muted">Export data otomatis mengikuti hasil pencarian &amp; filter aktif</small>
           </div>
           <div class="d-flex flex-wrap gap-2">
             <button class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold" onclick="exportDatabaseExcel()">
@@ -1260,6 +1345,92 @@ function refreshProgressBars() {
 }
 setInterval(refreshProgressBars, 1000);
 
+function escapeHtmlSafe(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function showLoginSuccessCelebration(username, onDone) {
+  const safeUser = escapeHtmlSafe(username || 'Admin');
+  const colors = ['#10b981', '#ffb74d', '#004d40', '#34d399', '#f59e0b', '#ffffff'];
+  const confettiHtml = Array.from({ length: 34 }).map((_, i) => {
+    const left = (Math.random() * 98).toFixed(1);
+    const delay = (Math.random() * 0.65).toFixed(2);
+    const duration = (1.35 + Math.random() * 1.1).toFixed(2);
+    const color = colors[i % colors.length];
+    const size = 6 + Math.floor(Math.random() * 7);
+    const isCircle = i % 2 === 0;
+    return `<span style="
+      position:absolute; top:-18px; left:${left}%;
+      width:${size}px; height:${size}px;
+      background:${color}; border-radius:${isCircle ? '50%' : '2px'};
+      animation: confettiFall ${duration}s ease-out ${delay}s forwards;
+      pointer-events:none; z-index:2;
+    "></span>`;
+  }).join('');
+
+  Swal.fire({
+    width: 440,
+    padding: '0',
+    background: 'transparent',
+    backdrop: 'rgba(2, 6, 23, 0.72)',
+    showConfirmButton: false,
+    timer: 2500,
+    html: `
+      <div class="login-celebrate-card animate__animated animate__zoomIn">
+        ${confettiHtml}
+        <div class="mascot-wrap">
+          <div class="mascot-ring"></div>
+          <svg viewBox="0 0 120 120" width="112" height="112" aria-hidden="true">
+            <circle cx="60" cy="60" r="50" fill="#10b981" opacity="0.22"/>
+            <!-- Antena -->
+            <line x1="60" y1="15" x2="60" y2="28" stroke="#ffb74d" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="60" cy="12" r="6" fill="#ffb74d"/>
+            <!-- Telinga -->
+            <rect x="21" y="46" width="7" height="18" rx="3.5" fill="#ffb74d"/>
+            <rect x="92" y="46" width="7" height="18" rx="3.5" fill="#ffb74d"/>
+            <!-- Kepala -->
+            <rect x="28" y="28" width="64" height="54" rx="22" fill="#ffffff"/>
+            <!-- Layar Wajah -->
+            <rect x="36" y="38" width="48" height="32" rx="12" fill="#064e3b"/>
+            <!-- Mata Berkedip -->
+            <circle class="mascot-eye" cx="49" cy="51" r="4.5" fill="#34d399"/>
+            <circle class="mascot-eye" cx="71" cy="51" r="4.5" fill="#34d399"/>
+            <!-- Pipi Merona -->
+            <circle cx="43" cy="59" r="3" fill="#fb7185" opacity="0.85"/>
+            <circle cx="77" cy="59" r="3" fill="#fb7185" opacity="0.85"/>
+            <!-- Senyum -->
+            <path d="M53 60 Q60 67 67 60" stroke="#ffb74d" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <!-- Badan & Dasi -->
+            <path d="M40 85 Q60 80 80 85 L85 104 L35 104 Z" fill="#10b981"/>
+            <polygon points="60,84 56,94 60,101 64,94" fill="#ffb74d"/>
+            <!-- Tangan Melambai -->
+            <g class="mascot-hand">
+              <circle cx="96" cy="55" r="8.5" fill="#ffb74d"/>
+              <circle cx="96" cy="55" r="4" fill="#fff3e0" opacity="0.6"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="admin-pill-glow">
+          <i class="fas fa-shield-alt"></i> AKSES ADMIN TERBUKA
+        </div>
+        <h4 style="font-weight:800; margin:0 0 6px; font-size:21px; letter-spacing:-0.3px;">
+          Halo, ${safeUser}! &#128075;
+        </h4>
+        <p style="font-size:12.5px; color:#cbd5e1; margin:0; line-height:1.5;">
+          Login berhasil! Mode Admin SI DAKON siap digunakan selama 1 jam.
+        </p>
+      </div>
+    `
+  }).then(() => {
+    if (typeof onDone === 'function') onDone();
+  });
+}
+
 function handleAuthAction() {
     if(isAdminMode) { 
         Swal.fire({
@@ -1275,6 +1446,7 @@ function handleAuthAction() {
             }
         });
     } else { 
+        let loggedUsername = 'Admin';
         Swal.fire({
             title: 'Admin Login',
             html: `
@@ -1293,6 +1465,7 @@ function handleAuthAction() {
                     Swal.showValidationMessage(`Harap isi username dan password`);
                     return false;
                 }
+                loggedUsername = username;
                 const finalUrl = `${SCRIPT_URL_BOS}?action=login&user=${encodeURIComponent(username)}&pass=${encodeURIComponent(password)}&t=${new Date().getTime()}`;
                 return fetch(finalUrl, { method: 'GET', mode: 'cors', redirect: 'follow' })
                 .then(response => {
@@ -1311,30 +1484,24 @@ function handleAuthAction() {
                     localStorage.setItem('si_ida_timestamp', new Date().getTime()); 
                     
                     isAdminMode = true; 
-                    $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi, #tab-audit').fadeIn();
+                    $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi').fadeIn();
                     $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
                     if (allData.length) {
                       renderTable(headersGlobal, allData);
                       renderPejabatTable();
                     }
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Sesi aktif selama 1 jam aktivitas',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-
                     resetIdleTimer();
 
-                    if (window.pendingEditIdx !== null && window.pendingEditIdx !== undefined) {
-                        const targetIdx = window.pendingEditIdx;
-                        window.pendingEditIdx = null;
-                        setTimeout(() => { if (typeof editData === "function") editData(targetIdx); }, 600);
-                    } else {
-                        showPage('home-page');
-                    }
+                    showLoginSuccessCelebration(loggedUsername, () => {
+                        if (window.pendingEditIdx !== null && window.pendingEditIdx !== undefined) {
+                            const targetIdx = window.pendingEditIdx;
+                            window.pendingEditIdx = null;
+                            if (typeof editData === "function") editData(targetIdx);
+                        } else {
+                            showPage('home-page');
+                        }
+                    });
                 } else {
                     Swal.fire('Gagal', result.value.message || 'Username/Password Salah', 'error');
                 }
@@ -1354,7 +1521,7 @@ function checkSessionTimeout() {
             prosesLogoutBersih('Sesi login Anda telah habis (1 jam).');
         } else {
             isAdminMode = true;
-            $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi, #tab-audit').show();
+            $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi').show();
             $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
             resetIdleTimer();
         }
@@ -1376,7 +1543,7 @@ function prosesLogoutBersih(pesan) {
     isAdminMode = false;
     clearTimeout(idleTimer);
 
-    $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi, #tab-audit').fadeOut();
+    $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi').fadeOut();
     $('#authBtn').html('<i class="fas fa-user-lock me-2"></i>Admin Sign In');
     
     Swal.fire({
@@ -3621,12 +3788,12 @@ function showDetail(idx) {
     </div>
     
     <div class="drh-card animate__animated animate__fadeIn animate__delay-1s">
-        <div class="drh-title"><i class="fas fa-briefcase"></i> Riwayat & Karir</div>
+        <div class="drh-title"><i class="fas fa-briefcase"></i> Riwayat &amp; Karir</div>
         <div class="drh-grid">${htmlRiwayat}</div>
     </div>
 
     <div class="drh-card animate__animated animate__fadeIn">
-        <div class="drh-title"><i class="fas fa-award"></i> Riwayat Sertifikasi & Diklat</div>
+        <div class="drh-title"><i class="fas fa-award"></i> Riwayat Sertifikasi &amp; Diklat</div>
         <div id="drh-sertifikat-list"><div class="text-muted small"><i class="fas fa-spinner fa-spin me-2"></i>Memuat daftar sertifikat...</div></div>
     </div>
     
@@ -3865,7 +4032,7 @@ function buildForm(h) {
 
 $(document).ready(() => {
   if(localStorage.getItem('si_ida_session') === 'true') {
-      isAdminMode = true; $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #tab-sertifikasi, #tab-audit').show();
+      isAdminMode = true; $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #tab-sertifikasi').show();
       $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
   }
   refreshData();
@@ -3877,20 +4044,6 @@ function handleSertifikasiNav(e) {
         Swal.fire({
             title: 'Akses Terbatas',
             text: 'Menu Sertifikasi hanya dapat diakses setelah login sebagai Admin.',
-            icon: 'warning',
-            confirmButtonColor: '#004d40'
-        });
-        return false;
-    }
-    return true;
-}
-
-function handleAuditNav(e) {
-    if (!isAdminMode) {
-        if (e) e.preventDefault();
-        Swal.fire({
-            title: 'Akses Terbatas',
-            text: 'Menu Audit hanya dapat diakses setelah login sebagai Admin.',
             icon: 'warning',
             confirmButtonColor: '#004d40'
         });
