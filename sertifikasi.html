@@ -2263,8 +2263,8 @@ $('#formSertifikat').on('submit', async function(e) {
       throw new Error(resJson.message || 'Gagal menyimpan data di server GAS.');
     }
 
-    // Jika file diunggah tetapi link belum dikembalikan atau folder belum terbuat karena Code.gs lama
-    if (file && (!resJson || !resJson.link || resJson.folderCreated === false)) {
+    // Jika file diunggah tetapi link belum dikembalikan karena Code.gs lama
+    if (file && (!resJson || !resJson.link)) {
       tampilkanPanduanKodeGAS();
       return;
     }
