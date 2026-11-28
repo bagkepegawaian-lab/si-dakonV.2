@@ -1430,20 +1430,53 @@ function setRekapSubFilter(sub) {
   updateStats();
 }
 
+function getFixedExportColumns() {
+  const safeHeaders = Array.isArray(headersGlobal) ? headersGlobal : [];
+  const findColIdx = (predicate, fallbackIdx = -1) => {
+    const found = safeHeaders.findIndex(h => predicate(String(h || "").toUpperCase().trim()));
+    return found !== -1 ? found : fallbackIdx;
+  };
+
+  const idxNip = findColIdx(n => n === "NIP" || n.includes("NIP"), 1);
+  const idxNama = findColIdx(n => n === "NAMA" || (n.includes("NAMA") && !n.includes("UNIT") && !n.includes("JABATAN")), 2);
+  const idxPangkat = findColIdx(n => n === "PANGKAT" || (n.includes("PANGKAT") && !n.includes("BERIKUTNYA") && !n.includes("KENAIKAN")));
+  const idxGol = findColIdx(n => (n.includes("GOL") && n.includes("RUANG")) || n === "GOL" || n.includes("GOL"));
+  const idxJab = findColIdx(n => n === "JABATAN" || (n.includes("JABATAN") && !n.includes("TAMBAHAN")));
+  const idxJk = findColIdx(n => n.includes("JENIS KELAMIN") || n === "GENDER" || n === "JK");
+  const idxUnit = findColIdx(n =>
+    (n.includes("UNIT KERJA") && !n.includes("HOMEBASE")) ||
+    n.includes("UNIT ORGANISASI") ||
+    (n.includes("UNIT") && !n.includes("HOMEBASE"))
+  );
+  const idxStatusAsn = findColIdx(n => n.includes("STATUS ASN") || n.includes("JENIS PEGAWAI"));
+
+  return [
+    { header: "NIP", colIdx: idxNip },
+    { header: "NAMA", colIdx: idxNama },
+    { header: "PANGKAT", colIdx: idxPangkat },
+    { header: "GOL./ RUANG", colIdx: idxGol },
+    { header: "JABATAN", colIdx: idxJab },
+    { header: "JENIS KELAMIN", colIdx: idxJk },
+    { header: "UNIT KERJA", colIdx: idxUnit },
+    { header: "Status ASN", colIdx: idxStatusAsn }
+  ];
+}
+
 function getFilteredRekapExportData() {
-  const idxStatusASN = headersGlobal.findIndex(h => h && h.toUpperCase().includes("STATUS ASN"));
-  const idxStatus = headersGlobal.findIndex(h => h && h.toUpperCase() === "STATUS");
-  const idxPensiun = headersGlobal.findIndex(h => h && h.toUpperCase().includes("MASA PENSIUN"));
-  const idxNip = headersGlobal.findIndex(h => h && h.toUpperCase().includes("NIP"));
-  const idxNama = headersGlobal.findIndex(h => h && h.toUpperCase().includes("NAMA"));
-  const idxUnit = headersGlobal.findIndex(h => h && h.toUpperCase().includes("UNIT") && !h.toUpperCase().includes("HOMEBASE"));
+  const safeHeaders = Array.isArray(headersGlobal) ? headersGlobal : [];
+  const idxStatusASN = safeHeaders.findIndex(h => h && String(h).toUpperCase().includes("STATUS ASN"));
+  const idxStatus = safeHeaders.findIndex(h => h && String(h).toUpperCase().trim() === "STATUS");
+  const idxPensiun = safeHeaders.findIndex(h => h && String(h).toUpperCase().includes("MASA PENSIUN"));
+  const idxNip = safeHeaders.findIndex(h => h && String(h).toUpperCase().includes("NIP"));
+  const idxNama = safeHeaders.findIndex(h => h && String(h).toUpperCase().includes("NAMA"));
+  const idxUnit = safeHeaders.findIndex(h => h && String(h).toUpperCase().includes("UNIT") && !String(h).toUpperCase().includes("HOMEBASE"));
 
   const qUmum = ($('#quickSearch').val() || "").trim().toLowerCase();
   const qNip = ($('#inputNip').val() || "").trim().toLowerCase();
   const qUnit = ($('#inputUnit').val() || "").trim();
 
-  const filteredRows = allData.filter(row => {
-    const asnVal = (row[idxStatusASN] || "").toUpperCase();
+  const filteredRows = (Array.isArray(allData) ? allData : []).filter(row => {
+    const asnVal = (idxStatusASN !== -1 && row[idxStatusASN] ? String(row[idxStatusASN]) : "").toUpperCase();
     if (!asnVal.includes(activeCat)) return false;
     if (activeSubFilter === 'PNS' && !asnVal.includes('PNS')) return false;
     if (activeSubFilter === 'PPPK' && !asnVal.includes('PPPK')) return false;
@@ -1468,16 +1501,12 @@ function getFilteredRekapExportData() {
     return true;
   });
 
-  let displayIndices = [];
-  headersGlobal.forEach((name, index) => {
-    if (!isFieldHidden(name)) displayIndices.push(index);
-  });
-
-  const exportHeaders = ["No", ...displayIndices.map(idx => headersGlobal[idx])];
+  const fixedCols = getFixedExportColumns();
+  const exportHeaders = ["No", ...fixedCols.map(c => c.header)];
   const exportBody = filteredRows.map((row, idx) => [
     idx + 1,
-    ...displayIndices.map(colIdx => {
-      const val = row[colIdx];
+    ...fixedCols.map(c => {
+      const val = (c.colIdx !== -1 && row && row[c.colIdx] !== undefined) ? row[c.colIdx] : "";
       return (val !== undefined && val !== null && String(val).trim() !== "") ? String(val).trim() : "-";
     })
   ]);
@@ -1544,9 +1573,19 @@ function exportRekapASNPDF() {
     body: exportBody,
     startY: 24,
     theme: 'grid',
-    styles: { fontSize: 6.5, cellPadding: 2, valign: 'middle', overflow: 'linebreak' },
+    styles: { fontSize: 7.5, cellPadding: 2.5, valign: 'middle', overflow: 'linebreak' },
     headStyles: { fillColor: [0, 77, 64], textColor: [255, 255, 255], halign: 'center', fontStyle: 'bold' },
-    columnStyles: { 0: { halign: 'center', cellWidth: 9 } },
+    columnStyles: {
+      0: { halign: 'center', cellWidth: 10 },
+      1: { cellWidth: 36 },
+      2: { cellWidth: 46 },
+      3: { cellWidth: 30 },
+      4: { halign: 'center', cellWidth: 20 },
+      5: { cellWidth: 40 },
+      6: { halign: 'center', cellWidth: 22 },
+      7: { cellWidth: 42 },
+      8: { halign: 'center', cellWidth: 23 }
+    },
     didDrawPage: function() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
@@ -1864,15 +1903,9 @@ function renderTable(h, v) {
 }
 
 function getFilteredDatabaseExportData() {
-  let displayIndices = [];
-  headersGlobal.forEach((name, index) => {
-    if (!isFieldHidden(name)) {
-      displayIndices.push(index);
-    }
-  });
-
-  const exportHeaders = ["No", ...displayIndices.map(idx => headersGlobal[idx])];
-  let filteredRows = allData;
+  const fixedCols = getFixedExportColumns();
+  const exportHeaders = ["No", ...fixedCols.map(c => c.header)];
+  let filteredRows = Array.isArray(allData) ? allData : [];
 
   if (table) {
     filteredRows = table.rows({ search: 'applied' }).data().toArray();
@@ -1880,8 +1913,8 @@ function getFilteredDatabaseExportData() {
 
   const exportBody = filteredRows.map((row, idx) => [
     idx + 1,
-    ...displayIndices.map(colIdx => {
-      const val = row[colIdx];
+    ...fixedCols.map(c => {
+      const val = (c.colIdx !== -1 && row && row[c.colIdx] !== undefined) ? row[c.colIdx] : "";
       return (val !== undefined && val !== null && String(val).trim() !== "") ? String(val).trim() : "-";
     })
   ]);
@@ -1956,10 +1989,18 @@ function exportDatabasePDF() {
     body: exportBody,
     startY: 24,
     theme: 'grid',
-    styles: { fontSize: 6.5, cellPadding: 2, valign: 'middle', overflow: 'linebreak' },
+    styles: { fontSize: 7.5, cellPadding: 2.5, valign: 'middle', overflow: 'linebreak' },
     headStyles: { fillColor: [0, 77, 64], textColor: [255, 255, 255], halign: 'center', fontStyle: 'bold' },
     columnStyles: {
-      0: { halign: 'center', cellWidth: 9 }
+      0: { halign: 'center', cellWidth: 10 },
+      1: { cellWidth: 36 },
+      2: { cellWidth: 46 },
+      3: { cellWidth: 30 },
+      4: { halign: 'center', cellWidth: 20 },
+      5: { cellWidth: 40 },
+      6: { halign: 'center', cellWidth: 22 },
+      7: { cellWidth: 42 },
+      8: { halign: 'center', cellWidth: 23 }
     },
     didDrawPage: function() {
       doc.setFont("helvetica", "normal");
