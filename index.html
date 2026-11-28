@@ -207,6 +207,14 @@
       #unit-list::-webkit-scrollbar { width: 5px; }
       #unit-list::-webkit-scrollbar-thumb { background: var(--tvk-blue); border-radius: 10px; }
 
+      #unit-kerja-list { max-height: 360px; overflow-y: auto; padding-right: 10px; }
+      #unit-kerja-list::-webkit-scrollbar { width: 5px; }
+      #unit-kerja-list::-webkit-scrollbar-thumb { background: var(--tvk-blue); border-radius: 10px; }
+
+      #unit-chart-scroll { max-height: 420px; overflow-y: auto; padding-right: 8px; }
+      #unit-chart-scroll::-webkit-scrollbar { width: 5px; }
+      #unit-chart-scroll::-webkit-scrollbar-thumb { background: var(--tvk-blue); border-radius: 10px; }
+
       .table-responsive { border-radius: 15px; overflow-x: auto !important; }
       table.dataTable { border-collapse: collapse !important; width: 100% !important; }
       table.dataTable thead th { background: #f8f9fa; color: var(--tvk-blue); white-space: nowrap !important; padding: 15px !important; border-bottom: 2px solid #eee !important; }
@@ -826,7 +834,38 @@
           </div>
         </div>
       </div>
-      <div id="kontainer-bawah-unit" style="margin-bottom: 50px;"></div>
+      <div id="kontainer-bawah-unit" class="mt-4" style="margin-bottom: 50px;">
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <div class="card-white h-100">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div>
+                  <h6 class="m-0" id="unit-chart-title">Distribusi Dosen per Unit Kerja</h6>
+                  <small class="text-muted" style="font-size: 11px;">Klik batang grafik untuk melihat daftar nama pegawai di unit tersebut</small>
+                </div>
+                <span class="badge rounded-pill" style="background: #e0f2f1; color: #004d40; font-size: 11px; padding: 6px 12px;" id="unit-total-badge">0 Unit</span>
+              </div>
+              <div id="unit-chart-scroll">
+                <div id="unitKerjaChartWrapper" style="height: 320px; position: relative;">
+                  <canvas id="unitKerjaBarChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="card-white h-100">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h6 class="m-0">Rincian per Unit Kerja</h6>
+                <div class="input-group input-group-sm" style="max-width: 220px;">
+                  <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                  <input type="text" id="searchUnitKerjaInput" class="form-control border-start-0 bg-light" placeholder="Cari unit kerja...">
+                </div>
+              </div>
+              <div id="unit-kerja-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <button onclick="bukaPopUpDUK()" class="btn-duk-modern">
@@ -839,7 +878,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-2">
           <div>
             <h5 class="fw-bold m-0" style="color: var(--tvk-blue)"><i class="fas fa-user-shield me-2"></i>Daftar Pejabat</h5>
-            <small class="text-muted">Data pejabat dengan Jabatan Jabatan Tambahan</small>
+            <small class="text-muted">Data pejabat dengan Jabatan Struktural / Jabatan Tambahan</small>
           </div>
           <div class="d-flex flex-wrap gap-2">
             <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold" onclick="exportPejabatPDF()">
@@ -864,7 +903,7 @@
                 <th class="text-center" style="width: 50px;">No</th>
                 <th style="min-width: 200px;">Nama Pegawai</th>
                 <th style="width: 170px;">NIP</th>
-                <th style="min-width: 170px;">Jabatan Fungsional</th>
+                <th style="min-width: 170px;">Jabatan Utama</th>
                 <th style="min-width: 220px;">Jabatan Strukural / Tambahan</th>
                 <th style="min-width: 180px;">Unit Kerja</th>
                 <th class="text-center" style="width: 110px;">Aksi</th>
@@ -927,12 +966,12 @@
               <input type="text" id="pjb_nip" class="form-control bg-light rounded-3" readonly>
             </div>
             <div class="col-6">
-              <label class="form-label small fw-bold text-muted">Jabatan Fungsional</label>
+              <label class="form-label small fw-bold text-muted">Jabatan Utama</label>
               <input type="text" id="pjb_jabatan_utama" class="form-control bg-light rounded-3" readonly>
             </div>
           </div>
           <div class="mb-2">
-            <label class="form-label small fw-bold text-muted">Jabatan Tambahan <span class="text-danger">*</span></label>
+            <label class="form-label small fw-bold text-muted">Jabatan Struktural/Tambahan <span class="text-danger">*</span></label>
             <input type="text" id="pjb_jabatan_tambahan" class="form-control rounded-3" required>
           </div>
         </div>
@@ -1974,7 +2013,7 @@ function showPejabatQuickModal(idx) {
           <div class="font-monospace text-secondary">${nip}</div>
         </div>
         <div>
-          <small class="text-muted fw-bold text-uppercase d-block" style="font-size:10px;">Jabatan Tambahan</small>
+          <small class="text-muted fw-bold text-uppercase d-block" style="font-size:10px;">Jabatan Struktural / Tambahan</small>
           <div class="mt-1"><span class="badge-jab-tambahan">${jabTamb}</span></div>
         </div>
       </div>
@@ -2288,7 +2327,7 @@ function exportPejabatPDF() {
   doc.text("DAFTAR PEJABAT UIN SUNAN AMPEL SURABAYA", pageWidth / 2, 16, { align: "center" });
 
   doc.autoTable({
-    head: [['No', 'Nama Pegawai', 'NIP', 'Jabatan Fungsional', 'Jabatan Tambahan', 'Unit Kerja']],
+    head: [['No', 'Nama Pegawai', 'NIP', 'Jabatan Utama', 'Jabatan Struktural / Tambahan', 'Unit Kerja']],
     body: pejabatList,
     startY: 23,
     theme: 'grid',
@@ -2787,6 +2826,8 @@ function updateStats() {
   const idxStatusASN = headersGlobal.findIndex(h => h && h.toUpperCase().includes("STATUS ASN"));
   const idxStatus = headersGlobal.findIndex(h => h && h.toUpperCase() === "STATUS"); 
   const idxJab = headersGlobal.findIndex(h => h && h.toUpperCase() === "JABATAN");
+  const idxUnitRaw = headersGlobal.findIndex(h => h && h.toUpperCase().includes("UNIT") && !h.toUpperCase().includes("HOMEBASE"));
+  const idxUnit = idxUnitRaw !== -1 ? idxUnitRaw : headersGlobal.findIndex(h => h && h.toUpperCase().includes("UNIT"));
   const idxGender = headersGlobal.findIndex(h => h && h.toUpperCase().includes("JENIS KELAMIN"));
   const idxPensiun = headersGlobal.findIndex(h => h && h.toUpperCase().includes("MASA PENSIUN"));
   
@@ -2905,7 +2946,7 @@ function updateStats() {
     <span class="rekap-pill rekap-pill-ib" onclick="window.showRekapDetailList('wanita_ib')"><i class="fas fa-book-reader"></i> Izin Belajar: <b>${wanitaIBList.length}</b></span>
   `);
 
-  let jabMap = {}, statusMap = {};
+  let jabMap = {}, statusMap = {}, unitMap = {};
   filtered.forEach(row => {
     const finalStat = getRowStatus(row);
     statusMap[finalStat] = (statusMap[finalStat] || 0) + 1;
@@ -2914,6 +2955,10 @@ function updateStats() {
   validJabatanData.forEach(row => {
     const jab = (row[idxJab] || "Lainnya").toString().trim();
     if (jab !== "") jabMap[jab] = (jabMap[jab] || 0) + 1;
+
+    const rawUnit = idxUnit !== -1 ? (row[idxUnit] || "").toString().trim() : "";
+    const unitName = (rawUnit && rawUnit !== "-") ? rawUnit : "Belum Terdata Unit";
+    unitMap[unitName] = (unitMap[unitName] || 0) + 1;
   });
 
   const btnPensiun = $('button:contains("Lihat Daftar Pegawai Pensiun"), a:contains("Lihat Daftar Pegawai Pensiun")').last();
@@ -2958,7 +3003,132 @@ function updateStats() {
     renderJabatanList($(this).val());
   });
 
+  // Render Rincian & Diagram Distribusi Pegawai berdasarkan Unit Kerja (Data Dosen & Data Tendik)
+  const sortedUnitKeys = Object.keys(unitMap).sort((a, b) => unitMap[b] - unitMap[a]);
+  $('#unit-chart-title').text(`Distribusi ${labelCat}${subLabel} per Unit Kerja`);
+  $('#unit-total-badge').text(`${sortedUnitKeys.length} Unit Kerja`);
+
+  window.showGlobalUnitKerjaPopup = (unitName) => {
+    const list = validJabatanData.filter(row => {
+      const raw = idxUnit !== -1 ? (row[idxUnit] || "").toString().trim() : "";
+      const normalized = (raw && raw !== "-") ? raw : "Belum Terdata Unit";
+      return normalized === unitName;
+    });
+    renderUnifiedPopup(`${labelCat}${subLabel} - Unit Kerja: ${unitName}`, list);
+  };
+
+  const renderUnitKerjaList = (keyword = "") => {
+    const q = keyword.trim().toLowerCase();
+    const filteredUnits = sortedUnitKeys.filter(u => u.toLowerCase().includes(q));
+    if (filteredUnits.length === 0) {
+      $('#unit-kerja-list').html(`<div class="text-center text-muted py-4 small"><i class="fas fa-search me-1"></i> Unit kerja "${keyword}" tidak ditemukan</div>`);
+      return;
+    }
+    let ukHtml = "";
+    filteredUnits.forEach((uName, index) => {
+      const count = unitMap[uName];
+      const percent = validJabatanData.length > 0 ? ((count / validJabatanData.length) * 100).toFixed(1) : 0;
+      const escapedUnit = uName.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      ukHtml += `
+        <div class="mb-2" onclick="window.showGlobalUnitKerjaPopup('${escapedUnit}')" style="background:#fff; border-radius:10px; padding:9px 12px; border:1px solid #f1f5f9; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#004d40'; this.style.background='#f0fdf4';" onmouseout="this.style.borderColor='#f1f5f9'; this.style.background='#fff';">
+          <div class="d-flex justify-content-between align-items-center gap-2">
+            <div style="font-size:10.5px; font-weight:800; color:#1e293b; text-transform:uppercase; line-height:1.35;">${uName}</div>
+            <div class="text-nowrap">
+              <span style="font-size:14px; font-weight:900; color:#059669;">${count}</span>
+              <span style="font-size:10px; font-weight:600; color:#64748b;">(${percent}%)</span>
+            </div>
+          </div>
+          <div style="height:4px; background:#f1f5f9; border-radius:10px; margin-top:6px; overflow:hidden;">
+            <div style="width:${percent}%; background:${greenGradients[index % 4]}; height:100%; border-radius:10px;"></div>
+          </div>
+        </div>`;
+    });
+    $('#unit-kerja-list').html(ukHtml);
+  };
+
+  renderUnitKerjaList($('#searchUnitKerjaInput').val() || "");
+  $('#searchUnitKerjaInput').off('input').on('input', function() {
+    renderUnitKerjaList($(this).val());
+  });
+
   setTimeout(() => {
+    const unitCanvasEl = document.getElementById('unitKerjaBarChart');
+    const unitWrapperEl = document.getElementById('unitKerjaChartWrapper');
+    if (unitCanvasEl && unitWrapperEl) {
+      const dynamicHeight = Math.max(300, sortedUnitKeys.length * 34);
+      unitWrapperEl.style.height = dynamicHeight + 'px';
+
+      const ctxUnit = unitCanvasEl.getContext('2d');
+      if (window.rekapUnitKerjaChart) window.rekapUnitKerjaChart.destroy();
+
+      const unitLabelsShort = sortedUnitKeys.map(u => u.length > 34 ? u.substring(0, 34) + '...' : u);
+      const unitValues = sortedUnitKeys.map(u => unitMap[u]);
+      const barColors = sortedUnitKeys.map((_, idx) => idx % 2 === 0 ? '#004d40' : '#059669');
+
+      window.rekapUnitKerjaChart = new Chart(ctxUnit, {
+        type: 'bar',
+        data: {
+          labels: unitLabelsShort,
+          datasets: [{
+            label: `Jumlah ${labelCat}${subLabel}`,
+            data: unitValues,
+            backgroundColor: barColors,
+            hoverBackgroundColor: '#ffb74d',
+            borderRadius: 6,
+            barThickness: 18
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          maintainAspectRatio: false,
+          layout: { padding: { right: 42 } },
+          onHover: (evt, elements) => {
+            evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+          },
+          onClick: (evt, elements) => {
+            if (elements.length > 0) {
+              const fullUnitName = sortedUnitKeys[elements[0].index];
+              window.showGlobalUnitKerjaPopup(fullUnitName);
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: { precision: 0, font: { size: 10 }, color: '#64748b' },
+              grid: { color: '#f1f5f9' }
+            },
+            y: {
+              ticks: { font: { size: 10, weight: '600' }, color: '#1e293b' },
+              grid: { display: false }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              anchor: 'end',
+              align: 'right',
+              color: '#004d40',
+              font: { weight: '800', size: 11 },
+              formatter: (v) => v > 0 ? v : ''
+            },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              padding: 10,
+              cornerRadius: 10,
+              callbacks: {
+                title: (items) => sortedUnitKeys[items[0].dataIndex],
+                label: (ctx) => {
+                  const val = ctx.parsed.x || 0;
+                  const pct = validJabatanData.length > 0 ? ((val / validJabatanData.length) * 100).toFixed(1) : 0;
+                  return ` Jumlah ${labelCat}${subLabel}: ${val} orang (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
     const canvasEl = document.getElementById('pangkatChart');
     if (!canvasEl) return;
     const ctxDoughnut = canvasEl.getContext('2d');
