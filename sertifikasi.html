@@ -2179,16 +2179,11 @@ $('#formSertifikat').on('submit', async function(e) {
     return;
   }
 
-  let folderUrl = $('#srt_folder_url').val().trim();
-  let folderId = $('#srt_folder_id').val().trim() || extractDriveFolderId(folderUrl);
-
-  if (!folderId) {
-    const matchedPegawai = cariPegawaiDiMaster(nip, nama);
-    if (matchedPegawai && matchedPegawai.folderId) {
-      folderUrl = matchedPegawai.folderUrl;
-      folderId = matchedPegawai.folderId;
-    }
-  }
+  // Kunci folder induk ke 'DATA SERTIFIKASI' dan subfolder otomatis atas nama pegawai
+  const cleanNipFolder = String(nip || '').replace(/^'/, '').trim();
+  const cleanNamaFolder = String(nama || '').trim().replace(/[\\/:*?"<>|]/g, '_');
+  const targetFolderName = cleanNamaFolder || cleanNipFolder || 'Tanpa_Nama';
+  const rootSertifikasiName = 'DATA SERTIFIKASI';
 
   const fileInput = document.getElementById('srt_file');
   const file = fileInput && fileInput.files ? fileInput.files[0] : null;
@@ -2204,7 +2199,7 @@ $('#formSertifikat').on('submit', async function(e) {
   Swal.fire({
     title: 'Menyimpan Riwayat...',
     html: file
-      ? `Mengunggah berkas dan menyimpannya ke direktori arsip pegawai (<code>${nama}</code>)...`
+      ? `Mengunggah berkas ke folder <code>${rootSertifikasiName} &gt; ${targetFolderName}</code>...`
       : 'Menyimpan data sertifikasi ke sistem...',
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading()
@@ -2237,11 +2232,17 @@ $('#formSertifikat').on('submit', async function(e) {
       tanggalExpired: tanggalExpired,
       jp: jp,
       existingLink: existingLink,
-      folderUrl: folderUrl,
-      folderId: folderId,
-      targetFolderId: folderId,
-      parentFolderId: folderId,
-      dokumenFolderUrl: folderUrl,
+      folderUrl: '',
+      folderId: '',
+      targetFolderId: '',
+      parentFolderId: '',
+      dokumenFolderUrl: '',
+      rootFolderName: rootSertifikasiName,
+      subFolderName: targetFolderName,
+      folderName: targetFolderName,
+      pegawaiFolderName: targetFolderName,
+      autoCreateSubFolder: true,
+      autoCreateFolder: true,
       base64Data: base64Data,
       fileName: fileName,
       mimeType: mimeType
@@ -2262,12 +2263,18 @@ $('#formSertifikat').on('submit', async function(e) {
       throw new Error(resJson.message || 'Gagal menyimpan data di server GAS.');
     }
 
+    // Jika file diunggah tetapi link belum dikembalikan atau folder belum terbuat karena Code.gs lama
+    if (file && (!resJson || !resJson.link || resJson.folderCreated === false)) {
+      tampilkanPanduanKodeGAS();
+      return;
+    }
+
     $('#modalSertifikat').modal('hide');
     Swal.fire({
       icon: 'success',
       title: 'Berhasil Disimpan!',
       text: file
-        ? 'Sertifikat berhasil diunggah ke arsip digital pegawai.'
+        ? `Sertifikat berhasil diunggah ke ${rootSertifikasiName} > ${targetFolderName}.`
         : 'Data riwayat sertifikasi berhasil diperbarui.',
       timer: 2000,
       showConfirmButton: false
@@ -2277,60 +2284,8 @@ $('#formSertifikat').on('submit', async function(e) {
   } catch (err) {
     console.error('Error submit sertifikat:', err);
     const errMsg = String(err.message || '');
-    if (errMsg.includes('handleSertifikasiPost is not defined')) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Fungsi Backend GAS Belum Ditambahkan',
-        width: '650px',
-        html: `
-          <div class="text-start small">
-            <p>Server Google Apps Script Anda memanggil fungsi <code>handleSertifikasiPost(data)</code> yang belum ada di file <b>Code.gs</b>.</p>
-            <p class="mb-1 fw-bold">Silakan tambahkan fungsi berikut di Google Apps Script Anda, lalu klik <i>Deploy &gt; Manage deployments &gt; Edit &gt; New version</i>:</p>
-            <textarea id="gas-snippet-box" class="form-control font-monospace" rows="9" readonly style="font-size:11px; background:#f8fafc;">function handleSertifikasiPost(data) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName('Sertifikasi');
-  if (!sheet) {
-    sheet = ss.insertSheet('Sertifikasi');
-    sheet.appendRow(['ID', 'NIP', 'NAMA', 'JENIS', 'NOMOR', 'JUDUL', 'PENYELENGGARA', 'TANGGAL', 'JP', 'LINK', 'TANGGAL_EXPIRED']);
-  }
-  var fileUrl = data.existingLink || '';
-  if (data.base64Data && data.fileName) {
-    var blob = Utilities.newBlob(Utilities.base64Decode(data.base64Data), data.mimeType || 'application/pdf', data.fileName);
-    var folder = (data.folderId) ? DriveApp.getFolderById(data.folderId) : DriveApp.getRootFolder();
-    var file = folder.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    fileUrl = file.getUrl();
-  }
-  var id = data.id || ('SRT-' + new Date().getTime());
-  var rowValues = [id, "'" + (data.nip || ''), data.nama, data.jenis, data.nomor, data.judul, data.penyelenggara, data.tanggal, Number(data.jp) || 0, fileUrl, data.tanggalExpired || ''];
-  var rows = sheet.getDataRange().getValues();
-  var updated = false;
-  for (var i = 1; i < rows.length; i++) {
-    if (String(rows[i][0]) === String(id)) {
-      sheet.getRange(i + 1, 1, 1, rowValues.length).setValues([rowValues]);
-      updated = true;
-      break;
-    }
-  }
-  if (!updated) sheet.appendRow(rowValues);
-  return ContentService.createTextOutput(JSON.stringify({ success: true, id: id, link: fileUrl })).setMimeType(ContentService.MimeType.JSON);
-}</textarea>
-          </div>
-        `,
-        showCancelButton: true,
-        confirmButtonText: '<i class="fas fa-copy me-1"></i> Salin Kode GAS',
-        cancelButtonText: 'Tutup',
-        confirmButtonColor: '#004d40'
-      }).then(r => {
-        if (r.isConfirmed) {
-          const el = document.getElementById('gas-snippet-box');
-          if (el) {
-            el.select();
-            document.execCommand('copy');
-            Swal.fire({ icon: 'success', title: 'Kode Disalin!', text: 'Tempelkan di editor Google Apps Script (Code.gs) lalu Deploy ulang.', timer: 2000, showConfirmButton: false });
-          }
-        }
-      });
+    if (errMsg.includes('handleSertifikasiPost is not defined') || errMsg.includes('Action tidak dikenali')) {
+      tampilkanPanduanKodeGAS();
     } else {
       Swal.fire({
         icon: 'error',
@@ -2341,6 +2296,137 @@ $('#formSertifikat').on('submit', async function(e) {
     }
   }
 });
+
+/**
+ * Menampilkan modal bantuan kode Google Apps Script (doPost & handleSertifikasiPost) agar mudah disalin
+ */
+function tampilkanPanduanKodeGAS() {
+  const gasCodeLengkap = `function doPost(e) {
+  try {
+    var raw = e && e.postData && e.postData.contents ? e.postData.contents : '{}';
+    var data = JSON.parse(raw);
+
+    if (data.action === 'saveSertifikasi') {
+      return handleSertifikasiPost(data);
+    }
+
+    // Tambahkan penanganan action lain di bawah ini jika ada
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, message: 'Action tidak dikenali: ' + data.action }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function handleSertifikasiPost(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Sertifikasi');
+  if (!sheet) {
+    sheet = ss.insertSheet('Sertifikasi');
+    sheet.appendRow(['ID', 'NIP', 'NAMA', 'JENIS', 'NOMOR', 'JUDUL', 'PENYELENGGARA', 'TANGGAL', 'JP', 'LINK', 'TANGGAL_EXPIRED']);
+  }
+
+  var fileUrl = data.existingLink || '';
+  var folderCreated = false;
+
+  if (data.base64Data && data.fileName) {
+    var blob = Utilities.newBlob(
+      Utilities.base64Decode(data.base64Data),
+      data.mimeType || 'application/pdf',
+      data.fileName
+    );
+
+    // 1. Cari atau buat otomatis folder induk "DATA SERTIFIKASI"
+    var rootName = data.rootFolderName || 'DATA SERTIFIKASI';
+    var rootSearch = DriveApp.getFoldersByName(rootName);
+    var parentFolder = rootSearch.hasNext() ? rootSearch.next() : DriveApp.createFolder(rootName);
+
+    // 2. Nama subfolder sesuai Nama Pegawai
+    var pegFolderName = String(data.nama || data.subFolderName || data.folderName || '')
+      .trim()
+      .replace(/[\\\\/:*?"<>|]/g, '_');
+    if (!pegFolderName) {
+      pegFolderName = String(data.nip || 'Tanpa_Nama').replace(/^'/, '').trim();
+    }
+
+    // 3. Cek folder atas nama pegawai di dalam DATA SERTIFIKASI; jika belum ada, buat otomatis
+    var existingFolders = parentFolder.getFoldersByName(pegFolderName);
+    var targetFolder = existingFolders.hasNext() ? existingFolders.next() : parentFolder.createFolder(pegFolderName);
+
+    // 4. Simpan sertifikat ke folder pegawai tersebut
+    var file = targetFolder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    fileUrl = file.getUrl();
+    folderCreated = true;
+  }
+
+  var id = data.id || ('SRT-' + new Date().getTime());
+  var rowValues = [
+    id,
+    "'" + (data.nip || ''),
+    data.nama,
+    data.jenis,
+    data.nomor,
+    data.judul,
+    data.penyelenggara,
+    data.tanggal,
+    Number(data.jp) || 0,
+    fileUrl,
+    data.tanggalExpired || ''
+  ];
+
+  var rows = sheet.getDataRange().getValues();
+  var updated = false;
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(id)) {
+      sheet.getRange(i + 1, 1, 1, rowValues.length).setValues([rowValues]);
+      updated = true;
+      break;
+    }
+  }
+  if (!updated) {
+    sheet.appendRow(rowValues);
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ success: true, id: id, link: fileUrl, folderCreated: folderCreated }))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+
+  Swal.fire({
+    icon: 'info',
+    title: 'Sinkronisasi Backend Google Apps Script (Code.gs)',
+    width: '680px',
+    html: `
+      <div class="text-start small">
+        <p class="mb-2">Agar Google Drive otomatis membuat folder <b>DATA SERTIFIKASI &gt; [Nama Pegawai]</b> saat unggah sertifikat, pastikan kode <code>doPost</code> dan <code>handleSertifikasiPost</code> di file <b>Code.gs</b> Anda sudah diperbarui dan di-<b>Deploy &gt; Manage deployments &gt; Edit &gt; New version</b>:</p>
+        <textarea id="gas-snippet-box" class="form-control font-monospace" rows="11" readonly style="font-size:11px; background:#f8fafc;">${gasCodeLengkap}</textarea>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: '<i class="fas fa-copy me-1"></i> Salin Kode Code.gs',
+    cancelButtonText: 'Tutup',
+    confirmButtonColor: '#004d40'
+  }).then(r => {
+    if (r.isConfirmed) {
+      const el = document.getElementById('gas-snippet-box');
+      if (el) {
+        el.select();
+        document.execCommand('copy');
+        Swal.fire({
+          icon: 'success',
+          title: 'Kode Berhasil Disalin!',
+          text: 'Tempelkan ke Code.gs di Google Apps Script Anda, lalu Deploy sebagai New Version.',
+          timer: 2200,
+          showConfirmButton: false
+        });
+      }
+    }
+  });
+}
 
 function hapusSertifikasi(id) {
   if (!isAdmin) return;
