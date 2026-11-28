@@ -1,0 +1,2161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusat Dokumen Audit &amp; ISO - SI DAKON KEPEGAWAIAN</title>
+    <base target="_top">
+    <!-- Google Fonts Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- jsPDF & AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <!-- SheetJS (XLSX) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+      :root {
+        --tvk-blue: #004d40;
+        --tvk-blue-dark: #00332b;
+        --tvk-accent: #ffb74d;
+        --tvk-bg: #f4f7f6;
+        --font-main: 'Poppins', sans-serif;
+      }
+
+      body {
+        background-color: var(--tvk-bg);
+        font-family: var(--font-main);
+        margin: 0;
+        color: #1e293b;
+        -webkit-font-smoothing: antialiased;
+        transition: background-color 0.3s ease;
+      }
+
+      /* Indikator Loading Bar Atas */
+      #loader-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: var(--tvk-accent);
+        z-index: 9999;
+        width: 0%;
+        transition: width 0.3s ease;
+      }
+
+      /* Top Navigation Bar */
+      .top-nav {
+        background: rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(4px);
+        padding: 10px 0;
+        color: white;
+        font-size: 0.84rem;
+        position: absolute;
+        width: 100%;
+        z-index: 20;
+      }
+
+      .top-nav a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        opacity: 0.92;
+        transition: 0.25s;
+      }
+
+      .top-nav a:hover {
+        opacity: 1;
+        color: var(--tvk-accent);
+      }
+
+      /* Hero Header dengan Clip-Path Ellipse */
+      .hero-container {
+        background: linear-gradient(rgba(0, 77, 64, 0.89), rgba(0, 37, 31, 0.96)),
+                    url('https://uinsa.ac.id/wp-content/uploads/2023/08/Twin-Towers-UINSA.jpg');
+        background-size: cover;
+        background-position: center;
+        min-height: 270px;
+        padding-top: 72px;
+        padding-bottom: 88px;
+        color: white;
+        clip-path: ellipse(150% 100% at 50% 0%);
+        position: relative;
+      }
+
+      .brand-logo {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: white;
+        text-decoration: none;
+        letter-spacing: -0.5px;
+      }
+
+      .brand-logo span {
+        font-weight: 300;
+        color: var(--tvk-accent);
+      }
+
+      /* Mode Presentasi Auditor */
+      body.auditor-mode .top-nav,
+      body.auditor-mode .hero-container,
+      body.auditor-mode .stat-row-section,
+      body.auditor-mode .quick-checklist-section,
+      body.auditor-mode .admin-only-col {
+        display: none !important;
+      }
+
+      body.auditor-mode .filter-panel {
+        margin-top: 16px;
+        border: 2px solid var(--tvk-blue);
+      }
+
+      #auditor-topbar {
+        display: none;
+        background: linear-gradient(90deg, var(--tvk-blue-dark), var(--tvk-blue));
+        color: white;
+        padding: 12px 0;
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      }
+
+      body.auditor-mode #auditor-topbar {
+        display: block;
+      }
+
+      /* Filter Panel Melayang */
+      .filter-panel {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 24px 26px;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
+        margin-top: -72px;
+        position: relative;
+        z-index: 10;
+        border: 1px solid #e2e8f0;
+      }
+
+      .filter-panel .form-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.5px;
+        color: #64748b;
+      }
+
+      .filter-panel .form-control,
+      .filter-panel .form-select {
+        border-radius: 10px;
+        border-color: #cbd5e1;
+        font-size: 0.85rem;
+        padding: 0.55rem 0.85rem;
+      }
+
+      .filter-panel .form-control:focus,
+      .filter-panel .form-select:focus {
+        border-color: var(--tvk-blue);
+        box-shadow: 0 0 0 3px rgba(0, 77, 64, 0.1);
+      }
+
+      .year-select-highlight {
+        border: 2px solid var(--tvk-blue) !important;
+        background-color: #f0fdf4 !important;
+        color: var(--tvk-blue) !important;
+        font-weight: 700 !important;
+      }
+
+      /* Kartu Statistik */
+      .stat-card {
+        background: #ffffff;
+        padding: 20px 22px;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        height: 100%;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--tvk-blue), #10b981);
+      }
+
+      .stat-card.stat-card-warn::before {
+        background: linear-gradient(90deg, #f59e0b, #dc2626);
+      }
+
+      .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      }
+
+      .stat-card .stat-title {
+        color: #64748b;
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-card h3 {
+        font-weight: 800;
+        font-size: 2rem;
+        margin: 0;
+        color: var(--tvk-blue);
+        line-height: 1.15;
+      }
+
+      .stat-card .stat-sub {
+        font-size: 0.74rem;
+        color: #64748b;
+        margin-top: 6px;
+      }
+
+      .stat-icon-circle {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+      }
+
+      /* Kartu Checklist Klausul Cepat */
+      .clause-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 14px 16px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        height: 100%;
+      }
+
+      .clause-card:hover,
+      .clause-card.active-clause {
+        border-color: var(--tvk-blue);
+        background: #f0fdf4;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 77, 64, 0.08);
+      }
+
+      /* Container Tabel Utama */
+      .card-white {
+        background: #ffffff;
+        padding: 24px 26px;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+      }
+
+      table.dataTable thead th {
+        background: #f8fafc;
+        color: var(--tvk-blue);
+        white-space: nowrap !important;
+        padding: 13px 12px !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+      }
+
+      table.dataTable tbody td {
+        vertical-align: middle;
+        padding: 13px 12px !important;
+        font-size: 0.83rem;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .badge-kategori {
+        background: #e6f4f1;
+        color: #004d40;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.71rem;
+        display: inline-block;
+        white-space: nowrap;
+      }
+
+      .badge-klausul {
+        background: #fff8e1;
+        color: #b45309;
+        border: 1px solid #fde68a;
+        padding: 3px 9px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.7rem;
+        display: inline-block;
+      }
+
+      .badge-lintas-tahun {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fcd34d;
+        padding: 2px 8px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.66rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .badge-masa-aktif {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #86efac;
+        padding: 2px 8px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.66rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .badge-masa-warning {
+        background: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fcd34d;
+        padding: 2px 8px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.66rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .badge-masa-expired {
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fca5a5;
+        padding: 2px 8px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.66rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* Status Pill Kesiapan */
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 0.71rem;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+      .status-pill-ready {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #86efac;
+      }
+      .status-pill-revision {
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fca5a5;
+      }
+      .status-pill-draft {
+        background: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fcd34d;
+      }
+
+      .btn-emerald {
+        background: var(--tvk-blue);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 9px 22px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: 0.25s;
+      }
+
+      .btn-emerald:hover {
+        background: var(--tvk-blue-dark);
+        color: white;
+        transform: translateY(-1px);
+      }
+
+      /* Tombol Display Langsung */
+      .btn-display-audit {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #ffffff;
+        background: linear-gradient(135deg, #004d40, #00796b);
+        border: none;
+        box-shadow: 0 2px 6px rgba(0, 77, 64, 0.24);
+        transition: 0.2s;
+        text-decoration: none;
+      }
+
+      .btn-display-audit:hover {
+        color: #ffffff;
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+      }
+
+      .btn-dl-audit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        font-size: 11.5px;
+        color: #004d40;
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        text-decoration: none;
+        transition: 0.2s;
+      }
+
+      .btn-dl-audit:hover {
+        background: #e2e8f0;
+        color: #00332b;
+      }
+
+      .modal-form-header {
+        background: linear-gradient(135deg, var(--tvk-blue), var(--tvk-blue-dark));
+        color: white;
+        padding: 1.15rem 1.5rem;
+      }
+
+      .modal-section-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--tvk-blue);
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 6px;
+        margin-bottom: 12px;
+      }
+
+      /* Modal Display Dokumen Layar Penuh */
+      .viewer-meta-bar {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 10px 20px;
+        font-size: 0.8rem;
+      }
+
+      .viewer-frame-wrapper {
+        width: 100%;
+        height: calc(100vh - 145px);
+        min-height: 460px;
+        background: #1e293b;
+        position: relative;
+      }
+
+      .viewer-frame-wrapper iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: #ffffff;
+      }
+    </style>
+</head>
+<body>
+
+<!-- Loader Bar -->
+<div id="loader-bar"></div>
+
+<!-- Topbar Khusus Saat Mode Presentasi Auditor Aktif -->
+<div id="auditor-topbar">
+  <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-warning text-dark fw-bold px-3 py-1 rounded-pill">
+        <i class="fas fa-desktop me-1"></i> MODE PRESENTASI AUDITOR AKTIF
+      </span>
+      <span class="small text-white-50 d-none d-md-inline">Tampilan bersih difokuskan untuk pencarian cepat &amp; display bukti dokumen audit</span>
+    </div>
+    <button type="button" class="btn btn-sm btn-light rounded-pill px-3 fw-bold text-dark" onclick="toggleAuditorMode(false)">
+      <i class="fas fa-compress-alt me-1"></i> Keluar Mode Presentasi
+    </button>
+  </div>
+</div>
+
+<!-- Top Navigation -->
+<div class="top-nav">
+  <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>Aplikasi SI DAKON KEPEGAWAIAN</div>
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <a href="index.html"><i class="fas fa-arrow-left me-1"></i>Kembali ke Beranda</a>
+      <button type="button" id="btnToggleAdmin" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-0 ms-2" style="font-size: 0.75rem;" onclick="toggleAdminSession()">
+        <i class="fas fa-user-lock me-1"></i>Admin Mode
+      </button>
+      <span id="adminBadge" class="ms-2 fw-bold text-warning" style="display:none;">
+        <i class="fas fa-check-circle me-1"></i>ADMIN MODE
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Hero Header -->
+<div class="hero-container">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <a href="index.html" class="brand-logo">Aplikasi<span> SI DAKON</span></a>
+        <p class="mb-0 mt-1 text-white-50 small">Pusat Dokumen Audit, Kepatuhan ISO, Akreditasi &amp; Display Bukti Fisik Kepegawaian</p>
+      </div>
+      <!-- Tombol Aksi Utama -->
+      <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-light rounded-pill px-3 fw-bold btn-sm text-success shadow-sm" onclick="toggleAuditorMode(true)">
+          <i class="fas fa-desktop me-1"></i> Mode Presentasi Auditor
+        </button>
+        <button type="button" class="btn btn-light rounded-pill px-3 fw-semibold btn-sm" onclick="cetakPaketAuditPDF()">
+          <i class="fas fa-file-pdf text-danger me-1"></i> Cetak Daftar Audit (PDF)
+        </button>
+        <button type="button" class="btn btn-outline-light rounded-pill px-3 fw-semibold btn-sm" onclick="exportExcelAudit()">
+          <i class="fas fa-file-excel me-1"></i> Ekspor Excel
+        </button>
+        <button type="button" id="btnInputAudit" class="btn btn-warning rounded-pill px-4 fw-bold btn-sm text-dark" style="display:none;" onclick="bukaModalTambahAudit()">
+          <i class="fas fa-plus me-1"></i> Tambah Dokumen / Hasil Audit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Container -->
+<div class="container pb-5">
+  <!-- Filter Panel dengan Dropdown Tahun Audit (Mulai 2025) -->
+  <div class="filter-panel mb-4">
+    <div class="row g-3 align-items-end">
+      <div class="col-lg-3 col-md-4">
+        <label class="form-label fw-bold mb-1 text-success"><i class="fas fa-calendar-alt me-1"></i>TAHUN AUDIT</label>
+        <select id="filterTahunAudit" class="form-select year-select-highlight">
+          <option value="">Semua Tahun</option>
+          <option value="2026">Tahun 2026</option>
+          <option value="2025">Tahun 2025</option>
+        </select>
+      </div>
+      <div class="col-lg-4 col-md-8">
+        <label class="form-label fw-bold mb-1">PENCARIAN CEPAT DOKUMEN / KLAUSUL</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 10px 0 0 10px;"><i class="fas fa-search"></i></span>
+          <input type="search" id="filterSearch" class="form-control border-start-0" style="border-radius: 0 10px 10px 0;" placeholder="Kode, judul dokumen, nama pegawai, klausul ISO..." autocomplete="off">
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label fw-bold mb-1">KATEGORI DOKUMEN</label>
+        <select id="filterKategori" class="form-select">
+          <option value="">Semua Kategori</option>
+          <option value="Laporan Hasil Audit (LHA)">Laporan Hasil Audit (LHA)</option>
+          <option value="Pedoman & Kebijakan Mutu">Pedoman &amp; Kebijakan Mutu</option>
+          <option value="SK & Struktur Organisasi">SK &amp; Struktur Organisasi</option>
+          <option value="SOP & Instruksi Kerja">SOP &amp; Instruksi Kerja</option>
+          <option value="Bukti Kompetensi & Pelatihan">Bukti Kompetensi &amp; Pelatihan</option>
+          <option value="Rekaman & Formulir Mutu">Rekaman &amp; Formulir Mutu</option>
+          <option value="Tinjauan Manajemen & CAPA">Tinjauan Manajemen &amp; CAPA</option>
+        </select>
+      </div>
+      <div class="col-lg-2 col-md-6">
+        <label class="form-label fw-bold mb-1">STATUS</label>
+        <div class="d-flex gap-2">
+          <select id="filterStatus" class="form-select">
+            <option value="">Semua</option>
+            <option value="Siap Audit">Siap Audit</option>
+            <option value="Perlu Update">Perlu Update</option>
+            <option value="Draft">Draft</option>
+          </select>
+          <button type="button" class="btn btn-outline-secondary fw-semibold px-3" style="border-radius: 10px;" onclick="resetFilterAudit()" title="Reset Filter">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistik Ringkas Tahun Terpilih (4 Kartu Sejajar) -->
+  <div class="row g-3 g-md-4 mb-4 stat-row-section">
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card" style="cursor:pointer;" onclick="$('#filterStatus').val('').trigger('change')">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="stat-title" id="stat-label-total">Dokumen Tahun 2026</div>
+            <h3 id="stat-total-dokumen">0</h3>
+          </div>
+          <div class="stat-icon-circle bg-success bg-opacity-10 text-success">
+            <i class="fas fa-folder-tree"></i>
+          </div>
+        </div>
+        <div class="stat-sub" id="stat-sub-folder">Arsip folder: DATA AUDIT &gt; 2026</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card" style="cursor:pointer;" onclick="$('#filterStatus').val('Siap Audit').trigger('change')">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="stat-title">Siap Display Audit</div>
+            <h3 id="stat-siap-audit" style="color: #00796b;">0</h3>
+          </div>
+          <div class="stat-icon-circle bg-primary bg-opacity-10 text-primary">
+            <i class="fas fa-check-double"></i>
+          </div>
+        </div>
+        <div class="stat-sub" id="stat-persentase-siap">0% dokumen siap ditampilkan</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card stat-card-warn" style="cursor:pointer;" onclick="$('#filterStatus').val('Perlu Update').trigger('change')">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="stat-title">Perlu Update / Draft</div>
+            <h3 id="stat-perlu-update" style="color: #dc2626;">0</h3>
+          </div>
+          <div class="stat-icon-circle bg-danger bg-opacity-10 text-danger">
+            <i class="fas fa-exclamation-circle"></i>
+          </div>
+        </div>
+        <div class="stat-sub" id="stat-draft-sub">0 dokumen berstatus draft</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+      <div class="stat-card" style="cursor:pointer;" onclick="pilihChecklistKategori('Bukti Kompetensi & Pelatihan')">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="stat-title">Bukti Kompetensi SDM</div>
+            <h3 id="stat-sertifikat-terkait" style="color: #f57c00;">0</h3>
+          </div>
+          <div class="stat-icon-circle bg-warning bg-opacity-10 text-warning">
+            <i class="fas fa-award"></i>
+          </div>
+        </div>
+        <div class="stat-sub">Otomatis tersinkron dari data Sertifikasi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Akses Cepat Checklist Kategori / Klausul ISO -->
+  <div class="card-white mb-4 quick-checklist-section">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom gap-2">
+      <div>
+        <h6 class="fw-bold m-0" style="color: var(--tvk-blue);">
+          <i class="fas fa-clipboard-check me-2 text-success"></i>Checklist Dokumen &amp; Hasil Audit (<span id="checklist-year-label">Tahun 2026</span>)
+        </h6>
+        <small class="text-muted">Klik kategori di bawah untuk menyaring dokumen sesuai kebutuhan auditor &bull; <b>Bukti Kompetensi &amp; Pelatihan</b> terhubung otomatis dengan Masa Berlaku Sertifikat</small>
+      </div>
+      <a href="sertifikasi.html" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold">
+        <i class="fas fa-user-graduate me-1"></i> Kelola Modul Sertifikasi (Klausul 7.2)
+      </a>
+    </div>
+    <div class="row g-2" id="quickClauseCardsContainer"></div>
+  </div>
+
+  <!-- Tabel Utama Dokumen Audit -->
+  <div class="card-white">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom gap-2">
+      <div>
+        <h5 class="fw-bold m-0" style="color: var(--tvk-blue);">
+          Daftar Dokumen &amp; Hasil Audit <span id="table-year-badge" class="badge bg-success ms-1 rounded-pill" style="font-size:0.75rem;">Tahun 2026</span>
+        </h5>
+        <small class="text-muted">Data langsung terhubung ke sheet <b>Audit</b> &amp; <b>Sertifikasi</b> &bull; Klik <b>Display Langsung</b> untuk menyajikan bukti ke auditor</small>
+      </div>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span id="connectionStatusBadge" class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill" style="display:none;">
+          <i class="fas fa-cloud-check me-1"></i>Terhubung ke Server
+        </span>
+        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="muatDataAudit(true)">
+          <i class="fas fa-rotate me-1"></i> Segarkan
+        </button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table id="auditTable" class="table table-hover align-middle w-100">
+        <thead>
+          <tr>
+            <th class="text-center" style="width: 40px;">No</th>
+            <th>Kode Dokumen</th>
+            <th>Judul Dokumen &amp; Klausul</th>
+            <th>Kategori</th>
+            <th>Unit / PIC</th>
+            <th>Tanggal &amp; Revisi</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Display &amp; Unduh</th>
+            <th class="text-center admin-only-col">Aksi</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Display Dokumen Langsung (Layar Besar untuk Auditor) -->
+<div class="modal fade" id="modalDisplayDokumen" tabindex="-1">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content border-0">
+      <div class="modal-form-header d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 px-3 px-md-4">
+        <div class="d-flex align-items-center gap-2 overflow-hidden">
+          <span id="disp-kode-badge" class="badge bg-warning text-dark font-monospace fw-bold px-2 py-1">DOK</span>
+          <h6 class="m-0 fw-bold text-truncate" id="disp-judul">Judul Dokumen Audit</h6>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" id="btnPrevDoc" class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="navigasiDisplayDokumen(-1)">
+            <i class="fas fa-chevron-left me-1"></i> Sebelumnya
+          </button>
+          <button type="button" id="btnNextDoc" class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="navigasiDisplayDokumen(1)">
+            Berikutnya <i class="fas fa-chevron-right ms-1"></i>
+          </button>
+          <a id="disp-btn-newtab" href="#" target="_blank" class="btn btn-sm btn-light rounded-pill px-3 fw-semibold text-dark">
+            <i class="fas fa-external-link-alt me-1"></i> Tab Baru
+          </a>
+          <a id="disp-btn-download" href="#" target="_blank" download class="btn btn-sm btn-success rounded-pill px-3 fw-semibold">
+            <i class="fas fa-download me-1"></i> Unduh
+          </a>
+          <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i> Tutup
+          </button>
+        </div>
+      </div>
+
+      <!-- Bar Metadata Dokumen -->
+      <div class="viewer-meta-bar d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <span><strong class="text-muted">Tahun:</strong> <span id="disp-tahun" class="badge bg-dark">2026</span></span>
+          <span><strong class="text-muted">Kategori:</strong> <span id="disp-kategori" class="fw-semibold text-dark">-</span></span>
+          <span><strong class="text-muted">Klausul ISO:</strong> <span id="disp-klausul" class="badge-klausul">-</span></span>
+          <span><strong class="text-muted">Unit / PIC:</strong> <span id="disp-unit" class="text-dark">-</span></span>
+          <span><strong class="text-muted">Tanggal / Revisi:</strong> <span id="disp-tgl-revisi" class="text-dark">-</span></span>
+          <span id="disp-masa-berlaku-wrap" style="display:none;"><strong class="text-muted">Masa Berlaku:</strong> <span id="disp-masa-berlaku">-</span></span>
+        </div>
+        <div id="disp-status-container"></div>
+      </div>
+
+      <!-- Area Iframe Display Dokumen -->
+      <div class="viewer-frame-wrapper" id="disp-frame-container">
+        <iframe id="disp-iframe" src="about:blank" allow="autoplay; fullscreen"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah / Edit Dokumen Audit -->
+<div class="modal fade" id="modalFormAudit" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+      <form id="formAuditDoc">
+        <input type="hidden" id="aud_id">
+        <input type="hidden" id="aud_existing_link">
+        <input type="hidden" id="aud_existing_filename">
+
+        <div class="modal-form-header d-flex justify-content-between align-items-center">
+          <h5 class="m-0 fw-bold" id="modalFormAuditTitle"><i class="fas fa-folder-plus me-2"></i>Tambah Dokumen / Hasil Audit</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <div class="modal-section-label"><i class="fas fa-tag me-1"></i>1. Tahun Audit &amp; Klasifikasi Dokumen</div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <label class="form-label small fw-bold text-muted">Tahun Audit <span class="text-danger">*</span></label>
+              <input type="number" id="aud_tahun" class="form-control fw-bold" min="2025" max="2099" value="2026" required>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label small fw-bold text-muted">Kategori Dokumen <span class="text-danger">*</span></label>
+              <select id="aud_kategori" class="form-select" required>
+                <option value="Laporan Hasil Audit (LHA)">Laporan Hasil Audit (LHA)</option>
+                <option value="Pedoman & Kebijakan Mutu">Pedoman &amp; Kebijakan Mutu</option>
+                <option value="SK & Struktur Organisasi">SK &amp; Struktur Organisasi</option>
+                <option value="SOP & Instruksi Kerja">SOP &amp; Instruksi Kerja</option>
+                <option value="Bukti Kompetensi & Pelatihan">Bukti Kompetensi &amp; Pelatihan</option>
+                <option value="Rekaman & Formulir Mutu">Rekaman &amp; Formulir Mutu</option>
+                <option value="Tinjauan Manajemen & CAPA">Tinjauan Manajemen &amp; CAPA</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Status Dokumen <span class="text-danger">*</span></label>
+              <select id="aud_status" class="form-select" required>
+                <option value="Siap Audit">Siap Audit</option>
+                <option value="Perlu Update">Perlu Update</option>
+                <option value="Draft">Draft</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Kode / Nomor Dokumen <span class="text-danger">*</span></label>
+              <input type="text" id="aud_kode" class="form-control font-monospace" placeholder="Contoh: SOP-KEP-01" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Klausul ISO / Standar</label>
+              <input type="text" id="aud_klausul" class="form-control" placeholder="Contoh: Klausul 7.2 - Kompetensi">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Unit / Penanggung Jawab <span class="text-danger">*</span></label>
+              <input type="text" id="aud_unit" class="form-control" placeholder="Contoh: Bagian Kepegawaian" required>
+            </div>
+          </div>
+
+          <div class="modal-section-label"><i class="fas fa-file-contract me-1"></i>2. Detail Dokumen &amp; Ringkasan Hasil</div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-12">
+              <label class="form-label small fw-bold text-muted">Judul Dokumen / Laporan Hasil Audit <span class="text-danger">*</span></label>
+              <input type="text" id="aud_judul" class="form-control" placeholder="Nama lengkap SOP / SK / Laporan Hasil Audit" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Tanggal Penetapan / Audit <span class="text-danger">*</span></label>
+              <input type="date" id="aud_tanggal" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Nomor Revisi / Versi</label>
+              <input type="text" id="aud_revisi" class="form-control" value="Rev. 00" placeholder="Rev. 00">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Ringkasan / Catatan Auditor</label>
+              <input type="text" id="aud_ringkasan" class="form-control" placeholder="Ringkasan hasil / temuan / keterangan">
+            </div>
+          </div>
+
+          <div class="modal-section-label"><i class="fas fa-cloud-upload-alt me-1"></i>3. Berkas Digital (Folder Google Drive: DATA AUDIT &gt; Tahun)</div>
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label small fw-bold text-muted">Unggah File Dokumen (PDF / JPG / PNG, Maksimal 10 MB)</label>
+              <input type="file" id="aud_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+              <div id="aud_existing_file_note" class="form-text text-muted small mt-1"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-light border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-emerald px-4"><i class="fas fa-save me-2"></i>Simpan ke Sheet Audit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts: jQuery, Bootstrap 5, DataTables -->
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+const SCRIPT_URL_BOS = "https://script.google.com/macros/s/AKfycby23aF4UE_2GGFdgFISf78RkHfZBDhV8Abpvhj_XoSHjI4QorVxPPNl0VMXKw-1S_H-/exec";
+const AUDIT_CACHE_KEY = 'si_dakon_audit_cache_v1';
+const SERTIFIKASI_CACHE_KEY = 'si_dakon_sertifikasi_cache_v1';
+
+let dataAuditSheet = [];
+let dataSertifikasiRef = [];
+let dtAudit = null;
+let currentDisplayIndex = -1;
+let currentFilteredList = [];
+let selectedTahunAudit = '';
+let isGlobalSearchFallback = false;
+
+/**
+ * Daftar Checklist Kategori ISO untuk akses cepat saat audit berlangsung
+ */
+const CHECKLIST_KATEGORI = [
+  { kategori: 'Laporan Hasil Audit (LHA)', klausul: 'Klausul 9.2', icon: 'fa-clipboard-list', color: '#dc2626' },
+  { kategori: 'Pedoman & Kebijakan Mutu', klausul: 'Klausul 5.2 & 6.2', icon: 'fa-bullseye', color: '#004d40' },
+  { kategori: 'SK & Struktur Organisasi', klausul: 'Klausul 5.3', icon: 'fa-sitemap', color: '#0288d1' },
+  { kategori: 'SOP & Instruksi Kerja', klausul: 'Klausul 7.5 & 8.1', icon: 'fa-file-signature', color: '#059669' },
+  { kategori: 'Bukti Kompetensi & Pelatihan', klausul: 'Klausul 7.2', icon: 'fa-user-graduate', color: '#d97706' },
+  { kategori: 'Rekaman & Formulir Mutu', klausul: 'Klausul 7.5.3', icon: 'fa-folder-open', color: '#7c3aed' },
+  { kategori: 'Tinjauan Manajemen & CAPA', klausul: 'Klausul 9.3 & 10.2', icon: 'fa-chart-line', color: '#0f766e' }
+];
+
+function isKategoriLintasTahun(kategori) {
+  const k = String(kategori || '').trim().toLowerCase();
+  return k === 'bukti kompetensi & pelatihan' || k.includes('bukti kompetensi');
+}
+
+function cekStatusAdmin() {
+  try {
+    const session = localStorage.getItem('si_ida_session') === 'true';
+    const timestamp = parseInt(localStorage.getItem('si_ida_timestamp') || '0', 10);
+    const satuJam = 60 * 60 * 1000;
+    if (!session) return false;
+    if (timestamp && (Date.now() - timestamp > satuJam)) {
+      localStorage.removeItem('si_ida_session');
+      localStorage.removeItem('si_ida_timestamp');
+      return false;
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+let isAdmin = cekStatusAdmin();
+
+function perbaruiTampilanAdmin() {
+  isAdmin = cekStatusAdmin();
+  if (isAdmin) {
+    $('#adminBadge, #btnInputAudit').show();
+    $('#btnToggleAdmin').html('<i class="fas fa-sign-out-alt me-1"></i>Logout').removeClass('btn-outline-warning').addClass('btn-warning text-dark');
+  } else {
+    $('#adminBadge, #btnInputAudit').hide();
+    $('#btnToggleAdmin').html('<i class="fas fa-user-lock me-1"></i>Admin Mode').removeClass('btn-warning text-dark').addClass('btn-outline-warning');
+  }
+  if (dtAudit) {
+    renderTabelAudit();
+  }
+}
+
+function toggleAdminSession() {
+  if (isAdmin) {
+    Swal.fire({
+      title: 'Logout?',
+      text: 'Anda akan keluar dari Mode Admin',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Ya, Logout',
+      cancelButtonText: 'Batal'
+    }).then(res => {
+      if (res.isConfirmed) {
+        localStorage.removeItem('si_ida_session');
+        localStorage.removeItem('si_ida_timestamp');
+        perbaruiTampilanAdmin();
+        Swal.fire({ icon: 'success', title: 'Logout Berhasil', timer: 1200, showConfirmButton: false });
+      }
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: 'Admin Login',
+    html: `
+      <input type="text" id="swal-username" class="swal2-input" placeholder="Username">
+      <input type="password" id="swal-password" class="swal2-input" placeholder="Password">
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'Sign In',
+    confirmButtonColor: '#004d40',
+    showLoaderOnConfirm: true,
+    preConfirm: () => {
+      const username = Swal.getPopup().querySelector('#swal-username').value;
+      const password = Swal.getPopup().querySelector('#swal-password').value;
+      if (!username || !password) {
+        Swal.showValidationMessage('Harap isi username dan password');
+        return false;
+      }
+      const finalUrl = `${SCRIPT_URL_BOS}?action=login&user=${encodeURIComponent(username)}&pass=${encodeURIComponent(password)}&t=${Date.now()}`;
+      return fetch(finalUrl, { method: 'GET', mode: 'cors', redirect: 'follow' })
+        .then(r => {
+          if (!r.ok) throw new Error('Network error');
+          return r.json();
+        })
+        .catch(() => {
+          Swal.showValidationMessage('Koneksi gagal ke server.');
+        });
+    },
+    allowOutsideClick: () => !Swal.isLoading()
+  }).then(result => {
+    if (result && result.isConfirmed && result.value) {
+      if (result.value.success) {
+        localStorage.setItem('si_ida_session', 'true');
+        localStorage.setItem('si_ida_timestamp', String(Date.now()));
+        perbaruiTampilanAdmin();
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Admin Mode aktif', timer: 1300, showConfirmButton: false });
+      } else {
+        Swal.fire('Gagal', result.value.message || 'Username / Password salah', 'error');
+      }
+    }
+  });
+}
+
+function toggleAuditorMode(enable) {
+  if (enable) {
+    document.body.classList.add('auditor-mode');
+    $('#filterSearch').focus();
+  } else {
+    document.body.classList.remove('auditor-mode');
+  }
+}
+
+function formatTanggalIndo(val) {
+  if (!val) return '-';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return String(val);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function formatTanggalInput(val) {
+  if (!val) return '';
+  const str = String(val).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.substring(0, 10);
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function getDrivePreviewUrl(url) {
+  if (!url) return '';
+  const fileMatch = url.match(/\/file\/d\/([-\w]{20,})/) || url.match(/[?&]id=([-\w]{20,})/);
+  if (fileMatch && fileMatch[1] && !url.includes('/folders/')) {
+    return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
+  }
+  return url;
+}
+
+function getDirectDownloadUrl(url) {
+  if (!url) return '';
+  const fileMatch = url.match(/\/file\/d\/([-\w]{20,})/) || url.match(/[?&]id=([-\w]{20,})/);
+  if (fileMatch && fileMatch[1] && !url.includes('/folders/')) {
+    return `https://drive.google.com/uc?export=download&id=${fileMatch[1]}`;
+  }
+  return url;
+}
+
+function ekstrakTahunValid(rawTahun, tglIso) {
+  const strThn = String(rawTahun || '').trim();
+  const match4Digit = strThn.match(/(20\d{2})/);
+  if (match4Digit && match4Digit[1]) {
+    return match4Digit[1];
+  }
+  if (tglIso && /^(20\d{2})/.test(tglIso)) {
+    return tglIso.substring(0, 4);
+  }
+  return '2026';
+}
+
+/**
+ * Menghitung status dan label Masa Berlaku dari kolom ke-11 (TANGGAL_EXPIRED) pada sheet Sertifikasi
+ */
+function hitungInfoMasaBerlaku(rawExpired) {
+  const rawStr = String(rawExpired || '').trim();
+  if (!rawStr || rawStr === '-' || rawStr.toLowerCase() === 'seumur hidup') {
+    return {
+      text: 'Seumur Hidup',
+      badgeClass: 'badge-masa-aktif',
+      icon: 'fa-infinity',
+      isExpired: false
+    };
+  }
+
+  const tglExpIso = formatTanggalInput(rawStr);
+  const expDate = tglExpIso ? new Date(`${tglExpIso}T23:59:59`) : new Date(rawStr);
+  if (isNaN(expDate.getTime())) {
+    return {
+      text: `Berlaku s/d ${rawStr}`,
+      badgeClass: 'badge-masa-aktif',
+      icon: 'fa-calendar-check',
+      isExpired: false
+    };
+  }
+
+  const now = new Date();
+  const diffDays = Math.ceil((expDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const tglLabel = formatTanggalIndo(tglExpIso || rawStr);
+
+  if (diffDays < 0) {
+    return {
+      text: `Kedaluwarsa (${tglLabel})`,
+      badgeClass: 'badge-masa-expired',
+      icon: 'fa-calendar-times',
+      isExpired: true
+    };
+  }
+  if (diffDays <= 90) {
+    return {
+      text: `Segera Habis (${tglLabel})`,
+      badgeClass: 'badge-masa-warning',
+      icon: 'fa-hourglass-half',
+      isExpired: false
+    };
+  }
+  return {
+    text: `Berlaku s/d ${tglLabel}`,
+    badgeClass: 'badge-masa-aktif',
+    icon: 'fa-calendar-check',
+    isExpired: false
+  };
+}
+
+/**
+ * Memetakan 13 kolom sheet 'Audit' secara fleksibel berdasarkan header maupun indeks:
+ * [0]=ID, [1]=TAHUN, [2]=KODE, [3]=JUDUL, [4]=KATEGORI, [5]=KLAUSUL,
+ * [6]=UNIT, [7]=TANGGAL, [8]=REVISI, [9]=STATUS, [10]=RINGKASAN, [11]=LINK, [12]=NAMA_FILE
+ */
+function parseAuditResponse(resAudit) {
+  let rawRows = [];
+  let headers = [];
+
+  if (Array.isArray(resAudit)) {
+    rawRows = resAudit;
+  } else if (resAudit && Array.isArray(resAudit.values)) {
+    rawRows = resAudit.values;
+    headers = Array.isArray(resAudit.headers) ? resAudit.headers.map(h => String(h || '').trim().toUpperCase()) : [];
+  } else if (resAudit && Array.isArray(resAudit.data)) {
+    rawRows = resAudit.data;
+  }
+
+  if (rawRows.length > 0 && Array.isArray(rawRows[0])) {
+    const firstCol = String(rawRows[0][0] || '').trim().toUpperCase();
+    const secondCol = String(rawRows[0][1] || '').trim().toUpperCase();
+    if (firstCol === 'ID' && (secondCol === 'TAHUN' || secondCol === 'KODE')) {
+      headers = rawRows[0].map(h => String(h || '').trim().toUpperCase());
+      rawRows = rawRows.slice(1);
+    }
+  }
+
+  const getIdx = (colName, defaultIdx) => {
+    if (!headers.length) return defaultIdx;
+    const found = headers.indexOf(colName);
+    return found !== -1 ? found : defaultIdx;
+  };
+
+  const iId = getIdx('ID', 0);
+  const iTahun = getIdx('TAHUN', 1);
+  const iKode = getIdx('KODE', 2);
+  const iJudul = getIdx('JUDUL', 3);
+  const iKategori = getIdx('KATEGORI', 4);
+  const iKlausul = getIdx('KLAUSUL', 5);
+  const iUnit = getIdx('UNIT', 6);
+  const iTanggal = getIdx('TANGGAL', 7);
+  const iRevisi = getIdx('REVISI', 8);
+  const iStatus = getIdx('STATUS', 9);
+  const iRingkasan = getIdx('RINGKASAN', 10);
+  const iLink = getIdx('LINK', 11);
+  const iNamaFile = getIdx('NAMA_FILE', 12);
+
+  return rawRows.map((row, idx) => {
+    if (Array.isArray(row)) {
+      const tglIso = formatTanggalInput(row[iTanggal]);
+      const tahunFix = ekstrakTahunValid(row[iTahun], tglIso);
+      return {
+        rowIndex: idx + 2,
+        id: String(row[iId] || `AUD-${idx + 1}`).trim(),
+        tahun: tahunFix,
+        kode: String(row[iKode] || '-').trim(),
+        judul: String(row[iJudul] || '-').trim(),
+        kategori: String(row[iKategori] || 'SOP & Instruksi Kerja').trim(),
+        klausul: String(row[iKlausul] || '-').trim(),
+        unit: String(row[iUnit] || '-').trim(),
+        tanggal: tglIso,
+        revisi: String(row[iRevisi] || 'Rev. 00').trim(),
+        status: String(row[iStatus] || 'Siap Audit').trim(),
+        ringkasan: String(row[iRingkasan] || '').trim(),
+        link: String(row[iLink] || '').trim(),
+        namaFile: String(row[iNamaFile] || '').trim(),
+        isLintasTahun: isKategoriLintasTahun(row[iKategori]),
+        masaBerlakuInfo: null,
+        fromSertifikasi: false
+      };
+    } else if (row && typeof row === 'object') {
+      const tglIso = formatTanggalInput(row.tanggal || row.TANGGAL);
+      const tahunFix = ekstrakTahunValid(row.tahun || row.TAHUN, tglIso);
+      const kat = String(row.kategori || row.KATEGORI || 'SOP & Instruksi Kerja').trim();
+      return {
+        rowIndex: idx + 2,
+        id: String(row.id || row.ID || `AUD-${idx + 1}`).trim(),
+        tahun: tahunFix,
+        kode: String(row.kode || row.KODE || '-').trim(),
+        judul: String(row.judul || row.JUDUL || '-').trim(),
+        kategori: kat,
+        klausul: String(row.klausul || row.KLAUSUL || '-').trim(),
+        unit: String(row.unit || row.UNIT || '-').trim(),
+        tanggal: tglIso,
+        revisi: String(row.revisi || row.REVISI || 'Rev. 00').trim(),
+        status: String(row.status || row.STATUS || 'Siap Audit').trim(),
+        ringkasan: String(row.ringkasan || row.RINGKASAN || '').trim(),
+        link: String(row.link || row.LINK || '').trim(),
+        namaFile: String(row.namaFile || row.NAMA_FILE || '').trim(),
+        isLintasTahun: isKategoriLintasTahun(kat),
+        masaBerlakuInfo: null,
+        fromSertifikasi: false
+      };
+    }
+    return null;
+  }).filter(item => item && item.judul !== '-' && item.judul !== '');
+}
+
+/**
+ * Mengonversi seluruh data dari sheet 'Sertifikasi' menjadi item dokumen audit
+ * berkategori 'Bukti Kompetensi & Pelatihan' (Klausul 7.2 - Kompetensi) beserta status Masa Berlaku (kolom ke-11).
+ */
+function konversiSertifikasiKeDokumenAudit(sertList) {
+  if (!Array.isArray(sertList)) return [];
+  return sertList
+    .filter(s => s && (String(s.judul || '').trim() !== '' || String(s.nama || '').trim() !== ''))
+    .map((s, idx) => {
+      const tglIso = formatTanggalInput(s.tanggal);
+      const thnSert = ekstrakTahunValid('', tglIso);
+      const namaPegawai = String(s.nama || '-').trim();
+      const nipPegawai = String(s.nip || '').replace(/^'/, '').trim();
+      const nomorSert = String(s.nomor || '').trim();
+      const jenisSert = String(s.jenis || 'Sertifikat Kompetensi').trim();
+      const judulSert = String(s.judul || jenisSert).trim();
+      const penyelenggara = String(s.penyelenggara || '').trim();
+      const jpVal = Number(s.jp) || 0;
+      const linkFile = String(s.link || '').trim();
+      const rawExpired = s.tanggalExpired !== undefined ? s.tanggalExpired : (s.TANGGAL_EXPIRED || '');
+      const masaBerlakuInfo = hitungInfoMasaBerlaku(rawExpired);
+
+      let statusDok = 'Draft';
+      if (linkFile && linkFile.startsWith('http')) {
+        statusDok = masaBerlakuInfo.isExpired ? 'Perlu Update' : 'Siap Audit';
+      }
+
+      return {
+        rowIndex: idx + 2,
+        id: String(s.id || `SRT-AUD-${idx + 1}`).trim(),
+        tahun: thnSert,
+        kode: nomorSert || `SRT-${idx + 1}`,
+        judul: `${judulSert} — ${namaPegawai}`,
+        kategori: 'Bukti Kompetensi & Pelatihan',
+        klausul: 'Klausul 7.2 - Kompetensi',
+        unit: nipPegawai ? `${namaPegawai} (${nipPegawai})` : namaPegawai,
+        tanggal: tglIso,
+        revisi: jpVal > 0 ? `${jpVal} JP • ${jenisSert}` : jenisSert,
+        status: statusDok,
+        ringkasan: penyelenggara ? `Penyelenggara: ${penyelenggara}` : jenisSert,
+        link: linkFile,
+        namaFile: namaPegawai ? `Sertifikat_${namaPegawai.replace(/\s+/g, '_')}` : '',
+        isLintasTahun: true,
+        masaBerlakuInfo: masaBerlakuInfo,
+        fromSertifikasi: true
+      };
+    });
+}
+
+/**
+ * Menggabungkan dokumen dari sheet 'Audit' dengan seluruh data bukti kompetensi dari sheet 'Sertifikasi'
+ */
+function getGabunganDokumenAudit() {
+  const sertDocs = konversiSertifikasiKeDokumenAudit(dataSertifikasiRef);
+  return [...dataAuditSheet, ...sertDocs];
+}
+
+function isiDropdownTahunAudit(autoPickDataYear = false) {
+  const yearSet = new Set(['2025', '2026']);
+  const availableDataYears = new Set();
+
+  dataAuditSheet.forEach(d => {
+    const yrStr = String(d.tahun || '').trim();
+    if (/^20\d{2}$/.test(yrStr)) {
+      yearSet.add(yrStr);
+      availableDataYears.add(yrStr);
+    }
+  });
+
+  const sortedYears = Array.from(yearSet).sort((a, b) => b.localeCompare(a));
+
+  if (autoPickDataYear && availableDataYears.size > 0) {
+    const sortedDataYears = Array.from(availableDataYears).sort((a, b) => b.localeCompare(a));
+    if (!selectedTahunAudit || !availableDataYears.has(selectedTahunAudit)) {
+      selectedTahunAudit = sortedDataYears[0];
+    }
+  } else if (selectedTahunAudit !== '' && !sortedYears.includes(selectedTahunAudit)) {
+    selectedTahunAudit = '';
+  }
+
+  let html = '<option value="">Semua Tahun</option>';
+  sortedYears.forEach(yr => {
+    html += `<option value="${yr}">Tahun ${yr}</option>`;
+  });
+  $('#filterTahunAudit').html(html).val(selectedTahunAudit);
+}
+
+function perbaruiLabelTahunAktif() {
+  const yr = selectedTahunAudit;
+  if (yr) {
+    $('#stat-label-total').text(`Dokumen Tahun ${yr}`);
+    $('#stat-sub-folder').html(`Folder: <b>DATA AUDIT &gt; ${yr}</b> (+ Kompetensi)`);
+    $('#checklist-year-label').text(`Tahun ${yr}`);
+    $('#table-year-badge').text(`Tahun ${yr}`);
+  } else {
+    $('#stat-label-total').text('Total Semua Tahun');
+    $('#stat-sub-folder').html('Folder Drive: <b>DATA AUDIT (Semua Tahun)</b>');
+    $('#checklist-year-label').text('Semua Tahun');
+    $('#table-year-badge').text('Semua Tahun');
+  }
+}
+
+async function muatDataAudit(forceRefresh = false) {
+  $('#loader-bar').css('width', '35%');
+
+  try {
+    const cachedSert = localStorage.getItem(SERTIFIKASI_CACHE_KEY);
+    if (cachedSert) {
+      const parsedSert = JSON.parse(cachedSert);
+      if (Array.isArray(parsedSert)) {
+        dataSertifikasiRef = parsedSert;
+      }
+    }
+  } catch (e) {}
+
+  if (!forceRefresh) {
+    try {
+      const cachedAudit = localStorage.getItem(AUDIT_CACHE_KEY);
+      if (cachedAudit) {
+        const parsed = JSON.parse(cachedAudit);
+        if (Array.isArray(parsed)) {
+          dataAuditSheet = parsed;
+          isiDropdownTahunAudit(true);
+          perbaruiSemuaTampilan();
+        }
+      }
+    } catch (e) {}
+  }
+
+  try {
+    const [resAudit, resSert] = await Promise.all([
+      fetch(`${SCRIPT_URL_BOS}?action=getAudit&t=${Date.now()}`).then(r => r.json()).catch(() => ({ values: [] })),
+      fetch(`${SCRIPT_URL_BOS}?action=getSertifikasi&t=${Date.now()}`).then(r => r.json()).catch(() => null)
+    ]);
+
+    $('#loader-bar').css('width', '80%');
+
+    if (resSert && Array.isArray(resSert.values)) {
+      dataSertifikasiRef = resSert.values.map(r => ({
+        id: r[0],
+        nip: r[1],
+        nama: r[2],
+        jenis: r[3],
+        nomor: r[4],
+        judul: r[5],
+        penyelenggara: r[6],
+        tanggal: r[7],
+        jp: r[8],
+        link: r[9],
+        tanggalExpired: r[10] || ''
+      }));
+      try {
+        localStorage.setItem(SERTIFIKASI_CACHE_KEY, JSON.stringify(dataSertifikasiRef));
+      } catch (e) {}
+    }
+
+    dataAuditSheet = parseAuditResponse(resAudit);
+    try {
+      localStorage.setItem(AUDIT_CACHE_KEY, JSON.stringify(dataAuditSheet));
+    } catch (e) {}
+
+    $('#connectionStatusBadge').show();
+
+    isiDropdownTahunAudit(true);
+    perbaruiSemuaTampilan();
+    $('#loader-bar').css('width', '100%');
+    setTimeout(() => $('#loader-bar').css('width', '0%'), 400);
+  } catch (err) {
+    console.warn('Koneksi ke server GAS dibatasi atau terputus:', err);
+    $('#loader-bar').css('width', '0%');
+    $('#connectionStatusBadge').hide();
+    isiDropdownTahunAudit(false);
+    perbaruiSemuaTampilan();
+  }
+}
+
+/**
+ * Mengambil dokumen sesuai tahun yang dipilih,
+ * DITAMBAH seluruh dokumen berkategori 'Bukti Kompetensi & Pelatihan' (baik dari sheet Audit maupun sheet Sertifikasi)
+ * yang bersifat bergerak/lintas tahun.
+ */
+function getDataAuditTahunIni() {
+  const semuaDokumen = getGabunganDokumenAudit();
+  if (!selectedTahunAudit) return semuaDokumen;
+  const targetThn = String(selectedTahunAudit).trim();
+  return semuaDokumen.filter(item => {
+    if (item.isLintasTahun || isKategoriLintasTahun(item.kategori)) return true;
+    return String(item.tahun || '').trim() === targetThn;
+  });
+}
+
+function cocokDenganFilter(item, q, fKategori, fStatus) {
+  if (fKategori && item.kategori !== fKategori) return false;
+  if (fStatus && item.status !== fStatus) return false;
+  if (q) {
+    const masaText = item.masaBerlakuInfo ? item.masaBerlakuInfo.text : '';
+    const hay = `${item.tahun} ${item.kode} ${item.judul} ${item.kategori} ${item.klausul} ${item.unit} ${item.ringkasan} ${item.namaFile} ${masaText} ${formatTanggalIndo(item.tanggal)}`.toLowerCase();
+    const keywords = q.split(/\s+/).filter(Boolean);
+    for (let i = 0; i < keywords.length; i++) {
+      if (!hay.includes(keywords[i])) return false;
+    }
+  }
+  return true;
+}
+
+function getFilteredAudit() {
+  const q = ($('#filterSearch').val() || '').trim().toLowerCase();
+  const fKategori = ($('#filterKategori').val() || '').trim();
+  const fStatus = ($('#filterStatus').val() || '').trim();
+
+  isGlobalSearchFallback = false;
+  const listTahunTerpilih = getDataAuditTahunIni();
+  const hasilTahunIni = listTahunTerpilih.filter(item => cocokDenganFilter(item, q, fKategori, fStatus));
+
+  if (hasilTahunIni.length === 0 && selectedTahunAudit && (q || fKategori || fStatus)) {
+    const hasilSemuaTahun = getGabunganDokumenAudit().filter(item => cocokDenganFilter(item, q, fKategori, fStatus));
+    if (hasilSemuaTahun.length > 0) {
+      isGlobalSearchFallback = true;
+      return hasilSemuaTahun;
+    }
+  }
+
+  return hasilTahunIni;
+}
+
+function perbaruiSemuaTampilan() {
+  perbaruiLabelTahunAktif();
+  perbaruiStatistikAudit();
+  renderQuickChecklistCards();
+  renderTabelAudit();
+}
+
+function perbaruiStatistikAudit() {
+  const listTahunIni = getDataAuditTahunIni();
+  const total = listTahunIni.length;
+  const siap = listTahunIni.filter(d => d.status === 'Siap Audit').length;
+  const perluUpdate = listTahunIni.filter(d => d.status === 'Perlu Update').length;
+  const draft = listTahunIni.filter(d => d.status === 'Draft').length;
+  const persenSiap = total > 0 ? Math.round((siap / total) * 100) : 0;
+  const totalBuktiKompetensi = listTahunIni.filter(d => isKategoriLintasTahun(d.kategori)).length;
+
+  $('#stat-total-dokumen').text(total);
+  $('#stat-siap-audit').text(siap);
+  $('#stat-persentase-siap').text(`${persenSiap}% dokumen siap ditampilkan`);
+  $('#stat-perlu-update').text(perluUpdate + draft);
+  $('#stat-draft-sub').text(`${perluUpdate} perlu update • ${draft} draft`);
+  $('#stat-sertifikat-terkait').text(totalBuktiKompetensi);
+}
+
+function renderQuickChecklistCards() {
+  const activeKat = $('#filterKategori').val();
+  const listTahunIni = getDataAuditTahunIni();
+
+  const html = CHECKLIST_KATEGORI.map(c => {
+    const count = listTahunIni.filter(d => d.kategori === c.kategori).length;
+    const isActive = activeKat === c.kategori ? 'active-clause' : '';
+    const safeKat = c.kategori.replace(/'/g, "\\'");
+    return `
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="clause-card ${isActive}" onclick="pilihChecklistKategori('${safeKat}')">
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <div style="width:32px; height:32px; border-radius:9px; background:${c.color}15; color:${c.color}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fas ${c.icon}"></i>
+              </div>
+              <div>
+                <div class="fw-bold text-dark" style="font-size:0.78rem; line-height:1.25;">${c.kategori}</div>
+                <div class="text-muted" style="font-size:0.69rem;">${c.klausul}</div>
+              </div>
+            </div>
+            <span class="badge rounded-pill" style="background:${c.color}; font-size:0.7rem;">${count}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  $('#quickClauseCardsContainer').html(html);
+}
+
+function pilihChecklistKategori(kategori) {
+  const current = $('#filterKategori').val();
+  if (current === kategori) {
+    $('#filterKategori').val('');
+  } else {
+    $('#filterKategori').val(kategori);
+  }
+  renderQuickChecklistCards();
+  renderTabelAudit();
+  document.getElementById('auditTable').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function getStatusBadgeHtml(status) {
+  if (status === 'Perlu Update') {
+    return '<span class="status-pill status-pill-revision"><i class="fas fa-exclamation-circle"></i>Perlu Update</span>';
+  }
+  if (status === 'Draft') {
+    return '<span class="status-pill status-pill-draft"><i class="fas fa-pen"></i>Draft</span>';
+  }
+  return '<span class="status-pill status-pill-ready"><i class="fas fa-check-circle"></i>Siap Audit</span>';
+}
+
+function renderTabelAudit() {
+  currentFilteredList = getFilteredAudit();
+
+  if (isGlobalSearchFallback) {
+    $('#table-year-badge').text('Hasil Lintas Semua Tahun').removeClass('bg-success').addClass('bg-warning text-dark');
+  } else {
+    $('#table-year-badge').text(selectedTahunAudit ? `Tahun ${selectedTahunAudit}` : 'Semua Tahun').removeClass('bg-warning text-dark').addClass('bg-success');
+  }
+
+  if (dtAudit) {
+    dtAudit.destroy();
+    dtAudit = null;
+  }
+
+  const tbodyHtml = currentFilteredList.map((item, idx) => {
+    const statusHtml = getStatusBadgeHtml(item.status);
+    const hasLink = item.link && item.link.startsWith('http');
+    const dlUrl = hasLink ? getDirectDownloadUrl(item.link) : '#';
+    const bedaTahunDenganFilter = selectedTahunAudit && String(item.tahun) !== String(selectedTahunAudit);
+    const mbInfo = item.masaBerlakuInfo;
+
+    const displayBtnHtml = `
+      <div class="d-inline-flex align-items-center gap-1">
+        <button type="button" class="btn-display-audit" onclick="bukaDisplayDokumen(${idx})" title="Tampilkan langsung di layar untuk auditor">
+          <i class="fas fa-desktop"></i> Display Langsung
+        </button>
+        ${hasLink
+          ? `<a href="${dlUrl}" target="_blank" download class="btn-dl-audit" title="Unduh Berkas"><i class="fas fa-download"></i></a>`
+          : ''}
+      </div>
+    `;
+
+    let aksiHtml = '<span class="text-muted small">-</span>';
+    if (isAdmin) {
+      if (item.fromSertifikasi) {
+        aksiHtml = `<a href="sertifikasi.html" class="btn btn-sm btn-outline-success rounded-pill px-2" title="Kelola di Modul Sertifikasi"><i class="fas fa-external-link-alt"></i></a>`;
+      } else {
+        aksiHtml = `<div class="text-nowrap">
+           <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 me-1" onclick="bukaModalEditAudit('${item.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+           <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2" onclick="hapusDokumenAudit('${item.id}')" title="Hapus"><i class="fas fa-trash"></i></button>
+         </div>`;
+      }
+    }
+
+    const showYearPill = !selectedTahunAudit || isGlobalSearchFallback || bedaTahunDenganFilter;
+
+    return `
+      <tr>
+        <td class="text-center fw-bold text-muted">${idx + 1}</td>
+        <td>
+          <div class="d-flex align-items-center gap-1 flex-wrap">
+            <span class="fw-bold font-monospace text-dark">${item.kode}</span>
+            ${showYearPill ? `<span class="badge bg-dark bg-opacity-10 text-dark border" style="font-size:0.66rem;">${item.tahun}</span>` : ''}
+          </div>
+          ${item.namaFile ? `<div class="small text-muted text-truncate" style="max-width:160px;" title="${item.namaFile}"><i class="fas fa-paperclip me-1"></i>${item.namaFile}</div>` : ''}
+        </td>
+        <td>
+          <div class="fw-semibold text-dark">${item.judul}</div>
+          <div class="mt-1 d-flex flex-wrap align-items-center gap-1">
+            ${item.klausul && item.klausul !== '-' ? `<span class="badge-klausul"><i class="fas fa-bookmark me-1"></i>${item.klausul}</span>` : ''}
+            ${mbInfo ? `<span class="${mbInfo.badgeClass}" title="Masa Berlaku Sertifikat"><i class="fas ${mbInfo.icon}"></i>${mbInfo.text}</span>` : ''}
+            ${item.fromSertifikasi ? `<span class="badge bg-info bg-opacity-10 text-info border border-info" style="font-size:0.65rem;">Data Sertifikasi</span>` : ''}
+          </div>
+        </td>
+        <td><span class="badge-kategori">${item.kategori}</span></td>
+        <td><div class="fw-medium text-dark">${item.unit}</div></td>
+        <td class="text-nowrap">
+          <div class="fw-semibold text-dark">${formatTanggalIndo(item.tanggal)}</div>
+          <div class="small text-muted">${item.revisi}</div>
+        </td>
+        <td class="text-center">${statusHtml}</td>
+        <td class="text-center">${displayBtnHtml}</td>
+        <td class="text-center admin-only-col">${aksiHtml}</td>
+      </tr>
+    `;
+  }).join('');
+
+  $('#auditTable tbody').html(tbodyHtml);
+
+  const labelKosong = selectedTahunAudit
+    ? `Belum ada dokumen audit pada Tahun ${selectedTahunAudit}`
+    : 'Belum ada dokumen audit tersimpan';
+
+  dtAudit = $('#auditTable').DataTable({
+    pageLength: 10,
+    searching: false,
+    language: {
+      zeroRecords: labelKosong,
+      info: "Menampilkan _START_ - _END_ dari _TOTAL_ dokumen",
+      infoEmpty: "Tidak ada data",
+      paginate: { previous: "Sebelumnya", next: "Berikutnya" }
+    }
+  });
+}
+
+function resetFilterAudit() {
+  $('#filterSearch').val('');
+  $('#filterKategori').val('');
+  $('#filterStatus').val('');
+  perbaruiSemuaTampilan();
+}
+
+/**
+ * Membuka modal display dokumen layar penuh langsung untuk disajikan ke auditor
+ */
+function bukaDisplayDokumen(index) {
+  if (index < 0 || index >= currentFilteredList.length) return;
+  currentDisplayIndex = index;
+  const item = currentFilteredList[index];
+
+  $('#disp-kode-badge').text(item.kode || 'DOK');
+  $('#disp-judul').text(item.judul);
+  $('#disp-tahun').text(item.tahun || selectedTahunAudit);
+  $('#disp-kategori').text(item.kategori);
+  $('#disp-klausul').text(item.klausul || '-');
+  $('#disp-unit').text(item.unit || '-');
+  $('#disp-tgl-revisi').text(`${formatTanggalIndo(item.tanggal)} (${item.revisi})`);
+  if (item.masaBerlakuInfo) {
+    $('#disp-masa-berlaku').html(`<span class="${item.masaBerlakuInfo.badgeClass}"><i class="fas ${item.masaBerlakuInfo.icon}"></i>${item.masaBerlakuInfo.text}</span>`);
+    $('#disp-masa-berlaku-wrap').show();
+  } else {
+    $('#disp-masa-berlaku-wrap').hide();
+  }
+  $('#disp-status-container').html(getStatusBadgeHtml(item.status));
+
+  $('#btnPrevDoc').prop('disabled', index === 0);
+  $('#btnNextDoc').prop('disabled', index >= currentFilteredList.length - 1);
+
+  const container = $('#disp-frame-container');
+  const rawLink = (item.link || '').trim();
+
+  if (rawLink && rawLink.startsWith('http')) {
+    const previewUrl = getDrivePreviewUrl(rawLink);
+    const dlUrl = getDirectDownloadUrl(rawLink);
+    $('#disp-btn-newtab').attr('href', rawLink).show();
+    $('#disp-btn-download').attr('href', dlUrl).show();
+
+    container.html(`<iframe id="disp-iframe" src="${previewUrl}" allow="autoplay; fullscreen"></iframe>`);
+  } else {
+    $('#disp-btn-newtab').hide();
+    $('#disp-btn-download').hide();
+
+    container.html(`
+      <div class="d-flex align-items-center justify-content-center h-100 p-4" style="background:#f1f5f9;">
+        <div class="bg-white border rounded-4 shadow-sm p-4 p-md-5" style="max-width: 720px; width:100%;">
+          <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+            <div>
+              <span class="badge bg-success mb-1">LEMBAR KENDALI DOKUMEN AUDIT (${item.tahun || selectedTahunAudit})</span>
+              <h4 class="fw-bold text-dark m-0">${item.judul}</h4>
+            </div>
+            <div class="text-end font-monospace">
+              <div class="fw-bold text-success">${item.kode}</div>
+              <small class="text-muted">${item.revisi}</small>
+            </div>
+          </div>
+          <table class="table table-bordered table-sm mb-3" style="font-size:0.86rem;">
+            <tr><th class="bg-light w-35">Tahun Dokumen</th><td><b>${item.tahun || selectedTahunAudit}</b></td></tr>
+            <tr><th class="bg-light">Kategori Dokumen</th><td>${item.kategori}</td></tr>
+            <tr><th class="bg-light">Klausul ISO</th><td><b>${item.klausul || '-'}</b></td></tr>
+            <tr><th class="bg-light">Unit / Pegawai Terkait</th><td>${item.unit || '-'}</td></tr>
+            <tr><th class="bg-light">Tanggal Terbit / Pengesahan</th><td>${formatTanggalIndo(item.tanggal)}</td></tr>
+            ${item.masaBerlakuInfo ? `<tr><th class="bg-light">Masa Berlaku</th><td><b>${item.masaBerlakuInfo.text}</b></td></tr>` : ''}
+            <tr><th class="bg-light">Keterangan / Penyelenggara</th><td>${item.ringkasan || '-'}</td></tr>
+          </table>
+          <div class="alert alert-warning small mb-0">
+            <i class="fas fa-info-circle me-1"></i>
+            Berkas digital (PDF/Scan) belum diunggah pada entri ini.
+          </div>
+        </div>
+      </div>
+    `);
+  }
+
+  const modalEl = document.getElementById('modalDisplayDokumen');
+  const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+  modalInstance.show();
+}
+
+function navigasiDisplayDokumen(step) {
+  const nextIdx = currentDisplayIndex + step;
+  if (nextIdx >= 0 && nextIdx < currentFilteredList.length) {
+    bukaDisplayDokumen(nextIdx);
+  }
+}
+
+function bukaModalTambahAudit() {
+  if (!isAdmin) {
+    Swal.fire('Akses Terbatas', 'Silakan login sebagai Admin terlebih dahulu.', 'warning');
+    return;
+  }
+  const tahunDefault = selectedTahunAudit || String(new Date().getFullYear());
+  $('#formAuditDoc')[0].reset();
+  $('#aud_id').val('');
+  $('#aud_existing_link').val('');
+  $('#aud_existing_filename').val('');
+  $('#aud_tahun').val(tahunDefault);
+  $('#aud_revisi').val('Rev. 00');
+  $('#aud_tanggal').val(`${tahunDefault}-01-15`);
+  $('#aud_existing_file_note').text('');
+  $('#modalFormAuditTitle').html(`<i class="fas fa-folder-plus me-2"></i>Tambah Dokumen / Hasil Audit Tahun ${tahunDefault}`);
+  $('#modalFormAudit').modal('show');
+}
+
+function bukaModalEditAudit(id) {
+  if (!isAdmin) return;
+  const item = dataAuditSheet.find(d => d.id === id);
+  if (!item) return;
+
+  $('#formAuditDoc')[0].reset();
+  $('#aud_id').val(item.id);
+  $('#aud_existing_link').val(item.link || '');
+  $('#aud_existing_filename').val(item.namaFile || '');
+  $('#aud_tahun').val(item.tahun || selectedTahunAudit || '2026');
+  $('#aud_kategori').val(item.kategori);
+  $('#aud_status').val(item.status || 'Siap Audit');
+  $('#aud_kode').val(item.kode);
+  $('#aud_klausul').val(item.klausul === '-' ? '' : item.klausul);
+  $('#aud_unit').val(item.unit === '-' ? '' : item.unit);
+  $('#aud_judul').val(item.judul);
+  $('#aud_tanggal').val(item.tanggal);
+  $('#aud_revisi').val(item.revisi);
+  $('#aud_ringkasan').val(item.ringkasan || '');
+
+  if (item.link) {
+    $('#aud_existing_file_note').html(`<i class="fas fa-check-circle text-success me-1"></i>Berkas saat ini sudah tersimpan (${item.namaFile || 'Google Drive'}). Biarkan kosong jika tidak ingin mengganti file.`);
+  } else {
+    $('#aud_existing_file_note').text('');
+  }
+
+  $('#modalFormAuditTitle').html('<i class="fas fa-edit me-2"></i>Edit Dokumen / Hasil Audit');
+  $('#modalFormAudit').modal('show');
+}
+
+function fileToBase64Clean(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      resolve(result.includes(',') ? result.split(',')[1] : result);
+    };
+    reader.onerror = err => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
+$('#formAuditDoc').on('submit', async function(e) {
+  e.preventDefault();
+  if (!isAdmin) return;
+
+  const id = $('#aud_id').val().trim();
+  const tahun = String($('#aud_tahun').val()).trim() || '2026';
+  const kategori = $('#aud_kategori').val().trim();
+  const status = $('#aud_status').val().trim();
+  const kode = $('#aud_kode').val().trim();
+  const klausul = $('#aud_klausul').val().trim() || '-';
+  const unit = $('#aud_unit').val().trim();
+  const judul = $('#aud_judul').val().trim();
+  const tanggal = $('#aud_tanggal').val().trim();
+  const revisi = $('#aud_revisi').val().trim() || 'Rev. 00';
+  const ringkasan = $('#aud_ringkasan').val().trim();
+  const existingLink = $('#aud_existing_link').val().trim();
+  const existingFileName = $('#aud_existing_filename').val().trim();
+
+  const fileInput = document.getElementById('aud_file');
+  const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+  if (file && file.size > 10 * 1024 * 1024) {
+    Swal.fire('Ukuran File Terlalu Besar', 'Maksimal ukuran file dokumen audit adalah 10 MB.', 'warning');
+    return;
+  }
+
+  Swal.fire({
+    title: 'Menyimpan Dokumen Audit...',
+    html: file
+      ? `Mengunggah berkas ke folder <code>DATA AUDIT &gt; ${tahun}</code>...`
+      : 'Menyimpan data ke sheet <b>Audit</b>...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  try {
+    let base64Data = '';
+    let fileName = '';
+    let mimeType = '';
+
+    if (file) {
+      base64Data = await fileToBase64Clean(file);
+      const ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : '.pdf';
+      const safeKode = kode.replace(/[^a-zA-Z0-9_-]+/g, '_');
+      const safeJudul = judul.replace(/[^a-zA-Z0-9_-]+/g, '_').substring(0, 45);
+      fileName = `${tahun}_${safeKode}_${safeJudul}${ext}`;
+      mimeType = file.type || 'application/pdf';
+    }
+
+    const payload = {
+      action: 'saveAudit',
+      id,
+      tahun,
+      kode,
+      judul,
+      kategori,
+      klausul,
+      unit,
+      tanggal,
+      revisi,
+      status,
+      ringkasan,
+      existingLink,
+      existingFileName,
+      base64Data,
+      fileName,
+      mimeType
+    };
+
+    const resp = await fetch(SCRIPT_URL_BOS, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+
+    let resJson = null;
+    try {
+      resJson = await resp.json();
+    } catch (parseErr) {}
+
+    if (resJson && (resJson.success === false || resJson.status === 'error')) {
+      throw new Error(resJson.message || 'Gagal menyimpan data di server GAS.');
+    }
+
+    if (file && (!resJson || !resJson.link)) {
+      tampilkanPanduanKodeGASAudit();
+      return;
+    }
+
+    selectedTahunAudit = tahun;
+    $('#modalFormAudit').modal('hide');
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil Disimpan!',
+      text: file
+        ? `Dokumen audit Tahun ${tahun} berhasil diunggah ke DATA AUDIT > ${tahun}.`
+        : `Data dokumen audit Tahun ${tahun} berhasil disimpan ke sheet Audit.`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    setTimeout(() => muatDataAudit(true), 800);
+  } catch (err) {
+    console.error('Error simpan audit:', err);
+    const errMsg = String(err.message || '');
+    if (errMsg.includes('Action tidak dikenali') || errMsg.includes('is not defined')) {
+      tampilkanPanduanKodeGASAudit();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal Menyimpan',
+        text: errMsg || 'Pastikan kode backend Code.gs untuk Audit sudah terpasang dan di-Deploy.',
+        confirmButtonColor: '#d33'
+      });
+    }
+  }
+});
+
+/**
+ * Menampilkan panduan kode Google Apps Script (Code.gs) untuk sheet Audit
+ */
+function tampilkanPanduanKodeGASAudit() {
+  const gasCodeAudit = `// Tambahkan case berikut di dalam fungsi doGet(e):
+// if (action === 'getAudit') return handleGetAudit();
+
+// Tambahkan case berikut di dalam fungsi doPost(e):
+// if (data.action === 'saveAudit') return handleSaveAudit(data);
+// if (data.action === 'deleteAudit') return handleDeleteAudit(data);
+
+function handleGetAudit() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Audit');
+  if (!sheet) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ headers: [], values: [] }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  var data = sheet.getDataRange().getValues();
+  var headers = data.length > 0 ? data[0] : [];
+  var values = data.length > 1 ? data.slice(1) : [];
+  return ContentService
+    .createTextOutput(JSON.stringify({ headers: headers, values: values }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleSaveAudit(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Audit');
+  if (!sheet) {
+    sheet = ss.insertSheet('Audit');
+    sheet.appendRow(['ID', 'TAHUN', 'KODE', 'JUDUL', 'KATEGORI', 'KLAUSUL', 'UNIT', 'TANGGAL', 'REVISI', 'STATUS', 'RINGKASAN', 'LINK', 'NAMA_FILE']);
+  }
+
+  var fileUrl = data.existingLink || '';
+  var savedFileName = data.existingFileName || '';
+
+  if (data.base64Data && data.fileName) {
+    var blob = Utilities.newBlob(
+      Utilities.base64Decode(data.base64Data),
+      data.mimeType || 'application/pdf',
+      data.fileName
+    );
+    var rootSearch = DriveApp.getFoldersByName('DATA AUDIT');
+    var rootFolder = rootSearch.hasNext() ? rootSearch.next() : DriveApp.createFolder('DATA AUDIT');
+
+    var tahunStr = String(data.tahun || '2026').trim();
+    var yearSearch = rootFolder.getFoldersByName(tahunStr);
+    var targetFolder = yearSearch.hasNext() ? yearSearch.next() : rootFolder.createFolder(tahunStr);
+
+    var file = targetFolder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    fileUrl = file.getUrl();
+    savedFileName = data.fileName;
+  }
+
+  var id = data.id || ('AUD-' + new Date().getTime());
+  var rowValues = [
+    id,
+    String(data.tahun || '2026'),
+    data.kode || '-',
+    data.judul || '-',
+    data.kategori || '-',
+    data.klausul || '-',
+    data.unit || '-',
+    data.tanggal || '',
+    data.revisi || 'Rev. 00',
+    data.status || 'Siap Audit',
+    data.ringkasan || '',
+    fileUrl,
+    savedFileName
+  ];
+
+  var rows = sheet.getDataRange().getValues();
+  var updated = false;
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(id)) {
+      sheet.getRange(i + 1, 1, 1, rowValues.length).setValues([rowValues]);
+      updated = true;
+      break;
+    }
+  }
+  if (!updated) {
+    sheet.appendRow(rowValues);
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ success: true, id: id, link: fileUrl, namaFile: savedFileName }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleDeleteAudit(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Audit');
+  if (!sheet) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, message: 'Sheet Audit tidak ditemukan' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  var rows = sheet.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(data.id)) {
+      sheet.deleteRow(i + 1);
+      break;
+    }
+  }
+  return ContentService
+    .createTextOutput(JSON.stringify({ success: true }))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+
+  Swal.fire({
+    icon: 'info',
+    title: 'Sinkronisasi Backend Code.gs untuk Sheet Audit',
+    width: '680px',
+    html: `
+      <div class="text-start small">
+        <p class="mb-2">Tempelkan fungsi berikut ke file <b>Code.gs</b> di Google Apps Script Anda, lalu klik <b>Deploy &gt; Manage deployments &gt; Edit &gt; New version</b>:</p>
+        <textarea id="gas-audit-snippet" class="form-control font-monospace" rows="12" readonly style="font-size:11px; background:#f8fafc;">${gasCodeAudit}</textarea>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: '<i class="fas fa-copy me-1"></i> Salin Kode Code.gs',
+    cancelButtonText: 'Tutup',
+    confirmButtonColor: '#004d40'
+  }).then(r => {
+    if (r.isConfirmed) {
+      const el = document.getElementById('gas-audit-snippet');
+      if (el) {
+        el.select();
+        document.execCommand('copy');
+        Swal.fire({
+          icon: 'success',
+          title: 'Kode Berhasil Disalin!',
+          text: 'Tempelkan ke Code.gs di Google Apps Script Anda, lalu Deploy sebagai New Version.',
+          timer: 2200,
+          showConfirmButton: false
+        });
+      }
+    }
+  });
+}
+
+function hapusDokumenAudit(id) {
+  if (!isAdmin) return;
+  const item = dataAuditSheet.find(d => d.id === id);
+  if (!item) return;
+
+  Swal.fire({
+    title: 'Hapus Dokumen Audit?',
+    text: `Dokumen "${item.kode} - ${item.judul}" akan dihapus dari sheet Audit.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    confirmButtonText: 'Ya, Hapus',
+    cancelButtonText: 'Batal'
+  }).then(async res => {
+    if (res.isConfirmed) {
+      Swal.fire({ title: 'Menghapus...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      try {
+        await fetch(SCRIPT_URL_BOS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'deleteAudit', id: item.id })
+        });
+        Swal.fire({ icon: 'success', title: 'Terhapus!', timer: 1300, showConfirmButton: false });
+        setTimeout(() => muatDataAudit(true), 700);
+      } catch (e) {
+        Swal.fire('Gagal', 'Tidak dapat menghapus dokumen dari server.', 'error');
+      }
+    }
+  });
+}
+
+function cetakPaketAuditPDF() {
+  const list = getFilteredAudit();
+  const labelThn = selectedTahunAudit || 'Semua Tahun';
+  if (list.length === 0) {
+    Swal.fire('Data Kosong', `Tidak ada dokumen audit pada ${labelThn} untuk dicetak.`, 'info');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('l', 'mm', 'a4');
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const tglCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text(`DAFTAR INDUK DOKUMEN & BUKTI AUDIT (${labelThn.toUpperCase()})`, pageWidth / 2, 15, { align: "center" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`SI DAKON KEPEGAWAIAN | Total: ${list.length} Dokumen`, pageWidth / 2, 20.5, { align: "center" });
+
+  const body = list.map((d, i) => [
+    i + 1,
+    d.kode,
+    `${d.judul}\n(${d.klausul || '-'})`,
+    d.kategori,
+    d.unit,
+    `${formatTanggalIndo(d.tanggal)}\n${d.revisi}`,
+    d.status
+  ]);
+
+  doc.autoTable({
+    head: [['No', 'Kode Dokumen', 'Judul Dokumen & Klausul', 'Kategori', 'Unit / PIC', 'Tanggal & Revisi', 'Status']],
+    body: body,
+    startY: 25,
+    theme: 'grid',
+    styles: { fontSize: 7.5, cellPadding: 2.3, valign: 'middle' },
+    headStyles: { fillColor: [0, 77, 64], textColor: [255, 255, 255], halign: 'center' },
+    columnStyles: {
+      0: { halign: 'center', cellWidth: 10 },
+      5: { halign: 'center', cellWidth: 26 },
+      6: { halign: 'center', cellWidth: 24 }
+    },
+    didDrawPage: function() {
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text(`Dicetak untuk keperluan Audit (${labelThn}): ${tglCetak}`, pageWidth - 14, pageHeight - 8, { align: "right" });
+    }
+  });
+
+  const pdfUrl = doc.output('bloburl');
+  Swal.fire({
+    title: `<span style="color:#004d40; font-weight:800; font-size:16px;"><i class="fas fa-file-pdf text-danger me-2"></i>Preview Daftar Dokumen Audit (${labelThn})</span>`,
+    width: '920px',
+    html: `<div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; height:480px;"><iframe src="${pdfUrl}" width="100%" height="100%" style="border:none;"></iframe></div>`,
+    showCancelButton: true,
+    confirmButtonText: '<i class="fas fa-download me-1"></i> Unduh PDF',
+    cancelButtonText: 'Tutup',
+    confirmButtonColor: '#004d40'
+  }).then(res => {
+    if (res.isConfirmed) {
+      doc.save(`Daftar_Dokumen_Audit_${selectedTahunAudit || 'Semua'}_${Date.now()}.pdf`);
+    }
+  });
+}
+
+function exportExcelAudit() {
+  const list = getFilteredAudit();
+  const labelThn = selectedTahunAudit || 'Semua';
+  if (list.length === 0) {
+    Swal.fire('Data Kosong', `Tidak ada data dokumen audit untuk diekspor.`, 'info');
+    return;
+  }
+  const rows = list.map((d, idx) => ({
+    NO: idx + 1,
+    ID: d.id,
+    TAHUN: d.tahun || labelThn,
+    KODE: d.kode,
+    JUDUL: d.judul,
+    KATEGORI: d.kategori,
+    KLAUSUL: d.klausul,
+    UNIT: d.unit,
+    TANGGAL: d.tanggal,
+    REVISI: d.revisi,
+    STATUS: d.status,
+    RINGKASAN: d.ringkasan || '-',
+    LINK: d.link || '-',
+    NAMA_FILE: d.namaFile || '-'
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, `Audit_${labelThn}`);
+  XLSX.writeFile(wb, `Daftar_Dokumen_Audit_${labelThn}_${Date.now()}.xlsx`);
+}
+
+$(document).ready(function() {
+  perbaruiTampilanAdmin();
+  muatDataAudit(false);
+
+  $('#filterTahunAudit').on('change input', function() {
+    selectedTahunAudit = String($(this).val() || '').trim();
+    perbaruiSemuaTampilan();
+  });
+
+  $('#filterSearch').on('input keyup change search', function() {
+    renderTabelAudit();
+  });
+  $('#filterKategori, #filterStatus').on('change', function() {
+    renderQuickChecklistCards();
+    renderTabelAudit();
+  });
+});
+</script>
+</body>
+</html>
