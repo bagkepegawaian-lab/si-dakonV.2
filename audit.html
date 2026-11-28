@@ -615,7 +615,6 @@
             <i class="fas fa-folder-tree"></i>
           </div>
         </div>
-        <div class="stat-sub" id="stat-sub-folder">Arsip folder: DATA AUDIT &gt; 2026</div>
       </div>
     </div>
     <div class="col-lg-3 col-sm-6">
@@ -1295,12 +1294,10 @@ function perbaruiLabelTahunAktif() {
   const yr = selectedTahunAudit;
   if (yr) {
     $('#stat-label-total').text(`Dokumen Tahun ${yr}`);
-    $('#stat-sub-folder').html(`Folder: <b>DATA AUDIT &gt; ${yr}</b> (+ Kompetensi)`);
     $('#checklist-year-label').text(`Tahun ${yr}`);
     $('#table-year-badge').text(`Tahun ${yr}`);
   } else {
     $('#stat-label-total').text('Total Semua Tahun');
-    $('#stat-sub-folder').html('Folder Drive: <b>DATA AUDIT (Semua Tahun)</b>');
     $('#checklist-year-label').text('Semua Tahun');
     $('#table-year-badge').text('Semua Tahun');
   }
