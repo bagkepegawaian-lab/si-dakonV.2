@@ -546,6 +546,9 @@
       <a href="sertifikasi.html" class="tab-item" id="tab-sertifikasi" onclick="return handleSertifikasiNav(event)" style="text-decoration: none; display: none;">
         <i class="fas fa-award"></i><span>Sertifikasi</span>
       </a>
+      <a href="audit.html" class="tab-item" id="tab-audit" onclick="return handleAuditNav(event)" style="text-decoration: none; display: none;">
+        <i class="fas fa-clipboard-check"></i><span>Audit</span>
+      </a>
       <div class="tab-item" id="tab-database" onclick="showPage('database-page')">
         <i class="fas fa-server"></i><span>Database</span>
       </div>
@@ -1308,7 +1311,7 @@ function handleAuthAction() {
                     localStorage.setItem('si_ida_timestamp', new Date().getTime()); 
                     
                     isAdminMode = true; 
-                    $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi').fadeIn();
+                    $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi, #tab-audit').fadeIn();
                     $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
                     if (allData.length) {
                       renderTable(headersGlobal, allData);
@@ -1351,7 +1354,7 @@ function checkSessionTimeout() {
             prosesLogoutBersih('Sesi login Anda telah habis (1 jam).');
         } else {
             isAdminMode = true;
-            $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi').show();
+            $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi, #tab-audit').show();
             $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
             resetIdleTimer();
         }
@@ -1373,7 +1376,7 @@ function prosesLogoutBersih(pesan) {
     isAdminMode = false;
     clearTimeout(idleTimer);
 
-    $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi').fadeOut();
+    $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #btnEditDrh, #tab-sertifikasi, #tab-audit').fadeOut();
     $('#authBtn').html('<i class="fas fa-user-lock me-2"></i>Admin Sign In');
     
     Swal.fire({
@@ -3862,7 +3865,7 @@ function buildForm(h) {
 
 $(document).ready(() => {
   if(localStorage.getItem('si_ida_session') === 'true') {
-      isAdminMode = true; $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #tab-sertifikasi').show();
+      isAdminMode = true; $('#adminInfo, #btnAddData, #btnAddPejabat, #btnTemplatePejabat, #btnImportPejabat, #tab-sertifikasi, #tab-audit').show();
       $('#authBtn').html('<i class="fas fa-sign-out-alt me-2"></i>Logout');
   }
   refreshData();
@@ -3874,6 +3877,20 @@ function handleSertifikasiNav(e) {
         Swal.fire({
             title: 'Akses Terbatas',
             text: 'Menu Sertifikasi hanya dapat diakses setelah login sebagai Admin.',
+            icon: 'warning',
+            confirmButtonColor: '#004d40'
+        });
+        return false;
+    }
+    return true;
+}
+
+function handleAuditNav(e) {
+    if (!isAdminMode) {
+        if (e) e.preventDefault();
+        Swal.fire({
+            title: 'Akses Terbatas',
+            text: 'Menu Audit hanya dapat diakses setelah login sebagai Admin.',
             icon: 'warning',
             confirmButtonColor: '#004d40'
         });
